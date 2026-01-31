@@ -7,7 +7,7 @@ import Button from "./Button";
 import DatePicker from "./DatePicker";
 import  AccommodationSection  from "./accomodationSection";
 import { InvoiceForm } from "./InvoiceForm";
-import  InvoiceSummarySection  from "./invoiceSummarySection";
+import  InvoiceSummarySection  from "./InvoiceSummarySection";
 import InvoiceInfoSection from "./InvoiceInfo"
 import CityTaxSection from "./CityTaxSection";
 import StampTaxSection from "./StampTaxSection";
