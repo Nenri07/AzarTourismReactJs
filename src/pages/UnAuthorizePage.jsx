@@ -1,7 +1,28 @@
-import { Link } from "react-router-dom";
+// src/pages/Unauthorized.jsx
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { ShieldAlert, ArrowLeft, Home, HelpCircle } from "lucide-react";
 
 export default function Unauthorized() {
+  const navigate = useNavigate();
+  const userData = useSelector((state) => state.auth.userData);
+  const userRole = userData?.role || userData?.user?.role;
+
+  // Determine home page based on role
+  const getHomePage = () => {
+    if (userRole === "super_admin") return "/dashboard";
+    if (userRole === "moderator") return "/hotel-configuration";
+    if (userRole === "employee") return "/invoices";
+    return "/";
+  };
+
+  const homePage = getHomePage();
+
+  const handleGoBack = () => {
+    // Always go to home page on unauthorized (safer than going back)
+    navigate(homePage, { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 flex items-center justify-center p-6">
       <div className="max-w-2xl w-full">
@@ -23,7 +44,7 @@ export default function Unauthorized() {
                 You don't have permission to access this page.
               </p>
               <p className="text-gray-500">
-                This area is restricted to administrators only. If you need access to this feature, 
+                This area is restricted. If you need access to this feature, 
                 please contact your system administrator.
               </p>
             </div>
@@ -43,21 +64,21 @@ export default function Unauthorized() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link 
-                to="/invoices" 
+              <button
+                onClick={handleGoBack}
                 className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <ArrowLeft size={18} />
-                Back to Invoices
-              </Link>
+                Go Back
+              </button>
 
-              <Link 
-                to="/" 
+              <button
+                onClick={() => navigate(homePage, { replace: true })}
                 className="flex-1 bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <Home size={18} />
                 Go to Home
-              </Link>
+              </button>
             </div>
           </div>
 

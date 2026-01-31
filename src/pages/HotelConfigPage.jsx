@@ -8,42 +8,91 @@ const SAMPLE_HOTEL_CONFIG = {
   form_fields: [
     {
       field_id: "company_name",
-      label: "Company Name",
+      label: "Reference No",
       data_type: "string",
       required: true,
-      max_length: 100
+      max_length: 100,
+      example: "REF-001, NOVO-1"
     },
     {
-      field_id: "guest_name",
-      label: "Guest Name",
+      field_id: "address",
+      label: "Company Address",
       data_type: "string",
       required: true,
-      max_length: 100
+      max_length: 200,
+      example: "Algeria Square Building Number 12 First Floor, Tripoli, Libya"
     },
     {
-      field_id: "arrival_date",
-      label: "Arrival Date",
-      data_type: "date",
-      required: true
+      field_id: "account_number",
+      label: "Account Number",
+      data_type: "string",
+      required: true,
+      max_length: 20,
+      example: "ARZ2022TOU"
     },
     {
-      field_id: "departure_date",
-      label: "Departure Date",
-      data_type: "date",
-      required: true
+      field_id: "vat_number",
+      label: "VAT Number",
+      data_type: "string",
+      required: false,
+      max_length: 20,
+      example: ""
     },
     {
       field_id: "invoice_number",
       label: "Invoice Number",
       data_type: "string",
       required: true,
-      max_length: 50
+      max_length: 20,
+      example: "49569"
     },
     {
-      field_id: "invoice_date",
-      label: "Invoice Date",
+      field_id: "cashier_id",
+      label: "Cashier ID",
+      data_type: "string",
+      required: true,
+      max_length: 10,
+      example: "6820"
+    },
+    {
+      field_id: "guest_name",
+      label: "Guest Name",
+      data_type: "string",
+      required: true,
+      max_length: 100,
+      example: "Mr. Muflah Zaid"
+    },
+    {
+      field_id: "room_number",
+      label: "Room Number",
+      data_type: "string",
+      required: true,
+      max_length: 10,
+      example: "207"
+    },
+    {
+      field_id: "arrival_date",
+      label: "Arrival Date",
       data_type: "date",
-      required: true
+      format: "DD/MM/YY",
+      required: true,
+      example: "22/12/25"
+    },
+    {
+      field_id: "departure_date",
+      label: "Departure Date",
+      data_type: "date",
+      format: "DD/MM/YY",
+      required: true,
+      example: "29/12/25"
+    },
+    {
+      field_id: "location",
+      label: "Location",
+      data_type: "string",
+      required: true,
+      max_length: 50,
+      example: "Tunis Lac"
     }
   ],
   conditional_sections: {
@@ -56,13 +105,32 @@ const SAMPLE_HOTEL_CONFIG = {
           label: "Total Nights",
           data_type: "integer",
           auto_calculated: true,
-          calculation: "departure_date - arrival_date"
+          calculation: "departure_date - arrival_date",
+          example: 7
         },
         {
           field_id: "room_rate",
           label: "Room Rate per Night",
           data_type: "decimal",
-          required: true
+          required: true,
+          example: 150.00,
+          currency: "EUR"
+        },
+        {
+          field_id: "room_type",
+          label: "Room Type",
+          data_type: "string",
+          required: false,
+          example: "Standard",
+          options: ["Standard", "Deluxe", "Suite", "Executive"]
+        },
+        {
+          field_id: "board_basis",
+          label: "Board Basis",
+          data_type: "string",
+          required: false,
+          example: "Room Only",
+          options: ["Room Only", "Bed & Breakfast", "Half Board", "Full Board"]
         }
       ],
       calculation_rules: {
@@ -72,26 +140,35 @@ const SAMPLE_HOTEL_CONFIG = {
       }
     },
     city_tax: {
-      enabled: true,
+      enabled: false,
       object_name: "city_tax",
       fields: [
         {
-          field_id: "city_tax_nights",
-          label: "Taxable Nights",
-          data_type: "integer",
-          auto_calculated: true,
-          calculation: "total_nights"
-        },
-        {
           field_id: "city_tax_rate",
-          label: "City Tax Rate per Night",
+          label: "City Tax Rate",
           data_type: "decimal",
           required: true,
-          example: 3.00
+          example: 1.5,
+          unit: "per night per person"
+        },
+        {
+          field_id: "city_tax_nights",
+          label: "Nights for City Tax",
+          data_type: "integer",
+          auto_calculated: true,
+          calculation: "total_nights",
+          example: 7
+        },
+        {
+          field_id: "city_tax_persons",
+          label: "Persons for City Tax",
+          data_type: "integer",
+          required: true,
+          example: 1
         }
       ],
       calculation_rules: {
-        city_tax_amount: "city_tax_rate * city_tax_nights"
+        city_tax_amount: "city_tax_rate * city_tax_nights * city_tax_persons"
       }
     },
     stamp_tax: {
@@ -102,31 +179,49 @@ const SAMPLE_HOTEL_CONFIG = {
           field_id: "stamp_tax_amount",
           label: "Stamp Tax Amount",
           data_type: "decimal",
-          fixed_value: 5.00
+          required: true,
+          fixed_value: 5.00,
+          example: 5.00,
+          note: "One time charge"
         }
-      ],
-      calculation_rules: {
-        stamp_tax_amount: "5.00"
-      }
+      ]
     },
     other_services: {
       enabled: true,
+      object_name: "other_services",
       multiple_entries: true,
       max_entries: 100,
-      object_name: "other_services",
       fields: [
         {
           field_id: "service_name",
           label: "Service Name",
           data_type: "string",
           required: true,
-          max_length: 100
+          max_length: 100,
+          example: "Airport Transfer"
+        },
+        {
+          field_id: "service_date",
+          label: "Service Date",
+          data_type: "date",
+          format: "DD/MM/YYYY",
+          required: true,
+          example: "22/12/25"
         },
         {
           field_id: "service_amount",
           label: "Amount",
           data_type: "decimal",
-          required: true
+          required: true,
+          example: 50.00
+        },
+        {
+          field_id: "service_taxable",
+          label: "Taxable",
+          data_type: "boolean",
+          required: false,
+          default: true,
+          example: true
         }
       ]
     }
