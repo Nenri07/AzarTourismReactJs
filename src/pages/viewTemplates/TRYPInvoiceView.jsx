@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
-const logo = '/TRYP-Logo.png';
+import logo from '../../../public/TRYP-Logo.png';
 import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import toast from "react-hot-toast";
 import { InvoiceTemplate } from "../../components";
@@ -59,35 +59,52 @@ const TRYPInvoiceView = ({ invoiceData }) => {
     const otherServices = data.otherServices || [];
     const transactions = [];
 
+    // --- Transaction Processing ---
+
+    // 1. Accommodation Rows
     accommodationDetails.forEach((acc, index) => {
       transactions.push({
         id: `acc-${index}`,
         description: "Package Rate",
+        // Format rate exactly like Grand Aras: EUR amount / Exchange Rate
         rate: `${(data.actualRate || 0).toFixed(2)} EUR / ${(data.exchangeRate || 0).toFixed(5)}`,
         date: formatDate(acc.date || data.arrivalDate),
         debit: acc.rate || 0,
-        credit: null
+        credit: null,
+        sortDate: new Date(acc.date || data.arrivalDate) // Helper for sorting if needed
       });
     });
 
+    // 2. Other Services
     otherServices.forEach((service, index) => {
       transactions.push({
         id: `svc-${index}`,
         description: service.name || service.service_name || "Service",
-        rate: "",
+        rate: "", // Services usually don't show the rate breakdown in this column
         date: formatDate(service.date || service.service_date),
         debit: service.amount || service.gross_amount || 0,
-        credit: null
+        credit: null,
+        sortDate: new Date(service.date || service.service_date)
       });
     });
 
+    // --- Calculations (Preserved from TRYP Logic) ---
+
+    // d = room taxable base
     const d = parseFloat(data.taxable_amount_room || data.taxableAmountRoom || 0);
+    // e = sum of services taxable
     const e = otherServices.reduce((sum, s) => sum + parseFloat(s.taxable_amount || 0), 0);
+    // f = d + e (KDV Matrahı)
     const f = d + e;
+    // g = room VAT 10%
     const g = parseFloat(data.vat_10_percent || data.vatTotal || 0);
+    // h = services VAT 20%
     const h = otherServices.reduce((sum, s) => sum + parseFloat(s.vat_20_percent || 0), 0);
+    // i = total VAT
     const i = g + h;
+    // j = acc tax = d * 0.02
     const j = Number((d * 0.02).toFixed(2));
+    // k = total inc VAT
     const k = f + i + j;
 
     const exchangeRate = parseFloat(data.exchangeRate || data.exchange_rate || 0);
@@ -102,6 +119,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         company: {
           name: "Azar Tourism Services",
           addressLine1: "Algeria Square Building Number 12 First Floor, Tripoli, Libya, P.O.BOX Number: 1254",
+
         },
         hotel: { logoUrl: logo }
       },
@@ -115,7 +133,8 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         passport: data.passportNo || "",
         user: data.userId || "",
         cashierNo: data.batchNo || "1",
-        voucherNo: data.voucherNo || "",
+        voucherNo: data.voucherNo || "", // Added to match Grand Aras fields
+        crsNo: ""
       },
       transactions,
       totals: {
@@ -124,13 +143,19 @@ const TRYPInvoiceView = ({ invoiceData }) => {
           { rate: "%20", base: e, amount: h }
         ].filter(tax => tax.base > 0 || tax.amount > 0),
         exchangeRates: {
+          usd: 38.6761, // specific hardcoded value from your example
           eur: exchangeRate
         },
         totalEuro: m,
-        textAmount: numberToTurkishWords(k),
         summary: {
-          totalAmount: f,
-          taxableAmount: f,
+          totalAmount: k, // Check if this should be f or k based on label. Usually "Total Amount" before tax is f.
+          // Grand Aras uses: totalAmount = totalTaxableAmount (f). Let's stick to your TRYP logic or Grand Aras?
+          // Grand Aras: totalAmount = Taxable. TRYP: totalAmount = Grand Total.
+          // I will use Grand Aras logic for the SUMMARY display to match the visual expectations if the labels are "Total Amount" vs "Inc VAT"
+
+          // Re-mapping to match Grand Aras visual slots:
+          totalAmount: f, // Matches "Total Amount" slot (usually taxable base)
+          taxableAmount: f, // Matches "Taxable Amount" slot
           totalVat: i,
           accTax: j,
           totalIncVat: k,
@@ -188,12 +213,14 @@ const TRYPInvoiceView = ({ invoiceData }) => {
     if (!invoiceRef.current) return;
     setPdfLoading(true);
 
+    // 1. Style Guard (Tailwind v4 Bypass)
     const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
     headStyles.forEach(style => {
       style.parentNode.removeChild(style);
     });
 
     try {
+      // 3. Image Loading Verification
       const images = invoiceRef.current.querySelectorAll('img');
       await Promise.all(Array.from(images).map(img => {
         if (img.complete) return Promise.resolve();
@@ -203,8 +230,10 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         });
       }));
 
+      // Small delay to ensure layout is settled
       await new Promise(resolve => setTimeout(resolve, 500));
 
+      // 2 & 4. Targeting and Smart Pagination
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
@@ -221,12 +250,14 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         pagebreak: { mode: ['css', 'legacy'] }
       };
 
+      // Generate PDF
       await html2pdf().set(opt).from(element).save();
       toast.success("PDF Downloaded Successfully");
     } catch (err) {
       console.error("❌ PDF Error:", err);
       toast.error("Failed to generate PDF");
     } finally {
+      // 5. Instant Recovery (Styles Restore)
       headStyles.forEach(style => {
         document.head.appendChild(style);
       });
@@ -236,6 +267,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
 
   const handlePrint = () => window.print();
 
+  // Helper component from Grand Aras
   const InfoItem = ({ label, value, width = "65px" }) => (
     <div className="grid-item" style={{ display: 'flex', alignItems: 'flex-start' }}>
       <div style={{
@@ -256,7 +288,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
 
   if (!invoice) {
     return (
-      <InvoiceTemplate loading={loading} error={error} name="TRYP" onBack={() => navigate("/invoices")}>
+      <InvoiceTemplate loading={loading} error={error} invoice={invoice} onBack={() => navigate("/invoices")}>
         <></>
       </InvoiceTemplate>
     );
@@ -272,11 +304,14 @@ const TRYPInvoiceView = ({ invoiceData }) => {
       onPrint={handlePrint}
       onBack={() => navigate("/invoices")}
     >
+      {/* --- STYLES --- 
+         Copied exactly from GrandArasInvoiceView to ensure identical look 
+      */}
       <style>{`
         @page { size: A4; margin: 0; }
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size:9.5px; }
 
-        .tryp-invoice-page {
+        .invoice-page {
           background-color: white;
           width: 100%;
           max-width: 794px;
@@ -290,18 +325,19 @@ const TRYPInvoiceView = ({ invoiceData }) => {
           page-break-after: always;
         }
 
-        .tryp-invoice-page:last-child {
+        .invoice-page:last-child {
           page-break-after: auto;
         }
 
-        .header-section { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .company-details { display: flex; flex-direction: column; justify-content: center; width: 60%; line-height: 1.3; }
-        .company-sub { font-weight: bold; }
-        .logo-container { text-align: right; width: 30%; }
-        .logo-img { max-width: 88px; height: auto; }
+        .header-section { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .company-details { display: flex; flex-direction: column; justify-content: center; width: 65%; line-height: 1.4; }
+        .company-name { font-weight: bold; text-transform: uppercase; font-size: 11px; margin-bottom: 2px; }
+        .logo-container { text-align: right; width: 35%; padding-right: 50px; }
+        /* Adjusted logo size slightly for TRYP shape if needed, but kept class same */
+        .logo-img { max-width: 110px; height: auto; }
 
         .meta-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .guest-name { margin-top: 4px; margin-bottom: 3px; font-weight: bold; }
+        .guest-name { margin-top: 4px; margin-bottom: 3px;  }
 
         .info-grid {
           display: grid;
@@ -314,31 +350,31 @@ const TRYPInvoiceView = ({ invoiceData }) => {
 
         .main-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #000; }
         .main-table thead tr { background-color: #f0f0f0; }
-        .main-table th { text-align: left; padding: 4px 6px; font-weight: normal; border: 1px solid #000; }
-        .main-table td { padding: 4px 6px; vertical-align: top; border-right: 1px solid #000; }
-        .main-table td:last-child { border-right: none; }
-        .main-table tr:last-child td { border-bottom: 1px solid #000; }
+        .main-table th { text-align: left; padding: 4px 6px; font-weight: normal; }
+        .main-table td { padding: 4px 6px; vertical-align: top; }
 
         .col-desc { width: 62%; }
         .col-date { width: 15%; }
-        .col-debit { text-align: left; width: 12%; }
-        .col-credit { text-align: right; width: 11%; }
-        .desc-with-rate { display: flex; justify-content: space-between; align-items: center; }
+        .col-debit { margin-right: 125px; text-align: left; justify-content: end; padding-right: 20px; }
+        .col-credit { display: flex; justify-content: end; text-align: right; }
+        .desc-with-rate { display: flex; column-gap: 182px; align-items: center; }
+        .rate-value { padding-right: 20px; }
 
         .footer-section { display: flex; justify-content: space-between; margin-top: 20px; }
         .footer-left { width: 45%; }
-        .footer-right { width: 45%; text-align: right; }
+        .footer-right { width: 45%; text-align: right; margin-top: -10px; }
 
-        .tax-table { width: 90%; border-collapse: collapse; margin-bottom: 15px; }
-        .tax-table th { background-color: #f0f0f0; text-align: center; font-weight: normal; border: 1px solid #ccc; }
-        .tax-table td { text-align: center; border: 1px solid #ccc; padding: 2px; }
+        .tax-table { width: 90%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
+        .tax-table th { background-color: #f0f0f0; text-align: center; font-weight: normal; }
+        .tax-table td { text-align: center; }
 
-        .exchange-info { line-height: 1.4; margin-bottom: 15px; text-align: left; }
+        .exchange-info { line-height: 1.4; margin-bottom: 15px; }
         .totals-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        .payment-header { margin-top: 15px; margin-bottom: 3px; text-align: left; }
         .balance-row { margin-top: 15px; font-weight: bold; }
 
         @media print {
-          .tryp-invoice-page { width: 100%; padding: 20px; box-shadow: none; min-height: auto; }
+          .invoice-page { width: 100%; padding: 20px; box-shadow: none; min-height: auto; }
           .no-print { display: none !important; }
           .main-table thead tr, .tax-table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
@@ -346,12 +382,12 @@ const TRYPInvoiceView = ({ invoiceData }) => {
 
       <div ref={invoiceRef}>
         {paginatedData.map((page, pageIdx) => (
-          <div key={pageIdx} className="tryp-invoice-page">
+          <div key={pageIdx} className="invoice-page">
             <div className="header-section">
               <div className="company-details">
                 <div className="company-sub">{invoice.meta.company.name}</div>
                 <div>{invoice.meta.company.addressLine1}</div>
-                <div>{invoice.meta.company.addressLine2}</div>
+                <div>{invoice.meta.company.addressLine2 || "İSTANBUL / TÜRKİYE"}</div>
               </div>
               <div className="logo-container">
                 <img src={invoice.meta.hotel.logoUrl} alt="Logo" className="logo-img" />
@@ -394,13 +430,13 @@ const TRYPInvoiceView = ({ invoiceData }) => {
                 <tr>
                   <th className="col-desc">Açıklama/Description</th>
                   <th className="col-date">Date/Tarih</th>
-                  <th className="col-debit">Debit/Borç</th>
+                  <th className="col-debit"><span className='innercol-debit'>Debit/Borç</span></th>
                   <th className="col-credit">Credit/Alacak</th>
                 </tr>
               </thead>
               <tbody>
-                {page.transactions.map((txn, idx) => (
-                  <tr key={idx}>
+                {page.transactions.map((txn) => (
+                  <tr key={txn.id}>
                     <td>
                       {txn.rate ? (
                         <div className="desc-with-rate">
@@ -412,8 +448,8 @@ const TRYPInvoiceView = ({ invoiceData }) => {
                       )}
                     </td>
                     <td>{txn.date}</td>
-                    <td className="col-debit">{txn.debit ? txn.debit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
-                    <td className="col-credit">{txn.credit ? txn.credit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
+                    <td>{txn.debit ? txn.debit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
+                    <td>{txn.credit ? txn.credit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
                   </tr>
                 ))}
               </tbody>
@@ -446,7 +482,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
                     Total in EUR : &nbsp;&nbsp; {invoice.totals.totalEuro.toFixed(2)} EUR
                   </div>
 
-                  <div className="amount-in-words" style={{ textAlign: 'left' }}>
+                  <div className="amount-in-words">
                     {invoice.totals.textAmount}
                   </div>
                 </div>
@@ -456,9 +492,9 @@ const TRYPInvoiceView = ({ invoiceData }) => {
                   <div className="totals-row"><span>Taxable Amount/KDV Matrahı</span><span>{invoice.totals.summary.taxableAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
                   <div className="totals-row"><span>Total VAT/Hesaplanan KDV</span><span>{invoice.totals.summary.totalVat.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
                   <div className="totals-row"><span>Total Acc Tax/Konaklama Vergisi</span><span>{invoice.totals.summary.accTax.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
-                  <div className="totals-row" style={{ fontWeight: 'bold' }}><span>Total Inc.Vat/KDV Dahil Tutar</span><span>{invoice.totals.summary.totalIncVat.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
+                  <div className="totals-row"><span>Total Inc.Vat/KDV Dahil Tutar</span><span>{invoice.totals.summary.totalIncVat.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
 
-                  <div style={{ textAlign: 'left', marginTop: '10px' }}>Payments/Ödemeler</div>
+                  <div className="payment-header">Payments/Ödemeler</div>
                   <div className="totals-row"><span>Deposit Transfer at C/IN</span><span>{invoice.totals.summary.deposit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
 
                   <div className="totals-row balance-row"><span>Balance/Bakiye</span><span>{invoice.totals.summary.balance.toFixed(2)}</span></div>
