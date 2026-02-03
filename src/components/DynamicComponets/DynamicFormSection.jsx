@@ -1,3 +1,4 @@
+
 import { Calendar } from "lucide-react";
 import Input from "../Input";
 import DatePicker from "../DatePicker";
@@ -8,11 +9,10 @@ const DynamicFormSection = ({ title, fields, formData, onFieldChange }) => {
   const renderField = (field) => {
     const value = formData[field.field_id] || "";
     
-    // Common props
+    // Common props for standard inputs
     const commonProps = {
       name: field.field_id,
       value: value,
-      onChange: (e) => onFieldChange(field.field_id, e.target.value),
       placeholder: field.example || `Enter ${field.label}`,
       required: field.required || false,
     };
@@ -23,6 +23,8 @@ const DynamicFormSection = ({ title, fields, formData, onFieldChange }) => {
         return (
           <DatePicker
             {...commonProps}
+            // ✅ Fix: DatePicker sends the string directly, not an event object
+            onChange={(dateString) => onFieldChange(field.field_id, dateString)}
           />
         );
 
@@ -33,6 +35,8 @@ const DynamicFormSection = ({ title, fields, formData, onFieldChange }) => {
             step="1"
             min="0"
             {...commonProps}
+            // ✅ Standard inputs use e.target.value
+            onChange={(e) => onFieldChange(field.field_id, e.target.value)}
           />
         );
 
@@ -43,6 +47,7 @@ const DynamicFormSection = ({ title, fields, formData, onFieldChange }) => {
             step="0.01"
             min="0"
             {...commonProps}
+            onChange={(e) => onFieldChange(field.field_id, e.target.value)}
           />
         );
 
@@ -53,6 +58,7 @@ const DynamicFormSection = ({ title, fields, formData, onFieldChange }) => {
             type="text"
             maxLength={field.max_length}
             {...commonProps}
+            onChange={(e) => onFieldChange(field.field_id, e.target.value)}
           />
         );
     }
