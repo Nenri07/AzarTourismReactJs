@@ -1,3 +1,4 @@
+
 import { X, AlertCircle } from "lucide-react";
 import { Input, DatePicker } from "./index.js";
 import { useState } from "react";
@@ -15,42 +16,47 @@ const ServiceRow = ({
     onChange(service.id, field, value);
   };
 
-  // Format date as DD/MM/YYYY
+  // Format date as DD/MM/YYYY for error messages
   const formatDateDisplay = (dateStr) => {
     if (!dateStr) return "";
-    const date = new Date(dateStr);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    try {
+      const date = new Date(dateStr);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return dateStr;
+    }
   };
 
-  // Handle date change
-  const handleDateChange = (e) => {
-    const dateValue = e.target.value;
+  // ✅ UPDATED: Accept direct value from DatePicker
+  const handleDateChange = (dateValue) => {
     setDateError(""); // Clear any previous error
 
-    // If no dates set, just update
+    // If no range constraints set, just update state
     if (!arrivalDate || !departureDate) {
       handleChange("date", dateValue);
       return;
     }
 
-    const date = new Date(dateValue);
-    const arrival = new Date(arrivalDate);
-    const departure = new Date(departureDate);
+    // Convert strings to timestamps for reliable comparison
+    const selected = new Date(dateValue).setHours(0, 0, 0, 0);
+    const arrival = new Date(arrivalDate).setHours(0, 0, 0, 0);
+    const departure = new Date(departureDate).setHours(0, 0, 0, 0);
 
     // Check if date is within range
-    if (date >= arrival && date <= departure) {
+    if (selected >= arrival && selected <= departure) {
       handleChange("date", dateValue);
     } else {
-      // Show error in a better way
       const arrivalFormatted = formatDateDisplay(arrivalDate);
       const departureFormatted = formatDateDisplay(departureDate);
       setDateError(
         `Must be between ${arrivalFormatted} - ${departureFormatted}`,
       );
-      // Don't update the invalid date
+      // We still update the state so the user sees what they picked, 
+      // but the error remains visible.
+      handleChange("date", dateValue);
     }
   };
 
@@ -72,14 +78,17 @@ const ServiceRow = ({
         <DatePicker
           name="date"
           value={service.date || ""}
-          onChange={handleDateChange}
+          // ✅ Pass the function directly; it now receives the string
+          onChange={handleDateChange} 
           placeholder="DD/MM/YYYY"
+          minDate={arrivalDate}
+          maxDate={departureDate}
         />
-        {/* Error message - appears below date picker */}
+        {/* Error message */}
         {dateError && (
           <div className="mt-1 flex items-center gap-1">
             <AlertCircle size={12} className="text-amber-600" />
-            <span className="text-xs text-amber-600">{dateError}</span>
+            <span className="text-[10px] leading-tight text-amber-600">{dateError}</span>
           </div>
         )}
       </div>
@@ -92,7 +101,7 @@ const ServiceRow = ({
           step="0.01"
           value={service.amount || ""}
           onChange={(e) => handleChange("amount", e.target.value)}
-          className="text-sm"
+          className="text-sm text-right"
         />
       </div>
 
