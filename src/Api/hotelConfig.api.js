@@ -67,6 +67,11 @@ export const getHotelConfigs = async () => {
   return await apiClient.get('/hotel-info/');
 };
 
+
+export const getallInvoices = async () => {
+  return await apiClient.get('/dashboard/');
+};
+
 export const getHotelConfigByName = async (hotelName) => {
   return await apiClient.get(`/hotel-info/by-hotel/${encodeURIComponent(hotelName)}`);
 };
@@ -95,5 +100,6 @@ export default {
   getHotelConfigById,
   createHotelConfig,
   updateHotelConfig,
-  deleteHotelConfig
+  deleteHotelConfig,
+  getallInvoices
 };
