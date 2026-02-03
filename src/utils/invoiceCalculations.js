@@ -1,3 +1,7 @@
+
+/**
+ * Safely parse a number value
+ */
 const parseNum = (value, decimals = 2) => {
   const num = parseFloat(value || 0);
   return isNaN(num) ? 0 : Number(num.toFixed(decimals));
@@ -313,19 +317,21 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
   }));
   
   // Return universal backend schema
-  return {
+   return {
     data: {
       // Basic info
       hotel: formData.hotel_name,
       guestName: capitalizeWords(formData.guest_name) || 'Guest',
       roomNo: formData.room_number || '',
-      voucherNo: formData.cash_no || '',
+      vd: formData.v_d || '', // V.D field (Grand Aras) - no fallback
+      vNo: formData.v_no || '', // V.NO field (Grand Aras) - no fallback
+      folio_number: formData.folio_number || '', // Folio Number field - ADDED
+      voucherNo: formData.voucher_no || '', // Voucher No
       passportNo: formData.passport_no || '',
       confirmation: formData.passport_no || '',
-      vNo: formData.folio_number || '',
       referenceNo: formData.company_name || `INV-${Date.now()}`,
       userId: formData.user_code || '',
-      batchNo: formData.page_number || '1',
+      batchNo: formData.cash_no || '1', // cash_no for Grand Aras
       invoiceDate: formatDate(formData.invoice_date),
       arrivalDate: formatDate(formData.arrival_date),
       departureDate: formatDate(formData.departure_date),
