@@ -9,9 +9,9 @@ export default function InvoiceViewPage() {
   const [error, setError] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [paginatedData, setPaginatedData] = useState([]);
-  const { invoiceNumber } = useParams();
+  const { novoid } = useParams();
   const navigate = useNavigate();
-  const invoiceId = invoiceNumber;
+  const invoiceId = novoid;
 
   const LOGO_URL = "/novotel_logo.png";
   const STAMP_URL = "/novotel_stemp.png";
