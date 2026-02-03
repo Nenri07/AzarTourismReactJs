@@ -90,3 +90,22 @@ textarea {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+
+
+/* Custom styles for react-day-picker */
+.rdp-custom {
+  --rdp-cell-size: 36px;
+  --rdp-accent-color: #003d7a;
+  --rdp-background-color: #f1f5f9;
+  margin: 0;
+}
+
+.rdp-custom .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: #f1f5f9;
+}
+
+.rdp-custom .rdp-button:focus-visible {
+  outline: 2px solid #003d7a;
+  outline-offset: 2px;
+}
