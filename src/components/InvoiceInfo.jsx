@@ -1,9 +1,23 @@
+
 import { Calendar } from "lucide-react";
 import { Input, DatePicker } from "./index.js";
 
 const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
-  const labelClass =
-    "text-xs md:text-sm font-medium text-slate-600 mb-1.5 block";
+  const labelClass = "text-xs md:text-sm font-medium text-slate-600 mb-1.5 block";
+
+  /**
+   * ✅ SYNTHETIC EVENT WRAPPER
+   * This creates a fake 'event' object that handleInputChange expects.
+   * It takes the raw string from DatePicker and maps it to the correct field name.
+   */
+  const handleDateChange = (name, value) => {
+    handleInputChange({
+      target: {
+        name: name,
+        value: value,
+      },
+    });
+  };
 
   return (
     <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-sm border border-slate-200">
@@ -20,6 +34,7 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-x-8 md:gap-y-5">
+          {/* Reference No */}
           <div className="form-control">
             <label className={labelClass}>
               Reference No <span className="text-red-500">*</span>
@@ -33,6 +48,7 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
             />
           </div>
 
+          {/* Invoice Date */}
           <div className="form-control">
             <label className={labelClass}>
               Invoice Date <span className="text-red-500">*</span>
@@ -40,11 +56,13 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
             <DatePicker
               name="invoiceDate"
               value={formData.invoiceDate || ""}
-              onChange={handleInputChange}
+              // ✅ FIXED: Using the wrapper to pass the string correctly
+              onChange={(val) => handleDateChange("invoiceDate", val)}
               required
             />
           </div>
 
+          {/* Guest Name */}
           <div className="form-control">
             <label className={labelClass}>
               Guest Name <span className="text-red-500">*</span>
@@ -58,17 +76,18 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
             />
           </div>
 
+          {/* Hotel */}
           <div className="form-control">
             <label className={labelClass}>Hotel</label>
             <Input
               name="hotel"
               value={formData.hotel || "Novotel Tunis Lac"}
-              onChange={handleInputChange}
-              placeholder="Enter Hotel Name"
               readOnly
+              className="bg-slate-50 cursor-not-allowed"
             />
           </div>
 
+          {/* VAT No */}
           <div className="form-control">
             <label className={labelClass}>
               VAT No <span className="text-red-500">*</span>
@@ -79,12 +98,11 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
               value={formData.vatNo || ""}
               onChange={handleInputChange}
               placeholder="Enter VAT Number"
-              style={{ MozAppearance: "textfield" }}
-              onWheel={(e) => e.target.blur()}
               required
             />
           </div>
 
+          {/* Room No */}
           <div className="form-control">
             <label className={labelClass}>
               Room No <span className="text-red-500">*</span>
@@ -98,8 +116,10 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
             />
           </div>
 
+          {/* Cashier ID */}
           <div className="form-control">
-            <label className={labelClass}>Cashier ID <span className="text-red-500">*</span>
+            <label className={labelClass}>
+              Cashier ID <span className="text-red-500">*</span>
             </label>
             <Input
               name="cashierId"
@@ -107,12 +127,11 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
               value={formData.cashierId || ""}
               onChange={handleInputChange}
               placeholder="Enter Cashier ID"
-              style={{ MozAppearance: "textfield" }}
-              onWheel={(e) => e.target.blur()}
               required
             />
           </div>
 
+          {/* Account Number */}
           <div className="form-control">
             <label className={labelClass}>
               Account Number <span className="text-red-500">*</span>
@@ -123,12 +142,11 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
               value={formData.accountNumber || ""}
               onChange={handleInputChange}
               placeholder="Enter Account Number"
-              style={{ MozAppearance: "textfield" }}
-              onWheel={(e) => e.target.blur()}
               required
             />
           </div>
 
+          {/* Pax Grid */}
           <div className="grid grid-cols-2 gap-3 md:gap-4">
             <div className="form-control">
               <label className={labelClass}>
@@ -157,6 +175,7 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
             </div>
           </div>
 
+          {/* Invoice No / Batch No */}
           <div className="form-control">
             <label className={labelClass}>
               Invoice No <span className="text-red-500">*</span>
@@ -167,12 +186,11 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
               value={formData.batchNo || ""}
               onChange={handleInputChange}
               placeholder="Enter Invoice Id"
-              style={{ MozAppearance: "textfield" }}
-              onWheel={(e) => e.target.blur()}
               required
             />
           </div>
 
+          {/* Arrival Date */}
           <div className="form-control">
             <label className={labelClass}>
               Arrival Date <span className="text-red-500">*</span>
@@ -180,11 +198,13 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
             <DatePicker
               name="arrivalDate"
               value={formData.arrivalDate || ""}
-              onChange={handleInputChange}
+              // ✅ FIXED
+              onChange={(val) => handleDateChange("arrivalDate", val)}
               required
             />
           </div>
 
+          {/* Departure Date */}
           <div className="form-control">
             <label className={labelClass}>
               Departure Date <span className="text-red-500">*</span>
@@ -192,8 +212,10 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
             <DatePicker
               name="departureDate"
               value={formData.departureDate || ""}
-              onChange={handleInputChange}
+              // ✅ FIXED
+              onChange={(val) => handleDateChange("departureDate", val)}
               required
+              minDate={formData.arrivalDate} // Prevent picking date before arrival
             />
             {dateError && (
               <p className="text-red-500 text-xs mt-1">{dateError}</p>
@@ -201,6 +223,7 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
           </div>
         </div>
 
+        {/* Nights Summary */}
         {formData.nights > 0 && (
           <div className="mt-4 md:mt-6 p-3 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-green-700 font-semibold text-xs md:text-sm flex items-center gap-2">
