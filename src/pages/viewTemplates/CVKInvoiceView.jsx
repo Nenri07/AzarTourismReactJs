@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-const logo = '/cvk-logo.jpeg';
+import logo from '../../../public/cvk-logo.jpeg';
 import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import toast from "react-hot-toast";
 import { InvoiceTemplate } from "../../components";
@@ -58,7 +58,6 @@ export default function CVKInvoiceView({ invoiceData }) {
   };
 
 
-
   const transformInvoiceData = (data) => {
     console.log("🔄 Transforming data:", data);
 
@@ -76,10 +75,12 @@ export default function CVKInvoiceView({ invoiceData }) {
     accommodationDetails.forEach((acc) => {
       const roomRate = acc.rate || 0;
 
+      // We add 'rawDate' to every object to help with sorting later
       transactions.push({
         description: "Accommodation Package",
         foreignAmount: `${(data.actualRate || 0).toFixed(2)} EUR / ${(data.exchangeRate || 0).toFixed(4)}`,
         date: formatDate(acc.date),
+        rawDate: acc.date, // Used for sorting
         debit: formatCurrency(roomRate),
         credit: "",
         vatRate: 10
@@ -90,6 +91,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         description: "VAT %10",
         foreignAmount: "",
         date: formatDate(acc.date),
+        rawDate: acc.date, // Used for sorting
         debit: formatCurrency(vatAmount),
         credit: "",
         vatRate: 10
@@ -100,6 +102,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         description: "Accommodation TAX",
         foreignAmount: "",
         date: formatDate(acc.date),
+        rawDate: acc.date, // Used for sorting
         debit: formatCurrency(accTax),
         credit: "",
         vatRate: 10
@@ -110,22 +113,30 @@ export default function CVKInvoiceView({ invoiceData }) {
     otherServices.forEach(service => {
       const serviceAmount = service.amount || 0;
       const serviceBase = serviceAmount / 1.2; // Remove 20% VAT
-      const serviceVAT = serviceAmount - serviceBase;
+      const serviceVAT = serviceBase * 0.1;
 
       // Add service charge
       transactions.push({
         description: service.name || "Service",
         foreignAmount: "",
         date: formatDate(service.date),
+        rawDate: service.date, // Used for sorting
         debit: formatCurrency(serviceAmount),
         credit: "",
         vatRate: 20
       });
     });
 
+    // SORTING LOGIC: Sort all transactions by date chronologically
+    transactions.sort((a, b) => {
+      const dateA = new Date(a.rawDate || 0);
+      const dateB = new Date(b.rawDate || 0);
+      return dateA - dateB;
+    });
+
     // Calculate totals
     const accommodationSubTotal = parseFloat(data.subTotal || 0);
-    const accommodationVAT = parseFloat(data.vatTotal || 0);
+    const accommodationVAT = parseFloat(data.vat_total_nights || 0);
 
     const otherServicesTotal = otherServices.reduce((sum, service) => sum + (service.amount || 0), 0);
     const otherServicesBase = otherServicesTotal / 1.2;
@@ -137,23 +148,23 @@ export default function CVKInvoiceView({ invoiceData }) {
     const totalIncVat = parseFloat(data.grandTotal || 0) + otherServicesTotal;
 
     const transformed = {
-      companyName: "Azar Tourism",
+      companyName: "Azar Tourism Services",
       companyAddress: "Algeria Square Building Number 12 First Floor, Tripoli, Libya.",
-      companyCity: "Tripoli, Libyan Arab Jamahiriya", // Fixed: was "1254 Tripoli Lebanon"
+
       vd: data.vd || "",
-      vno: data.voucherNo || "", // V.No should be voucherNo (22-4340)
+      vno: data.vNo || "",
       guestName: data.guestName || "Guest",
       roomNo: data.roomNo || "",
-      folioNo: data.vNo || data.folio_number || "", // Folio No should be vNo or folio_number
+      folioNo: data.folio_number || "",
       arrivalDate: formatDate(data.arrivalDate),
       departureDate: formatDate(data.departureDate),
       adults: String(data.paxAdult || 1),
       children: String(data.paxChild || 0),
       passportNo: data.passportNo || "",
-      crsNo: data.voucherNo || "", // Crs No should be voucherNo (22-4340)
+      crsNo: data.voucherNo || "",
       user: data.userId || "",
-      cashNo: data.batchNo || "", // Csh No/Kasa No should be batchNo (7737)
-      pageNo: "1", // Page number is usually fixed as "1"
+      cashNo: data.batchNo || "",
+      pageNo: "1",
       invoiceDate: formatDate(data.invoiceDate),
 
       transactions: transactions,
@@ -255,7 +266,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         });
       }));
 
-      // Small delay
+      // Small delay to ensure layout is settled
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // 2 & 4. Targeting and Smart Pagination
@@ -282,7 +293,7 @@ export default function CVKInvoiceView({ invoiceData }) {
       console.error("❌ PDF Error:", err);
       toast.error("Failed to generate PDF");
     } finally {
-      // 5. Instant Recovery
+      // 5. Instant Recovery (Styles Restore)
       headStyles.forEach(style => {
         document.head.appendChild(style);
       });
@@ -318,49 +329,50 @@ export default function CVKInvoiceView({ invoiceData }) {
       onPrint={handlePrint}
       onBack={() => navigate("/invoices")}
     >
-      <div ref={invoiceRef}>
-        <style>{`
-        @page { 
-          size: A4; 
-          margin: 0; 
-        }
-        
-        .cvk-invoice-page {
-          font-family: Arial, sans-serif;
-          font-size: 11px;
-          font-weight: 400;
-          margin: 0 auto;
-          padding: 45px;
-          color: #000;
-          line-height: 1.2;
-          background: white;
+      <style>{`
+        @page { size: A4; margin: 0; }
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size:9.5px; }
+
+        .invoice-page {
+          background-color: white;
           width: 100%;
           max-width: 794px;
           min-height: 296mm;
+          margin: 0 auto;
+          padding: 40px 50px;
+          color: #000;
           position: relative;
           box-sizing: border-box;
           page-break-inside: avoid;
           page-break-after: always;
+          font-size: 11px;
         }
 
-        .cvk-invoice-page:last-child {
+        .invoice-page:last-child {
           page-break-after: auto;
         }
 
         .header { margin-bottom: 14px; }
-        .logo-box { margin-bottom: 15px; }
+        .logo-box { margin-bottom: 20px; }
         .logo-img { max-width: 240px; height: auto; }
         .company-address { margin-bottom: 8px; font-size: 10.5px; }
+        
+        .info-row { display: flex; align-items: flex-start; }
+        .info-lbl { display: inline-block; white-space: nowrap; }
+        .info-sep { padding: 0 4px 0 2px; }
+
         .meta-container { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .guest-name { margin: 2px 0; }
+        
         .guest-grid {
           display: grid;
           grid-template-columns: 1.2fr 1.2fr 1fr 1.3fr 1fr;
           gap: 4px 12px;
           white-space: nowrap;
         }
-        .main-table { width: 100%; border-collapse: collapse; border: 1px solid #000; }
-        .main-table th { background-color: #ededed; border-bottom: 1px solid #000; padding: 4px 6px; font-weight: normal; text-align: left; }
+        
+        .main-table { width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 20px; }
+        .main-table th { background-color: #ededed;  padding: 4px 6px; font-weight: normal; text-align: left; }
         .main-table td { padding: 3px 6px; }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
@@ -380,14 +392,15 @@ export default function CVKInvoiceView({ invoiceData }) {
         .balance-box { margin-top: 15px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between; }
 
         @media print {
-          .cvk-invoice-page { padding: 30px; box-shadow: none; min-height: auto; }
+          .invoice-page { width: 100%; padding: 20px; box-shadow: none; min-height: auto; }
           .no-print { display: none !important; }
           .main-table th, .tax-table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
 
+      <div ref={invoiceRef}>
         {paginatedData.map((page, pageIdx) => (
-          <div key={pageIdx} className="cvk-invoice-page">
+          <div key={pageIdx} className="invoice-page">
             <div className="header">
               <div className="logo-box">
                 <img src={logo} alt="CVK PARK BOSPHORUS HOTEL" className="logo-img" />
@@ -401,8 +414,8 @@ export default function CVKInvoiceView({ invoiceData }) {
 
               <div className="meta-container">
                 <div>
-                  V.D. : {invoice.vd}<br />
-                  V.No : {invoice.vno}
+                  <div className="info-row"><span className="info-lbl" style={{ width: '35px' }}>V.D.</span><span className="info-sep">:</span> {invoice.vd}</div>
+                  <div className="info-row"><span className="info-lbl" style={{ width: '35px' }}>V.No</span><span className="info-sep">:</span> {invoice.vno}</div>
                 </div>
                 <div className="text-right">
                   Date/Tarih : {invoice.invoiceDate}
@@ -412,23 +425,23 @@ export default function CVKInvoiceView({ invoiceData }) {
               <div className="guest-name">{invoice.guestName}</div>
 
               <div className="guest-grid">
-                <div>Room/Oda : {invoice.roomNo}</div>
-                <div>Arrival/Giriş : {invoice.arrivalDate}</div>
-                <div>Adult/Yetişkin : {invoice.adults}</div>
-                <div>Passport No - TC No : {invoice.passportNo}</div>
-                <div>User/Kullanıcı : {invoice.user}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '65px' }}>Room/Oda</span><span className="info-sep">:</span> {invoice.roomNo}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '85px' }}>Arrival/Giriş</span><span className="info-sep">:</span> {invoice.arrivalDate}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '85px' }}>Adult/Yetişkin</span><span className="info-sep">:</span> {invoice.adults}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '125px' }}>Passport No - TC No</span><span className="info-sep">:</span> {invoice.passportNo}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '90px' }}>User/Kullanıcı</span><span className="info-sep">:</span> {invoice.user}</div>
 
-                <div>Folio No : {invoice.folioNo}</div>
-                <div>Departure/Çıkış : {invoice.departureDate}</div>
-                <div>Child/Çocuk : {invoice.children}</div>
-                <div>Crs No/Voucher No : {invoice.crsNo}</div>
-                <div>Csh No/Kasa No : {invoice.cashNo}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '65px' }}>Folio No</span><span className="info-sep">:</span> {invoice.folioNo}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '85px' }}>Departure/Çıkış</span><span className="info-sep">:</span> {invoice.departureDate}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '85px' }}>Child/Çocuk</span><span className="info-sep">:</span> {invoice.children}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '125px' }}>Crs No/Voucher No</span><span className="info-sep">:</span> {invoice.crsNo}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '90px' }}>Csh No/Kasa No</span><span className="info-sep">:</span> {invoice.cashNo}</div>
 
                 <div></div>
                 <div></div>
                 <div></div>
                 <div></div>
-                <div>Page/Sayfa : {page.pageNum} / {paginatedData.length}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '90px' }}>Page/Sayfa</span><span className="info-sep">:</span> {`${page.pageNum} / ${paginatedData.length}`}</div>
               </div>
             </div>
 
@@ -443,7 +456,7 @@ export default function CVKInvoiceView({ invoiceData }) {
               </thead>
               <tbody>
                 {page.transactions.map((transaction, index) => (
-                  <tr key={index} style={(index + 1) % 3 === 0 ? { borderBottom: "0.5px solid #eee" } : {}}>
+                  <tr key={index}>
                     <td>
                       {transaction.foreignAmount ? (
                         <div className="desc-col">
@@ -499,7 +512,7 @@ export default function CVKInvoiceView({ invoiceData }) {
                 <div className="footer-right">
                   <div className="totals-row">
                     <span>Total Amount/Toplam Tutar</span>
-                    <span>{invoice.totalAmount}</span>
+                    <span>{invoice.taxableAmount}</span>
                   </div>
                   <div className="totals-row">
                     <span>Taxable Amount/KDV Matrah</span>
