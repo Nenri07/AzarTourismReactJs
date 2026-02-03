@@ -352,11 +352,11 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
             page-break-after: auto;
           }
 
-          .header-section { display: flex; justify-content: space-between; margin-bottom: 10px; }
-          .company-details { display: flex; flex-direction: column; justify-content: center; width: 60%; line-height: 1.3; }
-          .company-name { font-weight: normal; text-transform: uppercase; }
-          .logo-container { text-align: right; width: 30%; }
-          .logo-img { max-width: 110px; height: auto; }
+          .header-section { display: flex; justify-content: space-between; margin-bottom: 20px; }
+          .company-details { display: flex; flex-direction: column; justify-content: center; width: 65%; line-height: 1.4; }
+          .company-name { font-weight: bold; text-transform: uppercase; font-size: 11px; margin-bottom: 2px; }
+          .logo-container { text-align: right; width: 35%; padding-right: 50px; }
+          .logo-img { max-width: 140px; height: auto; }
 
           .meta-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
           .guest-name { margin-top: 4px; margin-bottom: 3px;  }
@@ -406,8 +406,11 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           <div key={pageIdx} className="invoice-page">
             <div className="header-section">
               <div className="company-details">
+                <div className="company-name">AZAR TOURISM</div>
                 <div className="company-sub">Azar Tourism Services</div>
-                <div>Algeria Square Building Number 12 First Floor, Tripoli, Libya.</div>
+                <div>Algeria Square Building Number 12 First Floor, Tripoli, Libya, P.O.BOX Number: 1254</div>
+                <div>Tripoli Libya,</div>
+                <div>Tripoli, Libyan Arab Jamahiriya</div>
               </div>
               <div className="logo-container">
                 <img src={invoice.meta.hotel.logoUrl} alt="Logo" className="logo-img" />
