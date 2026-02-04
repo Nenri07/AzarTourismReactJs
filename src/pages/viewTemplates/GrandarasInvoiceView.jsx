@@ -356,7 +356,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .company-details { display: flex; flex-direction: column; justify-content: center; width: 65%; line-height: 1.4; }
           .company-name { font-weight: bold; text-transform: uppercase; font-size: 11px; margin-bottom: 2px; }
           .logo-container { text-align: right; width: 35%; padding-right: 50px; }
-          .logo-img { max-width: 140px; height: auto; }
+          .logo-img { max-width: 122px; height: auto; }
 
           .meta-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
           .guest-name { margin-top: 4px; margin-bottom: 3px;  }
@@ -377,7 +377,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
 
           .col-desc { width: 62%; }
           .col-date { width: 15%; }
-          .col-debit { margin-right: 125px; text-align: left; justify-content: end; padding-right: 20px; }
+          .col-debit { margin-right: 125px; text-align: right; justify-content: end; padding-right: 20px; }
           .col-credit { display: flex; justify-content: end; text-align: right; }
           .desc-with-rate { display: flex; column-gap: 182px; align-items: center; }
           .rate-value { padding-right: 20px; }
