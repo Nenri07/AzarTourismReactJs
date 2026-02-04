@@ -5,11 +5,7 @@ import { Input, DatePicker } from "./index.js";
 const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
   const labelClass = "text-xs md:text-sm font-medium text-slate-600 mb-1.5 block";
 
-  /**
-   * ✅ SYNTHETIC EVENT WRAPPER
-   * This creates a fake 'event' object that handleInputChange expects.
-   * It takes the raw string from DatePicker and maps it to the correct field name.
-   */
+
   const handleDateChange = (name, value) => {
     handleInputChange({
       target: {
@@ -98,7 +94,7 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
               value={formData.vatNo || ""}
               onChange={handleInputChange}
               placeholder="Enter VAT Number"
-              required
+             
             />
           </div>
 
@@ -142,7 +138,7 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
               value={formData.accountNumber || ""}
               onChange={handleInputChange}
               placeholder="Enter Account Number"
-              required
+             
             />
           </div>
 
