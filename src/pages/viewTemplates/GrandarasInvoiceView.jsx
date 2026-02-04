@@ -377,7 +377,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .main-table th.col-debit, 
           .main-table th.col-credit { 
             text-align: right; 
-            padding-right: 25px; 
+            padding-right: 9px; 
           }
 
           .col-desc { width: 62%; }
