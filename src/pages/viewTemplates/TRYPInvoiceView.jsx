@@ -82,12 +82,12 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         description: service.name || service.service_name || "Service",
         rate: "", // Services usually don't show the rate breakdown in this column
         date: formatDate(service.date || service.service_date),
-        debit: service.amount || service.gross_amount || 0,
+        debit: parseFloat(service.amount || service.gross_amount || 0),
         credit: null,
         sortDate: new Date(service.date || service.service_date)
       });
     });
-
+    transactions.sort((a, b) => a.sortDate - b.sortDate);
     // --- Calculations (Preserved from TRYP Logic) ---
 
     // d = room taxable base
@@ -114,11 +114,11 @@ const TRYPInvoiceView = ({ invoiceData }) => {
       meta: {
         folio: data.folio_number || data.voucherNo || "",
         date: formatDate(data.invoiceDate),
-        vatOffice: "LIBYA",
-        vatNo: "2222222222",
+        vatOffice: data.vd || "" ,
+        vatNo: data.vNo || "",
         company: {
           name: "Azar Tourism Services",
-          addressLine1: "Algeria Square Building Number 12 First Floor, Tripoli, Libya, P.O.BOX Number: 1254",
+          addressLine1: "Algeria Square Building Number 12 First Floor, Tripoli, Libya",
 
         },
         hotel: { logoUrl: logo }
@@ -160,7 +160,8 @@ const TRYPInvoiceView = ({ invoiceData }) => {
           accTax: j,
           totalIncVat: k,
           deposit: -k,
-          balance: 0.00
+          balance: 0.00,
+        
         }
       }
     };
@@ -355,8 +356,24 @@ const TRYPInvoiceView = ({ invoiceData }) => {
 
         .col-desc { width: 62%; }
         .col-date { width: 15%; }
-        .col-debit { margin-right: 125px; text-align: left; justify-content: end; padding-right: 20px; }
-        .col-credit { display: flex; justify-content: end; text-align: right; }
+        /* Update these specific classes */
+        .col-debit { 
+          text-align: right !important; 
+          padding-right: 30px !important; 
+        width: 100px;
+      }
+
+    .col-credit { 
+        text-align: right !important; 
+      padding-right: 10px !important; 
+      width: 100px;
+    }
+
+        
+    .main-table th.col-debit, 
+  .main-table th.col-credit { 
+    text-align: right; 
+    }
         .desc-with-rate { display: flex; column-gap: 182px; align-items: center; }
         .rate-value { padding-right: 20px; }
 
@@ -447,9 +464,18 @@ const TRYPInvoiceView = ({ invoiceData }) => {
                         txn.description
                       )}
                     </td>
+                    <td >{txn.date}</td>
                     <td>{txn.date}</td>
-                    <td>{txn.debit ? txn.debit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
-                    <td>{txn.credit ? txn.credit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
+                    <td className="col-debit">
+                      {txn.debit !== null && txn.debit !== undefined ? 
+                        Number(txn.debit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+                        : ''}
+                    </td>
+                    <td className="col-credit">
+                      {txn.credit !== null && txn.credit !== undefined ? 
+                        Number(txn.credit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+                        : ''}
+                    </td>
                   </tr>
                 ))}
               </tbody>
