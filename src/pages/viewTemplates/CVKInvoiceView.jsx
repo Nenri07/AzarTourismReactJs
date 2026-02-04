@@ -144,7 +144,7 @@ export default function CVKInvoiceView({ invoiceData }) {
 
     const totalBase = accommodationSubTotal + (otherServicesTotal > 0 ? otherServicesBase : 0);
     const totalVAT = accommodationVAT + (otherServicesTotal > 0 ? otherServicesVAT : 0);
-    const totalAccTax = (parseFloat(data.sellingRate || 0) * 0.02) * (data.nights || 0);
+    const totalAccTax = (parseFloat(data.acc_tax_total_nights)|| 0);
     const totalIncVat = parseFloat(data.grandTotal || 0) + otherServicesTotal;
 
     const transformed = {
@@ -381,7 +381,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .footer-container { display: flex; justify-content: space-between; margin-top: 20px; }
         .footer-left { width: 45%; }
         .footer-right { width: 38%; }
-        .tax-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .tax-table { width: 85%; border-collapse: collapse; margin-bottom: 15px; }
         .tax-table th { background-color: #ededed; padding: 4px; font-weight: normal; }
         .tax-table td { padding: 4px; text-align: right; }
         .tax-table .text-center { text-align: center; }
