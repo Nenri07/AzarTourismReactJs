@@ -406,7 +406,7 @@ export default function CVKInvoiceView({ invoiceData }) {
           <div key={pageIdx} className="invoice-page">
             <div className="header">
               <div className="logo-box">
-                <img src={logo} alt="CVK PARK BOSPHORUS HOTEL" className="logo-img" />
+                <img src="/nothing.png" alt="CVK PARK BOSPHORUS HOTEL" className="logo-img" />
               </div>
 
               <div className="company-address">
