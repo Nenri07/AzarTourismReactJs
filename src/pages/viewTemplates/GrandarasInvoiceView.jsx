@@ -373,7 +373,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .main-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #000; }
           .main-table thead tr { background-color: #f0f0f0; }
           .main-table th { text-align: left; padding: 4px 6px; font-weight: normal; }
-          .main-table td { padding: 4px 6px; vertical-align: top; }
+          .main-table td { padding: 2px 6px; vertical-align: top; }
 
           .col-desc { width: 62%; }
           .col-date { width: 15%; }
@@ -406,11 +406,8 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           <div key={pageIdx} className="invoice-page">
             <div className="header-section">
               <div className="company-details">
-                <div className="company-name">AZAR TOURISM</div>
                 <div className="company-sub">Azar Tourism Services</div>
-                <div>Algeria Square Building Number 12 First Floor, Tripoli, Libya, P.O.BOX Number: 1254</div>
-                <div>Tripoli Libya,</div>
-                <div>Tripoli, Libyan Arab Jamahiriya</div>
+                <div>Algeria Square Building Number 12 First Floor, Tripoli, Libya</div>
               </div>
               <div className="logo-container">
                 <img src={invoice.meta.hotel.logoUrl} alt="Logo" className="logo-img" />
