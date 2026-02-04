@@ -184,7 +184,7 @@ export default function CVKInvoiceView({ invoiceData }) {
       ],
 
       exchangeRate: `${(data.exchangeRate || 0).toFixed(4)} TRY`,
-      totalInEUR: `${parseFloat(totalIncVat / (data.exchangeRate || 1)).toFixed(2)} EUR`,
+      totalInEUR: `${(parseFloat(totalIncVat) / (parseFloat(data.exchangeRate) || 1)).toFixed(2)} EUR`,
       totalAmount: formatCurrency(totalBase + totalVAT + totalAccTax),
       taxableAmount: formatCurrency(totalBase),
       totalVAT: formatCurrency(totalVAT),
@@ -380,16 +380,19 @@ export default function CVKInvoiceView({ invoiceData }) {
         .desc-val { margin-right: 60px; }
         .footer-container { display: flex; justify-content: space-between; margin-top: 20px; }
         .footer-left { width: 45%; }
-        .footer-right { width: 38%; }
-        .tax-table { width: 85%; border-collapse: collapse; margin-bottom: 15px; }
+        .footer-right { width: 38%; margin-top: -8px;}
+        .tax-table { width: 85%; border-collapse: collapse; margin-bottom: 15px; margin-top: -8px; }
         .tax-table th { background-color: #ededed; padding: 4px; font-weight: normal; }
-        .tax-table td { padding: 4px; text-align: right; }
+        .tax-table td { padding: 1px; text-align: right; }
         .tax-table .text-center { text-align: center; }
         .exchange-rate { margin-top: 10px; }
         .exchange-row { display: flex; justify-content: space-between; padding-right: 30px; margin-bottom: 2px; }
         .totals-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
         .total-bold { font-weight: bold; padding-top: 8px; }
         .balance-box { margin-top: 15px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between; }
+        .main-table{
+          margin-top: -8px;
+        }
 
         @media print {
           .invoice-page { width: 100%; padding: 20px; box-shadow: none; min-height: auto; }
@@ -427,14 +430,14 @@ export default function CVKInvoiceView({ invoiceData }) {
               <div className="guest-grid">
                 <div className="info-row"><span className="info-lbl" style={{ width: '65px' }}>Room/Oda</span><span className="info-sep">:</span> {invoice.roomNo}</div>
                 <div className="info-row"><span className="info-lbl" style={{ width: '85px' }}>Arrival/Giriş</span><span className="info-sep">:</span> {invoice.arrivalDate}</div>
-                <div className="info-row"><span className="info-lbl" style={{ width: '85px' }}>Adult/Yetişkin</span><span className="info-sep">:</span> {invoice.adults}</div>
-                <div className="info-row"><span className="info-lbl" style={{ width: '125px' }}>Passport No - TC No</span><span className="info-sep">:</span> {invoice.passportNo}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '75px' }}>Adult/Yetişkin</span><span className="info-sep">:</span> {invoice.adults}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '110px' }}>Passport No - TC No</span><span className="info-sep">:</span> {invoice.passportNo}</div>
                 <div className="info-row"><span className="info-lbl" style={{ width: '90px' }}>User/Kullanıcı</span><span className="info-sep">:</span> {invoice.user}</div>
 
                 <div className="info-row"><span className="info-lbl" style={{ width: '65px' }}>Folio No</span><span className="info-sep">:</span> {invoice.folioNo}</div>
                 <div className="info-row"><span className="info-lbl" style={{ width: '85px' }}>Departure/Çıkış</span><span className="info-sep">:</span> {invoice.departureDate}</div>
-                <div className="info-row"><span className="info-lbl" style={{ width: '85px' }}>Child/Çocuk</span><span className="info-sep">:</span> {invoice.children}</div>
-                <div className="info-row"><span className="info-lbl" style={{ width: '125px' }}>Crs No/Voucher No</span><span className="info-sep">:</span> {invoice.crsNo}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '75px' }}>Child/Çocuk</span><span className="info-sep">:</span> {invoice.children}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '110px' }}>Crs No/Voucher No</span><span className="info-sep">:</span> {invoice.crsNo}</div>
                 <div className="info-row"><span className="info-lbl" style={{ width: '90px' }}>Csh No/Kasa No</span><span className="info-sep">:</span> {invoice.cashNo}</div>
 
                 <div></div>
@@ -449,9 +452,9 @@ export default function CVKInvoiceView({ invoiceData }) {
               <thead>
                 <tr>
                   <th style={{ width: "55%" }}>Açıklama/Description</th>
-                  <th className="text-center" style={{ width: "15%" }}>Date/Tarih</th>
-                  <th className="text-right" style={{ width: "15%" }}>Debit/Borç</th>
-                  <th className="text-right" style={{ width: "15%" }}>Credit/Alacak</th>
+                  <th className="text-center" style={{ width: "15%" textAlign: "center"}}>Date/Tarih</th>
+                  <th className="text-right" style={{ width: "15%" textAlign: "right" }}>Debit/Borç</th>
+                  <th className="text-right" style={{ width: "15%" textAlign: "right" }}>Credit/Alacak</th>
                 </tr>
               </thead>
               <tbody>
