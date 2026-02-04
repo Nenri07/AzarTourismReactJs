@@ -465,7 +465,6 @@ const TRYPInvoiceView = ({ invoiceData }) => {
                       )}
                     </td>
                     <td >{txn.date}</td>
-                    <td>{txn.date}</td>
                     <td className="col-debit">
                       {txn.debit !== null && txn.debit !== undefined ? 
                         Number(txn.debit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
