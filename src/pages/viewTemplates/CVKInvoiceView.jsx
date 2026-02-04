@@ -184,7 +184,7 @@ export default function CVKInvoiceView({ invoiceData }) {
       ],
 
       exchangeRate: `${(data.exchangeRate || 0).toFixed(4)} TRY`,
-      totalInEUR: `${(totalIncVat / (data.exchangeRate || 1)).toFixed(2)} EUR`,
+      totalInEUR: `${parseFloat(totalIncVat / (data.exchangeRate || 1)).toFixed(2)} EUR`,
       totalAmount: formatCurrency(totalBase + totalVAT + totalAccTax),
       taxableAmount: formatCurrency(totalBase),
       totalVAT: formatCurrency(totalVAT),
