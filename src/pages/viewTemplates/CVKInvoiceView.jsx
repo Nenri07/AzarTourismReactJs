@@ -339,7 +339,7 @@ export default function CVKInvoiceView({ invoiceData }) {
           max-width: 794px;
           min-height: 296mm;
           margin: 0 auto;
-          padding: 40px 50px;
+          padding: 40px 30px;
           color: #000;
           position: relative;
           box-sizing: border-box;
