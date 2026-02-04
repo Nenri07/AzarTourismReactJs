@@ -374,11 +374,22 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .main-table thead tr { background-color: #f0f0f0; }
           .main-table th { text-align: left; padding: 4px 6px; font-weight: normal; }
           .main-table td { padding: 2px 6px; vertical-align: top; }
+          .main-table th.col-debit { 
+              text-align: right; 
+            }
 
           .col-desc { width: 62%; }
           .col-date { width: 15%; }
-          .col-debit { margin-right: 125px; text-align: right; justify-content: end; padding-right: 20px; }
-          .col-credit { display: flex; justify-content: end; text-align: right; }
+          .col-debit { 
+              width: 12%;           
+              text-align: right;    
+              padding-right: 15px;  
+            }
+          .col-credit { 
+              width: 12%; 
+              text-align: right; 
+              padding-right: 15px; 
+            }
           .desc-with-rate { display: flex; column-gap: 182px; align-items: center; }
           .rate-value { padding-right: 20px; }
 
@@ -453,7 +464,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
                 <tr>
                   <th className="col-desc">Açıklama/Description</th>
                   <th className="col-date">Date/Tarih</th>
-                  <th className="col-debit"><span className='innercol-debit'>Debit/Borç</span></th>
+                  <th className="col-debit">Debit/Borç</th>
                   <th className="col-credit">Credit/Alacak</th>
                 </tr>
               </thead>
@@ -471,8 +482,8 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
                       )}
                     </td>
                     <td>{txn.date}</td>
-                    <td>{txn.debit ? (parseFloat(txn.debit)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
-                    <td>{txn.credit ? (parseFloat(txn.credit)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
+                    <td className="col-debit">{txn.debit ? (parseFloat(txn.debit)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
+                    <td className="col-credit">{txn.credit ? (parseFloat(txn.credit)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
                   </tr>
                 ))}
               </tbody>
