@@ -374,19 +374,21 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .main-table thead tr { background-color: #f0f0f0; }
           .main-table th { text-align: left; padding: 4px 6px; font-weight: normal; }
           .main-table td { padding: 2px 6px; vertical-align: top; }
-          .main-table th.col-debit { 
-              text-align: right; 
-            }
+          .main-table th.col-debit, 
+          .main-table th.col-credit { 
+            text-align: right; 
+            padding-right: 25px; 
+          }
 
           .col-desc { width: 62%; }
           .col-date { width: 15%; }
           .col-debit { 
-              width: 12%;           
+              width: 100px;           
               text-align: right;    
-              padding-right: 15px;  
+              padding-right: 25px !important;  
             }
           .col-credit { 
-              width: 12%; 
+              width: 100px; 
               text-align: right; 
               padding-right: 15px; 
             }
