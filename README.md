@@ -1,12 +1,13 @@
-# ✈️ Travel Agency Management Portal (Live Deployment)
+# ✈️ Azar Tourism Management Portal (Live Deployment)
 
-A professional-grade, internal ERP solution designed for travel agencies to manage guest folios, automate complex tax calculations, and generate high-precision financial invoices.
+A professional-grade, internal ERP solution designed for Azar Tourism to manage guest folios, automate complex tax calculations, and generate high-precision financial invoices.
+Project is Officially developed by **Plus92services**
 
 ---
 
 ## 🌐 Live Demo
 The project is currently deployed and active:
-**[Link to Render Deployment]** *(Replace this with your friend's link)*
+**[plus92services.com]**
 
 ---
 
@@ -54,3 +55,4 @@ Our stack is built for speed, security, and data integrity:
 This is a collaborative project currently managed as a public deployment for agency use.
 
 **Lead Developers:** [Umer Bashir] & [Muhammad Moin]
+
