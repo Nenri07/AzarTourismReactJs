@@ -78,7 +78,7 @@ export default function CVKInvoiceView({ invoiceData }) {
       // We add 'rawDate' to every object to help with sorting later
       transactions.push({
         description: "Accommodation Package",
-        foreignAmount: `${(data.actualRate || 0).toFixed(2)} EUR / ${(data.exchangeRate || 0).toFixed(4)}`,
+        foreignAmount: `${(data.actualRate || 0).toFixed(2)} EUR / ${(data.exchangeRate || 0).toFixed(5)}`,
         date: formatDate(acc.date),
         rawDate: acc.date, // Used for sorting
         debit: formatCurrency(roomRate),
@@ -183,7 +183,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         }] : [])
       ],
 
-      exchangeRate: `${(data.exchangeRate || 0).toFixed(4)} TRY`,
+      exchangeRate: `${(data.exchangeRate || 0).toFixed(5)} TRY`,
       totalInEUR: `${(parseFloat(totalIncVat) / (parseFloat(data.exchangeRate) || 1)).toFixed(2)} EUR`,
       totalAmount: formatCurrency(totalBase + totalVAT + totalAccTax),
       taxableAmount: formatCurrency(totalBase),
@@ -406,7 +406,7 @@ export default function CVKInvoiceView({ invoiceData }) {
           <div key={pageIdx} className="invoice-page">
             <div className="header">
               <div className="logo-box">
-                <img src="/nothing.png" alt="CVK PARK BOSPHORUS HOTEL" className="logo-img" />
+                <img src={logo} alt="CVK PARK BOSPHORUS HOTEL" className="logo-img" />
               </div>
 
               <div className="company-address">
