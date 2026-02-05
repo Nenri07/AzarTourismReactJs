@@ -332,7 +332,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
       <div ref={invoiceRef}>
         <style>{`
           @page { size: A4; margin: 0; }
-          body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 8.5px; }
+          body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 8.9px; }
 
           .invoice-page {
             background-color: white;
