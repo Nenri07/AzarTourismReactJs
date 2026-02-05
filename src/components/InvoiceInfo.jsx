@@ -86,7 +86,7 @@ const InvoiceInfoSection = ({ formData, handleInputChange, dateError }) => {
           {/* VAT No */}
           <div className="form-control">
             <label className={labelClass}>
-              VAT No <span className="text-red-500">*</span>
+              VAT No 
             </label>
             <Input
               name="vatNo"
