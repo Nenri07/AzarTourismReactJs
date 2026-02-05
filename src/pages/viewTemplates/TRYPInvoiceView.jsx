@@ -15,7 +15,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [paginatedData, setPaginatedData] = useState([]);
   const invoiceRef = useRef(null);
-  const ROWS_PER_PAGE = 22;
+  const ROWS_PER_PAGE = 38;
 
   useEffect(() => {
     if (invoiceData) {
