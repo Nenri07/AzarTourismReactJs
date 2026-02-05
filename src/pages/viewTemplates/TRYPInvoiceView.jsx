@@ -311,7 +311,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
       */}
       <style>{`
         @page { size: A4; margin: 0; }
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size:9.5px; }
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 8.9px; }
 
         .invoice-page {
           background-color: white;
@@ -336,7 +336,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         .company-name { font-weight: bold; text-transform: uppercase; font-size: 11px; margin-bottom: 2px; }
         .logo-container { text-align: right; width: 35%; padding-right: 50px; }
         /* Adjusted logo size slightly for TRYP shape if needed, but kept class same */
-        .logo-img { max-width: 100px; height: auto; }
+        .logo-img { max-width: 85px; height: auto; }
 
         .meta-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .guest-name { margin-top: 4px; margin-bottom: 3px;  }
