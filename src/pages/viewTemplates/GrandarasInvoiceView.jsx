@@ -120,8 +120,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
     const vat10Percent = parseFloat(data.vat7 || data.vat_10_percent || data.vat1_10 || 12453.94);
     const vat20Percent = parseFloat(data.vat20 || 850);
     const otherServicesVat = otherServices.reduce((sum, s) => sum + parseFloat(s.vat_20_percent || 0), 0);
-    const totalVat = vat10Percent + vat20Percent + otherServicesVat;
-
+    const totalVat = data.vatTotal;
     const accommodationTax = parseFloat(data.accommodation_tax || data.accommodationTaxTotal || 2490.79);
     const grandTotal = parseFloat(data.grandTotal || 144584.15);
     const exchangeRate = parseFloat(data.exchangeRate || 48.7707);
