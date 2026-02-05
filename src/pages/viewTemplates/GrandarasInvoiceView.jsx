@@ -513,7 +513,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
                   </table>
 
                   <div className="exchange-info">
-                    Room Check-in EUR Exch. Rate &nbsp;&nbsp; {invoice.totals.exchangeRates.eur.toFixed(4)} TRY<br />
+                    Room Check-in EUR Exch. Rate &nbsp;&nbsp; {invoice.totals.exchangeRates.eur.toFixed(5)} TRY<br />
                     Total in EUR : &nbsp;&nbsp; {invoice.totals.totalEuro.toFixed(2)} EUR
                   </div>
                 </div>
