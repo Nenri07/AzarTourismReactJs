@@ -332,7 +332,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
       <div ref={invoiceRef}>
         <style>{`
           @page { size: A4; margin: 0; }
-          body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size:9.5px; }
+          body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 8.5px; }
 
           .invoice-page {
             background-color: white;
@@ -356,7 +356,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .company-details { display: flex; flex-direction: column; justify-content: center; width: 65%; line-height: 1.4; }
           .company-name { font-weight: bold; text-transform: uppercase; font-size: 11px; margin-bottom: 2px; }
           .logo-container { text-align: right; width: 35%; padding-right: 50px; }
-          .logo-img { max-width: 122px; height: auto; }
+          .logo-img { max-width: 110px; height: auto; }
 
           .meta-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
           .guest-name { margin-top: 4px; margin-bottom: 3px;  }
