@@ -164,8 +164,8 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
         passport: data.passportNo || data.confirmation || "AB456789",
         user: data.userId || "Azar",
         cashierNo: data.batchNo || data.cshNo || data.cashNo || "7737",
-        voucherNo: data.voucherNo || "22-4340",
-        crsNo: data.voucherNo || "22-4340"
+        voucherNo: data.voucherNo || "",
+        crsNo: data.voucherNo || ""
       },
       transactions,
       totals: {
