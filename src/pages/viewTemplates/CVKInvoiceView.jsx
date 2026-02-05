@@ -379,7 +379,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .exchange-row { display: flex; justify-content: space-between; padding-right: 30px; margin-bottom: 2px; }
         .totals-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
         .total-bold { font-weight: bold; padding-top: 8px; }
-        .balance-box { margin-top: 15px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between; }
+        .balance-box { margin-top: 15px; font-weight: bold;  display: flex; justify-content: space-between; }
         .main-table{
           margin-top: -8px;
         }
