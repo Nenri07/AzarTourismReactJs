@@ -427,11 +427,11 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
             </div>
 
             <div className="meta-row">
-              <div>V.D. &nbsp; : &nbsp; {invoice.meta.vatOffice || '70000000'}</div>
+              <div>V.D. &nbsp; : &nbsp; {invoice.meta.vatOffice || " "}</div>
               <div>Date/Tarih : &nbsp; {invoice.meta.date}</div>
             </div>
             <div className="meta-row">
-              <div>V. NO : &nbsp; {invoice.meta.vatNo || '22-4340'}</div>
+              <div>V. NO : &nbsp; {invoice.meta.vatNo || " "}</div>
               <div></div>
             </div>
 
