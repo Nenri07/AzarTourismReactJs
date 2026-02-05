@@ -112,6 +112,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
 
     return {
       meta: {
+        refNo: data.referenceNo,
         folio: data.folio_number || data.voucherNo || "",
         date: formatDate(data.invoiceDate),
         vatOffice: data.vd || "" ,
@@ -238,7 +239,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `TRYP_Invoice_${invoice.meta.folio}.pdf`,
+        filename: `${invoice.meta.refNo}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
