@@ -32,7 +32,7 @@ export const calculateAccommodation = (formData, hotelType) => {
   const acc = formData.accommodation_details || {};
   
   const eurAmount = parseNum(acc.eur_amount, 4);
-  const exchangeRate = parseNum(acc.exchange_rate, 4);
+  const exchangeRate = parseNum(acc.exchange_rate, 5);
   const totalNights = parseInt(acc.total_nights) || 0;
   
   if (eurAmount === 0 || exchangeRate === 0 || totalNights === 0) {
