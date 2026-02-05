@@ -15,7 +15,7 @@ export default function CVKInvoiceView({ invoiceData }) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [paginatedData, setPaginatedData] = useState([]);
   const invoiceRef = useRef(null);
-  const ROWS_PER_PAGE = 22;
+  const ROWS_PER_PAGE = 38;
 
   useEffect(() => {
     if (invoiceData) {
@@ -58,7 +58,7 @@ export default function CVKInvoiceView({ invoiceData }) {
   };
 
 
-  const transformInvoiceData = (data) => {
+ const transformInvoiceData = (data) => {
     console.log("🔄 Transforming data:", data);
 
     if (!data) {
@@ -68,41 +68,43 @@ export default function CVKInvoiceView({ invoiceData }) {
 
     const accommodationDetails = data.accommodationDetails || [];
     const otherServices = data.otherServices || [];
-
     const transactions = [];
+
+    // Pre-convert to Numbers to prevent precision errors
+    const exchangeRate = Number(data.exchangeRate) || 1;
+    const actualRate = Number(data.actualRate) || 0;
 
     // Accommodation details (10% VAT)
     accommodationDetails.forEach((acc) => {
-      const roomRate = acc.rate || 0;
+      const roomRate = Number(acc.rate) || 0;
+      const vatAmount = roomRate * 0.1;
+      const accTax = roomRate * 0.02;
 
-      // We add 'rawDate' to every object to help with sorting later
       transactions.push({
         description: "Accommodation Package",
-        foreignAmount: `${(data.actualRate || 0).toFixed(2)} EUR / ${(data.exchangeRate || 0).toFixed(5)}`,
+        foreignAmount: `${actualRate.toFixed(2)} EUR / ${exchangeRate.toFixed(5)}`,
         date: formatDate(acc.date),
-        rawDate: acc.date, // Used for sorting
+        rawDate: acc.date, 
         debit: formatCurrency(roomRate),
         credit: "",
         vatRate: 10
       });
 
-      const vatAmount = roomRate * 0.1;
       transactions.push({
         description: "VAT %10",
         foreignAmount: "",
         date: formatDate(acc.date),
-        rawDate: acc.date, // Used for sorting
+        rawDate: acc.date, 
         debit: formatCurrency(vatAmount),
         credit: "",
         vatRate: 10
       });
 
-      const accTax = roomRate * 0.02;
       transactions.push({
         description: "Accommodation TAX",
         foreignAmount: "",
         date: formatDate(acc.date),
-        rawDate: acc.date, // Used for sorting
+        rawDate: acc.date, 
         debit: formatCurrency(accTax),
         credit: "",
         vatRate: 10
@@ -111,48 +113,41 @@ export default function CVKInvoiceView({ invoiceData }) {
 
     // Other services (20% VAT)
     otherServices.forEach(service => {
-      const serviceAmount = service.amount || 0;
-      const serviceBase = serviceAmount / 1.2; // Remove 20% VAT
-      const serviceVAT = serviceBase * 0.1;
-
-      // Add service charge
+      const serviceAmount = Number(service.amount) || 0;
       transactions.push({
         description: service.name || "Service",
         foreignAmount: "",
         date: formatDate(service.date),
-        rawDate: service.date, // Used for sorting
+        rawDate: service.date, 
         debit: formatCurrency(serviceAmount),
         credit: "",
         vatRate: 20
       });
     });
 
-    // SORTING LOGIC: Sort all transactions by date chronologically
-    transactions.sort((a, b) => {
-      const dateA = new Date(a.rawDate || 0);
-      const dateB = new Date(b.rawDate || 0);
-      return dateA - dateB;
-    });
+    // Sort transactions by date
+    transactions.sort((a, b) => new Date(a.rawDate || 0) - new Date(b.rawDate || 0));
 
-    // Calculate totals
-    const accommodationSubTotal = parseFloat(data.subTotal || 0);
-    const accommodationVAT = parseFloat(data.vat_total_nights || 0);
+    // Calculate totals using Number() to avoid the "long string" bug
+    const accommodationSubTotal = Number(data.subTotal) || 0;
+    const accommodationVAT = Number(data.vat_total_nights) || 0;
+    const totalAccTax = Number(data.acc_tax_total_nights) || 0;
 
-    const otherServicesTotal = otherServices.reduce((sum, service) => sum + (service.amount || 0), 0);
+    const otherServicesTotal = otherServices.reduce((sum, service) => sum + (Number(service.amount) || 0), 0);
     const otherServicesBase = otherServicesTotal / 1.2;
     const otherServicesVAT = otherServicesTotal - otherServicesBase;
 
-    const totalBase = accommodationSubTotal + (otherServicesTotal > 0 ? otherServicesBase : 0);
-    const totalVAT = accommodationVAT + (otherServicesTotal > 0 ? otherServicesVAT : 0);
-    const totalAccTax = (parseFloat(data.acc_tax_total_nights)|| 0);
-    const totalIncVat = parseFloat(data.grandTotal || 0) + otherServicesTotal;
+    // The core fix: Summing numbers first, then rounding to 2 decimals
+    const totalBase = Number((accommodationSubTotal + (otherServicesTotal > 0 ? otherServicesBase : 0)).toFixed(2));
+    const totalVAT = Number((accommodationVAT + (otherServicesTotal > 0 ? otherServicesVAT : 0)).toFixed(2));
+    const totalIncVat = Number((accommodationSubTotal + accommodationVAT + totalAccTax + otherServicesTotal).toFixed(2));
 
     const transformed = {
       companyName: "Azar Tourism Services",
       companyAddress: "Algeria Square Building Number 12 First Floor, Tripoli, Libya.",
-
       vd: data.vd || "",
       vno: data.vNo || "",
+      refNo: data.referenceNo,
       guestName: data.guestName || "Guest",
       roomNo: data.roomNo || "",
       folioNo: data.folio_number || "",
@@ -166,10 +161,7 @@ export default function CVKInvoiceView({ invoiceData }) {
       cashNo: data.batchNo || "",
       pageNo: "1",
       invoiceDate: formatDate(data.invoiceDate),
-
       transactions: transactions,
-
-      // Tax table data for multiple VAT rates
       taxTable: [
         {
           rate: "%10",
@@ -182,10 +174,9 @@ export default function CVKInvoiceView({ invoiceData }) {
           amount: formatCurrency(otherServicesVAT)
         }] : [])
       ],
-
-      exchangeRate: `${(data.exchangeRate || 0).toFixed(5)} TRY`,
-      totalInEUR: `${(parseFloat(totalIncVat) / (parseFloat(data.exchangeRate) || 1)).toFixed(2)} EUR`,
-      totalAmount: formatCurrency(totalBase + totalVAT + totalAccTax),
+      exchangeRate: `${exchangeRate.toFixed(5)} TRY`,
+      totalInEUR: `${(totalIncVat / exchangeRate).toFixed(2)} EUR`,
+      totalAmount: formatCurrency(totalBase),
       taxableAmount: formatCurrency(totalBase),
       totalVAT: formatCurrency(totalVAT),
       totalAccTax: formatCurrency(totalAccTax),
@@ -198,7 +189,6 @@ export default function CVKInvoiceView({ invoiceData }) {
     console.log("✅ Transformation complete:", transformed);
     return transformed;
   };
-
   const formatDate = (dateString) => {
     if (!dateString) return "";
     try {
@@ -273,7 +263,7 @@ export default function CVKInvoiceView({ invoiceData }) {
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `CVK_Invoice_${invoice.folioNo}.pdf`,
+        filename: `${invoice.refNo}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
@@ -331,7 +321,7 @@ export default function CVKInvoiceView({ invoiceData }) {
     >
       <style>{`
         @page { size: A4; margin: 0; }
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size:9.5px; }
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 8.9px; }
 
         .invoice-page {
           background-color: white;
@@ -354,7 +344,7 @@ export default function CVKInvoiceView({ invoiceData }) {
 
         .header { margin-bottom: 14px; }
         .logo-box { margin-bottom: 20px; }
-        .logo-img { max-width: 240px; height: auto; }
+        .logo-img { max-width: 220px; height: auto; }
         .company-address { margin-bottom: 8px; font-size: 10.5px; }
         
         .info-row { display: flex; align-items: flex-start; }
@@ -383,7 +373,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .footer-right { width: 38%; margin-top: -8px;}
         .tax-table { width: 85%; border-collapse: collapse; margin-bottom: 15px; margin-top: -8px; }
         .tax-table th { background-color: #ededed;  font-weight: normal; }
-        .tax-table td { padding: 1px; text-align: right; }
+        .tax-table td { padding: 1px; text-align: center; }
         .tax-table .text-center { text-align: center; }
         .exchange-rate { margin-top: 10px; }
         .exchange-row { display: flex; justify-content: space-between; padding-right: 30px; margin-bottom: 2px; }
