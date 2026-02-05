@@ -335,7 +335,7 @@ export default function CVKInvoiceView({ invoiceData }) {
           box-sizing: border-box;
           page-break-inside: avoid;
           page-break-after: always;
-          font-size: 11px;
+          
         }
 
         .invoice-page:last-child {
@@ -345,7 +345,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .header { margin-bottom: 14px; }
         .logo-box { margin-bottom: 20px; }
         .logo-img { max-width: 220px; height: auto; }
-        .company-address { margin-bottom: 8px; font-size: 10.5px; }
+        .company-address { margin-bottom: 8px; }
         
         .info-row { display: flex; align-items: flex-start; }
         .info-lbl { display: inline-block; white-space: nowrap; }
