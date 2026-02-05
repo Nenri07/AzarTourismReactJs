@@ -141,10 +141,11 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
 
     return {
       meta: {
+        refno:data.referenceNo || "",
         folio: data.folio_number || data.vNo || "9090",
         date: formatDate(data.invoiceDate),
-        vatOffice: data.vd || "70000000",
-        vatNo: data.vNo || "22-4340",
+        vatOffice: data.vd || " ",
+        vatNo: data.vNo || " ",
         company: {
           name: "AZAR TOURISM",
           subName: "Azar Tourism Services",
@@ -260,7 +261,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `GrandAras_Invoice_${invoice.meta.folio}.pdf`,
+        filename: `${invoice.meta.refno}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
