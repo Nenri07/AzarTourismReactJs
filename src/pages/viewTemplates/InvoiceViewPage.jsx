@@ -355,59 +355,71 @@ export default function InvoiceViewPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8 print:p-0">
-      <style>{`
-        @page {
-          size: A4;
-          margin: 0;
-        }
+         <style>{`
+  @page {
+    size: A4;
+    margin: 0;
+  }
 
-        body {
-          margin: 0;
-          padding: 0;
-          font-family: Arial, sans-serif;
-        }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
 
-        .invoice-page {
-          position: relative;
-          padding: 12px 15px 35mm 15px;
-          background: white;
-          color: #000;
-          min-height: 297mm;
-          page-break-after: always;
-          font-size: 11px;
-          box-sizing: border-box;
-        }
+  .invoice-page {
+    position: relative;
+    /* Increase bottom padding to 45mm to ensure a clear gap for the stamp */
+    padding: 12px 15px 45mm 15px; 
+    background: white;
+    color: #000;
+    min-height: 297mm;
+    page-break-after: always;
+    font-size: 11px;
+    box-sizing: border-box;
+    /* This ensures the content doesn't overlap the stamp */
+    display: flex;
+    flex-direction: column;
+  }
 
-        .invoice-page:last-child {
-          page-break-after: auto;
-        }
+  .invoice-page:last-child {
+    page-break-after: auto;
+  }
 
-        .stamp-logo {
-          position: absolute;
-          right: 15px;
-          bottom: 10px;
-          width: 110px;
-          z-index: 100;
-        }
+  .stamp-logo {
+    position: absolute;
+    right: 20px;
+    bottom: 15px; /* Keep it strictly at the bottom */
+    width: 110px;
+    /* Removed z-index to stop it from floating over text */
+    pointer-events: none; /* Allows clicking through the image if needed */
+  }
 
-        @media print {
-          body { 
-            margin: 0; 
-            padding: 0; 
-            background: white;
-          }
-          
-          .no-print { 
-            display: none !important; 
-          }
-          
-          .invoice-page { 
-            margin: 0; 
-            border: 0;
-            padding: 12px 15px 35mm 15px;
-          }
-        }
-      `}</style>
+  /* Ensure the table doesn't push into the footer area */
+  table {
+    margin-bottom: 20px;
+  }
+
+  @media print {
+    body { 
+      margin: 0; 
+      padding: 0; 
+      background: white;
+    }
+    
+    .no-print { 
+      display: none !important; 
+    }
+    
+    .invoice-page { 
+      margin: 0; 
+      border: 0;
+      /* Match the padding here */
+      padding: 12px 15px 45mm 15px;
+    }
+  }
+`}</style>
+
 
       <div className="max-w-[210mm] mx-auto">
         <div className="no-print flex justify-between mb-6">
