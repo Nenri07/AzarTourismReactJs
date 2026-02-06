@@ -168,7 +168,7 @@ const router = createBrowserRouter([
         ),
       },
         {
-        path: "invoices/nvdownload-pdf/:invoiceId",
+        path: "invoices/nvdownload-pdf/:novoid",
         element: (
           <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
             <InvoiceViewPage />
