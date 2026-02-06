@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import logo from '../../../public/cvk-logo.jpeg';
 import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import toast from "react-hot-toast";
@@ -9,6 +9,7 @@ import html2pdf from 'html2pdf.js';
 export default function CVKInvoiceView({ invoiceData }) {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(!invoiceData);
   const [error, setError] = useState(null);
@@ -16,6 +17,8 @@ export default function CVKInvoiceView({ invoiceData }) {
   const [paginatedData, setPaginatedData] = useState([]);
   const invoiceRef = useRef(null);
   const ROWS_PER_PAGE = 38;
+
+  const isPdfDownload = location.pathname.includes("/download-pdf");
 
   useEffect(() => {
     if (invoiceData) {
@@ -31,6 +34,26 @@ export default function CVKInvoiceView({ invoiceData }) {
       setLoading(false);
     }
   }, [invoiceData, invoiceId]);
+
+   useEffect(() => {
+      console.log("this is path",isPdfDownload);
+      
+    if (
+      isPdfDownload &&
+      invoice 
+      
+    ) {
+      const timer = setTimeout(async () => {
+        await handleDownloadPDF();
+  
+        // Redirect after download
+        navigate("/invoices", { replace: true });
+      }, 800); // slight delay for render safety
+  
+      return () => clearTimeout(timer);
+    }
+  }, [isPdfDownload, invoice]);
+  
 
   const fetchInvoiceData = async () => {
     try {
