@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import { Download, Printer, ArrowLeft, Loader2 } from "lucide-react";
 import InvoiceApi from "../../Api/invoice.api";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 export default function InvoiceViewPage() {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
+  const location= useLocation();
   const [error, setError] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [paginatedData, setPaginatedData] = useState([]);
   const { novoid } = useParams();
   const navigate = useNavigate();
   const invoiceId = novoid;
+
+  const isPdfDownload = location.pathname.includes("/nvdownload-pdf");
 
   const LOGO_URL = "/novotel_logo.png";
   const STAMP_URL = "/novotel_stemp.png";
@@ -192,6 +195,25 @@ export default function InvoiceViewPage() {
     return invoiceData;
   };
 
+  useEffect(() => {
+      console.log("this is path",isPdfDownload);
+      
+    if (
+      isPdfDownload &&
+      invoice 
+      
+    ) {
+      const timer = setTimeout(async () => {
+        await handleDownloadPDF();
+  
+        // Redirect after download
+        navigate("/invoices", { replace: true });
+      }, 800); // slight delay for render safety
+  
+      return () => clearTimeout(timer);
+    }
+  }, [isPdfDownload, invoice]);
+  
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     try {
