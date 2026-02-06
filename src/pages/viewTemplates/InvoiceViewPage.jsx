@@ -758,26 +758,6 @@ export default function InvoiceViewPage() {
     }
   };
 
-       
-   useEffect(() => {
-      console.log("this is path",isPdfDownload);
-      
-    if (
-      isPdfDownload &&
-      invoice 
-      
-    ) {
-      const timer = setTimeout(async () => {
-        await handleDownloadPDF();
-  
-        // Redirect after download
-        navigate("/invoices", { replace: true });
-      }, 800); // slight delay for render safety
-  
-      return () => clearTimeout(timer);
-    }
-  }, [isPdfDownload, invoice]);
-
 
   const transformApiData = (data) => {
     const inv = data.invoice || {};
@@ -929,7 +909,42 @@ export default function InvoiceViewPage() {
     return invoiceData;
   };
 
- 
+  
+  useEffect(() => {
+  if (
+    !isPdfDownload ||
+    !invoice ||
+    !Array.isArray(paginatedData) ||
+    paginatedData.length === 0
+  ) {
+    return;
+  }
+
+  let cancelled = false;
+
+  const autoDownload = async () => {
+    try {
+      // Small delay to ensure final render stability (important for prod)
+      await new Promise((res) => setTimeout(res, 300));
+
+      if (cancelled) return;
+
+      await handleDownloadPDF();
+
+      if (!cancelled) {
+        navigate("/invoices", { replace: true });
+      }
+    } catch (e) {
+      console.error("Auto PDF failed:", e);
+    }
+  };
+
+  autoDownload();
+
+  return () => {
+    cancelled = true;
+  };
+}, [isPdfDownload, invoice, paginatedData, navigate]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -992,6 +1007,11 @@ export default function InvoiceViewPage() {
     return;
   }
 
+  if (!paginatedData || paginatedData.length === 0) {
+    console.warn("PDF blocked: pagination not ready");
+    return;
+  }
+  
   try {
     setPdfLoading(true);
 
@@ -1424,4 +1444,3 @@ export default function InvoiceViewPage() {
     </div>
   );
 }
-
