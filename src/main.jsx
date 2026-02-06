@@ -159,6 +159,22 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
+         {
+        path: "invoices/download-pdf/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceViewPage />
+          </AuthLayout>
+        ),
+      },
+        {
+        path: "invoices/nvdownload-pdf/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <InvoiceViewPage />
+          </AuthLayout>
+        ),
+      },
       
       // SUPER ADMIN & EMPLOYEE - Create Dynamic Invoice
       {
