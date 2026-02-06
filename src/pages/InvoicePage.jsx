@@ -1302,10 +1302,10 @@ const handleDeleteInvoice = async () => {
 };
 
   const handleDownloadPDF = (invoice) => {
-    if (invoice.pdfPath) {
-      toast.success(`Downloading ${invoice.invoiceNumber}...`);
+    if (invoice.hotelName === "Novotel Tunis Lac") {
+      navigate(`/invoices/nvdownload-pdf/${invoice.id}`);
     } else {
-      toast.error("PDF not available for this invoice yet!");
+      navigate(`/invoices/download-pdf/${invoice.id}`);
     }
   };
 
