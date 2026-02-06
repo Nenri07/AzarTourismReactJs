@@ -1553,8 +1553,8 @@ const handleDeleteInvoice = async () => {
       </div>
 
       <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 mb-4 sm:mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
-          <div className="sm:col-span-1 lg:col-span-2">
+       <div className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-[150px] sm:min-w-[180px]">
             <label className="label pb-1 text-xs font-semibold text-slate-600">
               Hotel
             </label>
@@ -1574,7 +1574,7 @@ const handleDeleteInvoice = async () => {
             </select>
           </div>
 
-          <div className="sm:col-span-1 lg:col-span-2">
+          <div className="flex-1 min-w-[150px] sm:min-w-[180px]">
             <label className="label pb-1 text-xs font-semibold text-slate-600">
               Status
             </label>
@@ -1752,7 +1752,7 @@ const handleDeleteInvoice = async () => {
             </div>
           </div>
 
-          <div className="sm:col-span-2 lg:col-span-2 flex gap-2">
+         <div className="flex gap-2 flex-wrap">
             <button
               onClick={handleSearch}
               disabled={searchLoading}
