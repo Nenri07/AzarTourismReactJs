@@ -21,8 +21,9 @@ export default function InvoiceViewPage() {
   const ROWS_PER_PAGE = 24;
 
   useEffect(() => {
-    fetchInvoiceData();
-  }, []);
+  if (!invoiceId) return;   // 🛑 STOP invalid request
+  fetchInvoiceData();
+}, [invoiceId]);
 
   const fetchInvoiceData = async () => {
     try {
