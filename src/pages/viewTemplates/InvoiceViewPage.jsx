@@ -709,9 +709,6 @@
 //   );
 // }
 
-
-
-
 import { useEffect, useState } from "react";
 import { Download, Printer, ArrowLeft, Loader2 } from "lucide-react";
 import InvoiceApi from "../../Api/invoice.api";
@@ -760,6 +757,26 @@ export default function InvoiceViewPage() {
       setLoading(false);
     }
   };
+
+       
+   useEffect(() => {
+      console.log("this is path",isPdfDownload);
+      
+    if (
+      isPdfDownload &&
+      invoice 
+      
+    ) {
+      const timer = setTimeout(async () => {
+        await handleDownloadPDF();
+  
+        // Redirect after download
+        navigate("/invoices", { replace: true });
+      }, 800); // slight delay for render safety
+  
+      return () => clearTimeout(timer);
+    }
+  }, [isPdfDownload, invoice]);
 
 
   const transformApiData = (data) => {
@@ -912,25 +929,7 @@ export default function InvoiceViewPage() {
     return invoiceData;
   };
 
-  
-   useEffect(() => {
-      console.log("this is path",isPdfDownload);
-      
-    if (
-      isPdfDownload &&
-      invoice 
-      
-    ) {
-      const timer = setTimeout(async () => {
-        await handleDownloadPDF();
-  
-        // Redirect after download
-        navigate("/invoices", { replace: true });
-      }, 800); // slight delay for render safety
-  
-      return () => clearTimeout(timer);
-    }
-  }, [isPdfDownload, invoice]);
+ 
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -1425,3 +1424,4 @@ export default function InvoiceViewPage() {
     </div>
   );
 }
+
