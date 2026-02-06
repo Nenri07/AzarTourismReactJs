@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef,useLocation } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 const logo = '/grandaras-logo.png';
 import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
@@ -8,6 +8,7 @@ import html2pdf from 'html2pdf.js';
 
 const GrandArasInvoiceView = ({ invoiceData }) => {
   const { invoiceId } = useParams();
+  const location=useLocation();
   const navigate = useNavigate();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(!invoiceData);
@@ -16,6 +17,9 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
   const [paginatedData, setPaginatedData] = useState([]);
   const invoiceRef = useRef(null);
   const ROWS_PER_PAGE = 38;
+
+
+  const isPdfDownload = location.pathname.includes("/download-pdf");
 
   useEffect(() => {
     if (invoiceData) {
@@ -32,6 +36,26 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
       setLoading(false);
     }
   }, [invoiceData, invoiceId]);
+
+   useEffect(() => {
+    console.log("this is path",isPdfDownload);
+    
+  if (
+    isPdfDownload &&
+    invoice &&
+    invoiceRef.current
+  ) {
+    const timer = setTimeout(async () => {
+      await handleDownloadPDF();
+
+      // Redirect after download
+      navigate("/invoices", { replace: true });
+    }, 800); // slight delay for render safety
+
+    return () => clearTimeout(timer);
+  }
+}, [isPdfDownload, invoice]);
+
 
   const fetchInvoiceData = async () => {
     try {
