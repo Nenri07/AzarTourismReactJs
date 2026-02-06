@@ -143,6 +143,22 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
+      {
+        path: "invoices/novotel/duplicate/:id",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <InvoiceFormPage />
+          </AuthLayout>
+        ),
+      },
+        {
+        path: "invoices/duplicate/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPage />
+          </AuthLayout>
+        ),
+      },
       
       // SUPER ADMIN & EMPLOYEE - Create Dynamic Invoice
       {
