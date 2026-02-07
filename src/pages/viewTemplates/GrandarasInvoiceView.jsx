@@ -180,14 +180,14 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
       },
       guest: {
         name: data.guestName || "Muhammad Haris Javaid",
-        room: data.roomNo || "100",
+        room: data.roomNo || "",
         arrival: formatDate(data.arrivalDate),
         departure: formatDate(data.departureDate),
         adults: data.paxAdult || 1,
         children: data.paxChild || 0,
-        passport: data.passportNo || data.confirmation || "AB456789",
-        user: data.userId || "Azar",
-        cashierNo: data.batchNo || data.cshNo || data.cashNo || "7737",
+        passport: data.passportNo || data.confirmation || "",
+        user: data.userId || " ",
+        cashierNo: data.batchNo || data.cshNo || data.cashNo || "",
         voucherNo: data.voucherNo || "",
         crsNo: data.voucherNo || ""
       },
