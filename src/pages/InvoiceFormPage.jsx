@@ -793,7 +793,7 @@ export default function InvoiceFormPage() {
         ...(isDuplicateMode ? {} : { id: apiInvoice.id }),
         
         // In duplicate mode, generate a new reference number or leave it for user to fill
-        referenceNo: isDuplicateMode ? "" : (apiInvoice.reference_no || ""),
+        referenceNo: isDuplicateMode ? `${apiInvoice.reference_no || ""}-COPY` : (apiInvoice.reference_no || ""),
         
         // In duplicate mode, set invoice date to today
         invoiceDate: isDuplicateMode ? new Date().toISOString().split("T")[0] : (apiInvoice.invoice_date || ""),
