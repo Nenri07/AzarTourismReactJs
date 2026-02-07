@@ -737,7 +737,7 @@ export default function InvoiceFormPage() {
     console.log(`📥 Duplicate Mode: ${isDuplicateMode}`);
     
     try {
-      const response = await invoiceApi.getInvoice(invoiceId);
+      const response = await invoiceApi.getCompleteInvoice(invoiceId);
       console.log(`📥 API Response received:`, response);
       
       let apiInvoice, accommodationDetails, cityTaxDetails, stampTaxDetails, otherServices;
