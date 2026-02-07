@@ -1063,8 +1063,8 @@ export default function InvoiceFormPage() {
       let isDuplicateKeyError = false;
       
       // Check for duplicate key error
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail;
+      if (error?.detail) {
+        const detail = error.detail;
         
         // Check if it's a duplicate key error
         if (typeof detail === 'string' && 
