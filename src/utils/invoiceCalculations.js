@@ -331,7 +331,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       confirmation: formData.passport_no || '',
       referenceNo: formData.company_name || `INV-${Date.now()}`,
       userId: formData.user_code || '',
-      batchNo: formData.cash_no || '1', // cash_no for Grand Aras
+      batchNo: formData.cash_no || '', // cash_no for Grand Aras
       invoiceDate: formatDate(formData.invoice_date),
       arrivalDate: formatDate(formData.arrival_date),
       departureDate: formatDate(formData.departure_date),
