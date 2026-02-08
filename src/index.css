@@ -109,3 +109,17 @@ textarea {
   outline: 2px solid #003d7a;
   outline-offset: 2px;
 }
+
+@layer base {
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
