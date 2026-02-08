@@ -404,8 +404,8 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
             padding-right: 9px; 
           }
 
-          .col-desc { width: 62%; }
-          .col-date { width: 15%; }
+          .col-desc { width: 85%; }
+          .col-date { width: 18%; }
           .col-debit { 
               width: 100px;           
               text-align: right;    
@@ -423,9 +423,9 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .footer-left { width: 45%; }
           .footer-right { width: 45%; text-align: right; margin-top: -10px; }
 
-          .tax-table { width: 62%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
+          .tax-table { width: 65%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
           .tax-table th { background-color: #f0f0f0; text-align: right; font-weight: normal; }
-          .tax-table td { text-align: center; }
+          .tax-table td { text-align: right; }
 
           .exchange-info { line-height: 1.4; margin-bottom: 15px; font-weight:bold; font-size: 10.5px; }
           .totals-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
@@ -523,7 +523,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
                       <tr>
                         <th>Tax Rate<br />KDV Oranı</th>
                         <th>Tax Base<br />KDV Matrahı</th>
-                        <th>Tax Amount<br />KDV Tutarı</th>
+                        <th style={{ paddingRight: '13px' }}>Tax Amount<br />KDV Tutarı</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -531,7 +531,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
                         <tr key={index}>
                           <td>{tax.rate}</td>
                           <td>{tax.base.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                          <td>{tax.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                          <td style={{ paddingRight: '13px' }}>{tax.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                         </tr>
                       ))}
                     </tbody>
