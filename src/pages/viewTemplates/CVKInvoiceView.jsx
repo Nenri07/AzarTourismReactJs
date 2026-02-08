@@ -468,7 +468,7 @@ export default function CVKInvoiceView({ invoiceData }) {
                   <th style={{ width: "60%" }}>Açıklama/Description</th>
                   <th  style={{ width: "20%", textAlign: "right"}}>Date/Tarih</th>
                   <th className="text-right" style={{ width: "13%" ,textAlign: "right" }}>Debit/Borç</th>
-                  <th className="text-right" style={{ width: "15%" ,textAlign: "right" paddingLeft: "20px" }}>Credit/Alacak</th>
+                  <th className="text-right" style={{ width: "15%" ,textAlign: "right", paddingLeft: "20px" }}>Credit/Alacak</th>
                 </tr>
               </thead>
               <tbody>
