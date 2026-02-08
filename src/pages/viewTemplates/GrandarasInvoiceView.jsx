@@ -387,7 +387,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
 
           .info-grid {
             display: grid;
-            grid-template-columns: 0.8fr 1.2fr 1fr 1.8fr 1.2fr;
+                grid-template-columns: 0.9fr 1.2fr 0.7fr 2.0fr 1.3fr;
             gap: 2px 10px;
             margin-bottom: 5px;
           }
@@ -419,7 +419,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .desc-with-rate { display: flex; column-gap: 182px; align-items: center; }
           .rate-value { padding-right: 20px; }
 
-          .footer-section { display: flex; justify-content: space-between; margin-top: 20px; }
+          .footer-section { display: flex; justify-content: space-between; margin-top: 20px; font-size:9.2px; }
           .footer-left { width: 45%; }
           .footer-right { width: 45%; text-align: right; margin-top: -10px; }
 
@@ -464,25 +464,25 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
 
             <div className="info-grid">
               {/* Row 1 */}
-              <InfoItem label="Room/Oda" value={invoice.guest.room} width="65px" />
-              <InfoItem label="Arrival/Giriş" value={invoice.guest.arrival} width="75px" />
-              <InfoItem label="Adult/Yetişkin" value={invoice.guest.adults} width="75px" />
-              <InfoItem label="Passport No - TC No" value={invoice.guest.passport} width="110px" />
-              <InfoItem label="User/Kullanıcı" value={invoice.guest.user} width="85px" />
+              <InfoItem label="Room/Oda" value={invoice.guest.room} width="50px" />
+              <InfoItem label="Arrival/Giriş" value={invoice.guest.arrival} width="70px" />
+              <InfoItem label="Adult/Yetişkin" value={invoice.guest.adults} width="60px" />
+              <InfoItem label="Passport No - TC No" value={invoice.guest.passport} width="90px" />
+              <InfoItem label="User/Kullanıcı" value={invoice.guest.user} width="80px" />
 
               {/* Row 2 */}
-              <InfoItem label="Folio No" value={invoice.meta.folio} width="65px" />
-              <InfoItem label="Departure/Çıkış" value={invoice.guest.departure} width="75px" />
-              <InfoItem label="Child/Çocuk" value={invoice.guest.children} width="75px" />
-              <InfoItem label="Crs No/Voucher No" value={invoice.guest.voucherNo || invoice.guest.crsNo || ''} width="110px" />
-              <InfoItem label="Csh No/Kasa No" value={invoice.guest.cashierNo} width="85px" />
+              <InfoItem label="Folio No" value={invoice.meta.folio} width="50px" />
+              <InfoItem label="Departure/Çıkış" value={invoice.guest.departure} width="70px" />
+              <InfoItem label="Child/Çocuk" value={invoice.guest.children} width="60px" />
+              <InfoItem label="Crs No/Voucher No" value={invoice.guest.voucherNo || invoice.guest.crsNo || ''} width="90px" />
+              <InfoItem label="Csh No/Kasa No" value={invoice.guest.cashierNo} width="80px" />
 
               {/* Row 3 - Page Number */}
               <div></div>
               <div></div>
               <div></div>
               <div></div>
-              <InfoItem label="Page/Sayfa" value={`${page.pageNum} / ${paginatedData.length}`} width="85px" />
+              <InfoItem label="Page/Sayfa" value={`${page.pageNum} / ${paginatedData.length}`} width="80fgrpx" />
             </div>
 
             <table className="main-table">
