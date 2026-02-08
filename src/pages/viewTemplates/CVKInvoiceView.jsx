@@ -380,7 +380,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         
         .guest-grid {
           display: grid;
-          grid-template-columns: 1.2fr 1.2fr 1fr 1.3fr 1fr;
+          grid-template-columns: 0.9fr 1.2fr 0.7fr 2.0fr 1.3fr;
           gap: 4px 12px;
           white-space: nowrap;
         }
@@ -395,15 +395,15 @@ export default function CVKInvoiceView({ invoiceData }) {
         .footer-container { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9.5px !important; }
         .footer-left { width: 45%; }
         .footer-right { width: 38%; margin-top: -8px;}
-        .tax-table { width: 85%; border-collapse: collapse; margin-bottom: 15px; margin-top: -8px; }
+        .tax-table { width: 60%; border-collapse: collapse; margin-bottom: 15px; margin-top: -8px; }
         .tax-table th { background-color: #ededed;  font-weight: normal; }
         .tax-table td { padding: 1px; text-align: center; }
-        .tax-table .text-center { text-align: center; }
+        .tax-table .text-center { text-align: right; }
         .exchange-rate { margin-top: 10px; }
-        .exchange-row { display: flex; justify-content: space-between; padding-right: 30px; margin-bottom: 2px; font-size: 10.5px !important; font-weight: bold;}
+        .exchange-row { display: flex; justify-content: space-between; padding-right: 80px; margin-bottom: 2px; font-size: 10.5px !important; font-weight: bold;}
         .totals-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
         .total-bold { font-weight: bold; padding-top: 8px; }
-        .balance-box { margin-top: 15px; font-weight: bold;  display: flex; justify-content: space-between; }
+        .balance-box {  display: flex; justify-content: space-between; }
         .main-table{
           margin-top: -8px;
         }
@@ -458,7 +458,7 @@ export default function CVKInvoiceView({ invoiceData }) {
                 <div></div>
                 <div></div>
                 <div></div>
-                <div className="info-row"><span className="info-lbl" style={{ width: '90px' }}>Page/Sayfa</span><span className="info-sep">:</span> {`${page.pageNum} / ${paginatedData.length}`}</div>
+                <div className="info-row"><span className="info-lbl" style={{ width: '72px' }}>Page/Sayfa</span><span className="info-sep">:</span> {`${page.pageNum} / ${paginatedData.length}`}</div>
               </div>
             </div>
 
@@ -499,16 +499,16 @@ export default function CVKInvoiceView({ invoiceData }) {
                     <thead>
                       <tr>
                         <th className="text-center">Tax Rate<br />KDV Oranı</th>
-                        <th>Tax Base<br />KDV Matrahı</th>
-                        <th>Tax Amount<br />KDV Tutarı</th>
+                        <th className="text-center">Tax Base<br />KDV Matrahı</th>
+                        <th className="text-center" style={{ padding: '0 10px 0 0px' }}>Tax Amount<br />KDV Tutarı</th>
                       </tr>
                     </thead>
                     <tbody>
                       {invoice.taxTable.map((tax, index) => (
                         <tr key={index}>
                           <td className="text-center">{tax.rate}</td>
-                          <td>{tax.base}</td>
-                          <td>{tax.amount}</td>
+                          <td className="text-center">{tax.base}</td>
+                          <td className="text-center" style={{ padding: '0 10px 0 0px' }}>{tax.amount}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -516,12 +516,12 @@ export default function CVKInvoiceView({ invoiceData }) {
 
                   <div className="exchange-rate">
                     <div className="exchange-row">
-                      <span>Room Check-in Exch. Rate(EUR): </span>
-                      <span>{invoice.exchangeRate}</span>
+                      <span>EUR Toplam / Total in EUR &nbsp;{invoice.totalInEUR}</span>
+                      <span></span>
                     </div>
                     <div className="exchange-row">
-                      <span>EUR Toplam / Total in EUR  {invoice.totalInEUR}</span>
-                      <span></span>
+                      <span>Room Check-in Exch. Rate ( EUR ): </span>
+                      <span>{invoice.exchangeRate}</span>
                     </div>
                   </div>
                 </div>
@@ -543,12 +543,12 @@ export default function CVKInvoiceView({ invoiceData }) {
                     <span>Total Acc Tax/Konaklama Vergisi</span>
                     <span>{invoice.totalAccTax}</span>
                   </div>
-                  <div className="totals-row total-bold">
+                  <div>
                     <span>Total Inc.Vat/KDV Dahil Tutar</span>
                     <span>{invoice.totalIncVat}</span>
                   </div>
 
-                  <div style={{ marginTop: "15px" }}>
+                  <div >
                     <div className="totals-row">
                       <span>Payments/Ödemeler</span>
                       <span></span>
