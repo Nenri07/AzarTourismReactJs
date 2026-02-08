@@ -392,7 +392,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .text-center { text-align: center; }
         .desc-col { display: flex; justify-content: space-between; width: 100%; }
         .desc-val { margin-right: 40px; }
-        .footer-container { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9.5px !important; }
+        .footer-container { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9.1px !important; }
         .footer-left { width: 45%; }
         .footer-right { width: 38%; margin-top: -8px;}
         .tax-table { width: 60%; border-collapse: collapse; margin-bottom: 15px; margin-top: -8px; }
