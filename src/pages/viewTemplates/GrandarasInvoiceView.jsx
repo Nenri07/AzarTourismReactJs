@@ -482,7 +482,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
               <div></div>
               <div></div>
               <div></div>
-              <InfoItem label="Page/Sayfa" value={`${page.pageNum} / ${paginatedData.length}`} width="80fgrpx" />
+              <InfoItem label="Page/Sayfa" value={`${page.pageNum} / ${paginatedData.length}`} width="80px" />
             </div>
 
             <table className="main-table">
