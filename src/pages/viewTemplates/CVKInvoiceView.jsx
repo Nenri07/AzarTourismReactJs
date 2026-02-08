@@ -386,12 +386,12 @@ export default function CVKInvoiceView({ invoiceData }) {
         }
         
         .main-table { width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 20px; }
-        .main-table th { background-color: #ededed;  padding: 4px 6px; font-weight: normal; text-align: left; }
+        .main-table th { background-color: #ededed;  padding: 2px 4px 1px 6px; font-weight: normal; text-align: left; }
         .main-table td { padding: 3px 6px; }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .desc-col { display: flex; justify-content: space-between; width: 100%; }
-        .desc-val { margin-right: 60px; }
+        .desc-val { margin-right: 40px; }
         .footer-container { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9.5px !important; }
         .footer-left { width: 45%; }
         .footer-right { width: 38%; margin-top: -8px;}
@@ -543,7 +543,7 @@ export default function CVKInvoiceView({ invoiceData }) {
                     <span>Total Acc Tax/Konaklama Vergisi</span>
                     <span>{invoice.totalAccTax}</span>
                   </div>
-                  <div>
+                  <div className="totals-row">
                     <span>Total Inc.Vat/KDV Dahil Tutar</span>
                     <span>{invoice.totalIncVat}</span>
                   </div>
