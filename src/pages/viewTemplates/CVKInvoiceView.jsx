@@ -484,7 +484,7 @@ export default function CVKInvoiceView({ invoiceData }) {
                         transaction.description
                       )}
                     </td>
-                    <td className="text-center">{transaction.date}</td>
+                    <td className="text-right">{transaction.date}</td>
                     <td className="text-right">{transaction.debit}</td>
                     <td className="text-right">{transaction.credit}</td>
                   </tr>
