@@ -444,7 +444,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
             <div className="header-section">
               <div className="company-details">
                 <div className="company-sub">Azar Tourism Services</div>
-                <div>Algeria Square Building Number 12 First Floor, <br>Tripoli, Libya</br></div>
+                <div>Algeria Square Building Number 12 First Floor, <br />Tripoli, Libya</div>
               </div>
               <div className="logo-container">
                 <img src={invoice.meta.hotel.logoUrl} alt="Logo" className="logo-img" />
