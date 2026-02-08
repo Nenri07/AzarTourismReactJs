@@ -383,7 +383,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .logo-img { max-width: 110px; height: auto; }
 
           .meta-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-          .guest-name { margin-top: 4px; margin-bottom: 3px;  }
+          .guest-name { margin-top: 10px; margin-bottom: 10px;  }
 
           .info-grid {
             display: grid;
@@ -444,7 +444,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
             <div className="header-section">
               <div className="company-details">
                 <div className="company-sub">Azar Tourism Services</div>
-                <div>Algeria Square Building Number 12 First Floor, Tripoli, Libya</div>
+                <div>Algeria Square Building Number 12 First Floor, <br>Tripoli, Libya</br></div>
               </div>
               <div className="logo-container">
                 <img src={invoice.meta.hotel.logoUrl} alt="Logo" className="logo-img" />
