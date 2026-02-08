@@ -167,7 +167,8 @@ export default function CVKInvoiceView({ invoiceData }) {
 
     const transformed = {
       companyName: "Azar Tourism Services",
-      companyAddress: "Algeria Square Building Number 12 First Floor, Tripoli, Libya.",
+      companyAddress: "Algeria Square Building Number 12 First Floor,",
+      companyCity: "Tripoli, Libya.",
       vd: data.vd || "",
       vno: data.vNo || "",
       refNo: data.referenceNo,
@@ -375,7 +376,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .info-sep { padding: 0 4px 0 2px; }
 
         .meta-container { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .guest-name { margin: 2px 0; }
+        .guest-name { margin: 10px 0; }
         
         .guest-grid {
           display: grid;
