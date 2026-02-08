@@ -423,14 +423,14 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .footer-left { width: 45%; }
           .footer-right { width: 45%; text-align: right; margin-top: -10px; }
 
-          .tax-table { width: 90%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
-          .tax-table th { background-color: #f0f0f0; text-align: center; font-weight: normal; }
+          .tax-table { width: 62%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
+          .tax-table th { background-color: #f0f0f0; text-align: right; font-weight: normal; }
           .tax-table td { text-align: center; }
 
-          .exchange-info { line-height: 1.4; margin-bottom: 15px; }
+          .exchange-info { line-height: 1.4; margin-bottom: 15px; font-weight:bold; font-size: 10.5px; }
           .totals-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
-          .payment-header { margin-top: 15px; margin-bottom: 3px; text-align: left; }
-          .balance-row { margin-top: 15px; font-weight: bold; }
+          .payment-header {  margin-bottom: 3px; text-align: left; }
+          .balance-row {  }
 
           @media print {
             .invoice-page { width: 100%; padding: 20px; box-shadow: none; min-height: auto; }
@@ -538,8 +538,8 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
                   </table>
 
                   <div className="exchange-info">
-                    Room Check-in EUR Exch. Rate &nbsp;&nbsp; {invoice.totals.exchangeRates.eur.toFixed(5)} TRY<br />
-                    Total in EUR : &nbsp;&nbsp; {invoice.totals.totalEuro.toFixed(2)} EUR
+                    EUR Toplam/Total in EUR  &nbsp;&nbsp; {invoice.totals.totalEuro.toFixed(2)} EUR <br />
+                    Room Check-in Exch. Rate ( EUR ) :&nbsp;&nbsp; {invoice.totals.exchangeRates.eur.toFixed(5)} TRY
                   </div>
                 </div>
 
