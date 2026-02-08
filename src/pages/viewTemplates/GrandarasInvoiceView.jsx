@@ -394,7 +394,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
 
           .grid-item { white-space: nowrap; }
 
-          .main-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #000; }
+          .main-table { width: 100%; border-spacing: 0; margin-bottom: 20px; border: 1px solid #000; }
           .main-table thead tr { background-color: #f0f0f0; }
           .main-table th { text-align: left; padding: 4px 6px; font-weight: normal; }
           .main-table td { padding: 2px 6px; vertical-align: top; }
