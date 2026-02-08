@@ -391,7 +391,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .desc-col { display: flex; justify-content: space-between; width: 100%; }
-        .desc-val { margin-right: 40px; }
+        .desc-val { margin-right: -35px; }
         .footer-container { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9.1px !important; }
         .footer-left { width: 45%; }
         .footer-right { width: 38%; margin-top: -8px;}
@@ -465,10 +465,10 @@ export default function CVKInvoiceView({ invoiceData }) {
             <table className="main-table">
               <thead>
                 <tr>
-                  <th style={{ width: "55%" }}>Açıklama/Description</th>
-                  <th className="text-center" style={{ width: "15%", textAlign: "center"}}>Date/Tarih</th>
-                  <th className="text-right" style={{ width: "15%" ,textAlign: "right" }}>Debit/Borç</th>
-                  <th className="text-right" style={{ width: "15%" ,textAlign: "right" }}>Credit/Alacak</th>
+                  <th style={{ width: "60%" }}>Açıklama/Description</th>
+                  <th  style={{ width: "20%", textAlign: "right"}}>Date/Tarih</th>
+                  <th className="text-right" style={{ width: "13%" ,textAlign: "right" }}>Debit/Borç</th>
+                  <th className="text-right" style={{ width: "15%" ,textAlign: "right" paddingLeft: "20px" }}>Credit/Alacak</th>
                 </tr>
               </thead>
               <tbody>
