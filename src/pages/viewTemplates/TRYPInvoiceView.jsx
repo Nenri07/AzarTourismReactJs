@@ -142,7 +142,8 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         vatNo: data.vNo || "",
         company: {
           name: "Azar Tourism Services",
-          addressLine1: "Algeria Square Building Number 12 First Floor, Tripoli, Libya",
+          addressLine1: "Algeria Square Building Number 12 First Floor, ",
+          cityLine:"Tripoli, Libya."
 
         },
         hotel: { logoUrl: logo }
@@ -362,7 +363,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         .logo-img { max-width: 85px; height: auto; }
 
         .meta-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .guest-name { margin-top: 4px; margin-bottom: 3px;  }
+        .guest-name { margin-top: 10px; margin-bottom: 10px;  }
 
         .info-grid {
           display: grid;
@@ -428,6 +429,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
               <div className="company-details">
                 <div className="company-sub">{invoice.meta.company.name}</div>
                 <div>{invoice.meta.company.addressLine1}</div>
+                <div>{invoice.meta.company.cityLine}</div>
               </div>
               <div className="logo-container">
                 <img src={invoice.meta.hotel.logoUrl} alt="Logo" className="logo-img" />
