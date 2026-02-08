@@ -406,7 +406,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         .footer-left { width: 45%; }
         .footer-right { width: 45%; text-align: right; margin-top: -10px; }
 
-        .tax-table { width: 90%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
+        .tax-table { width: 75%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
         .tax-table th { background-color: #f0f0f0; text-align: right; font-weight: normal; }
         .tax-table td { text-align: right; }
 
