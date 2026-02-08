@@ -367,19 +367,19 @@ const TRYPInvoiceView = ({ invoiceData }) => {
 
         .info-grid {
           display: grid;
-          grid-template-columns: 0.8fr 1.2fr 1fr 1.8fr 1.2fr;
+          grid-template-columns: 0.9fr 1.2fr 0.7fr 2.0fr 1.3fr;
           gap: 2px 10px;
           margin-bottom: 5px;
         }
 
         .grid-item { white-space: nowrap; }
 
-        .main-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #000; }
+        .main-table { width: 100%; border-spacing: 0; margin-bottom: 20px; border: 1px solid #000; }
         .main-table thead tr { background-color: #f0f0f0; }
         .main-table th { text-align: left; padding: 4px 6px; font-weight: normal; }
         .main-table td { padding: 4px 6px; vertical-align: top; }
 
-        .col-desc { width: 62%; }
+        .col-desc { width: 75%; }
         .col-date { width: 15%; }
         /* Update these specific classes */
         .col-debit { 
@@ -399,21 +399,21 @@ const TRYPInvoiceView = ({ invoiceData }) => {
   .main-table th.col-credit { 
     text-align: right; 
     }
-        .desc-with-rate { display: flex; column-gap: 182px; align-items: center; }
+        .desc-with-rate { display: flex; column-gap: 230px; align-items: center; }
         .rate-value { padding-right: 20px; }
 
-        .footer-section { display: flex; justify-content: space-between; margin-top: 20px; }
+        .footer-section { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9.2px;}
         .footer-left { width: 45%; }
         .footer-right { width: 45%; text-align: right; margin-top: -10px; }
 
         .tax-table { width: 90%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
-        .tax-table th { background-color: #f0f0f0; text-align: center; font-weight: normal; }
-        .tax-table td { text-align: center; }
+        .tax-table th { background-color: #f0f0f0; text-align: right; font-weight: normal; }
+        .tax-table td { text-align: right; }
 
-        .exchange-info { line-height: 1.4; margin-bottom: 15px; }
+        .exchange-info { line-height: 1.4; margin-bottom: 15px; font-size: 10.5px; font-weight: bold;}
         .totals-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
-        .payment-header { margin-top: 15px; margin-bottom: 3px; text-align: left; }
-        .balance-row { margin-top: 15px; font-weight: bold; }
+        .payment-header { margin-bottom: 3px; text-align: left; }
+        .balance-row { }
 
         @media print {
           .invoice-page { width: 100%; padding: 20px; box-shadow: none; min-height: auto; }
@@ -448,23 +448,23 @@ const TRYPInvoiceView = ({ invoiceData }) => {
             <div className="guest-name">{invoice.guest.name}</div>
 
             <div className="info-grid">
-              <InfoItem label="Room/Oda" value={invoice.guest.room} width="65px" />
-              <InfoItem label="Arrival/Giriş" value={invoice.guest.arrival} width="75px" />
-              <InfoItem label="Adult/Yetişkin" value={invoice.guest.adults} width="75px" />
-              <InfoItem label="Passport No - TC No" value={invoice.guest.passport} width="110px" />
-              <InfoItem label="User/Kullanıcı" value={invoice.guest.user} width="85px" />
+              <InfoItem label="Room/Oda" value={invoice.guest.room} width="50px" />
+              <InfoItem label="Arrival/Giriş" value={invoice.guest.arrival} width="70px" />
+              <InfoItem label="Adult/Yetişkin" value={invoice.guest.adults} width="60px" />
+              <InfoItem label="Passport No - TC No" value={invoice.guest.passport} width="90px" />
+              <InfoItem label="User/Kullanıcı" value={invoice.guest.user} width="80px" />
 
-              <InfoItem label="Folio No" value={invoice.meta.folio} width="65px" />
-              <InfoItem label="Departure/Çıkış" value={invoice.guest.departure} width="75px" />
-              <InfoItem label="Child/Çocuk" value={invoice.guest.children} width="75px" />
-              <InfoItem label="Crs No/Voucher No" value={invoice.guest.voucherNo} width="110px" />
-              <InfoItem label="Csh No/Kasa No" value={invoice.guest.cashierNo} width="85px" />
+              <InfoItem label="Folio No" value={invoice.meta.folio} width="50px" />
+              <InfoItem label="Departure/Çıkış" value={invoice.guest.departure} width="70px" />
+              <InfoItem label="Child/Çocuk" value={invoice.guest.children} width="60px" />
+              <InfoItem label="Crs No/Voucher No" value={invoice.guest.voucherNo} width="90px" />
+              <InfoItem label="Csh No/Kasa No" value={invoice.guest.cashierNo} width="80px" />
 
               <div></div>
               <div></div>
               <div></div>
               <div></div>
-              <InfoItem label="Page/Sayfa" value={`${page.pageNum} / ${paginatedData.length}`} width="85px" />
+              <InfoItem label="Page/Sayfa" value={`${page.pageNum} / ${paginatedData.length}`} width="80px" />
             </div>
 
             <table className="main-table">
@@ -513,7 +513,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
                       <tr>
                         <th>Tax Rate<br />KDV Oranı</th>
                         <th>Tax Base<br />KDV Matrahı</th>
-                        <th>Tax Amount<br />KDV Tutarı</th>
+                        <th style={{ paddingRight: '20px' }}>Tax Amount<br />KDV Tutarı</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -521,15 +521,15 @@ const TRYPInvoiceView = ({ invoiceData }) => {
                         <tr key={index}>
                           <td>{tax.rate}</td>
                           <td>{tax.base.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                          <td>{tax.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                          <td style={{ paddingRight: '20px' }}>{tax.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
 
                   <div className="exchange-info">
-                    Room Check-in EUR Exch. Rate &nbsp;&nbsp; {invoice.totals.exchangeRates.eur.toFixed(5)} TRY<br />
-                    Total in EUR : &nbsp;&nbsp; {invoice.totals.totalEuro.toFixed(2)} EUR
+                    EUR Toplam/Total in EUR  &nbsp;&nbsp; {invoice.totals.totalEuro.toFixed(2)} EUR <br />
+                    Room Check-in Exch. Rate ( EUR ) :&nbsp;&nbsp; {invoice.totals.exchangeRates.eur.toFixed(5)} TRY
                   </div>
 
                   <div className="amount-in-words">
