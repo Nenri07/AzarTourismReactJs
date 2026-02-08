@@ -416,7 +416,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
               text-align: right; 
               padding-right: 15px; 
             }
-          .desc-with-rate { display: flex; column-gap: 182px; align-items: center; }
+          .desc-with-rate { display: flex; column-gap: 280px; align-items: center; }
           .rate-value { padding-right: 20px; }
 
           .footer-section { display: flex; justify-content: space-between; margin-top: 20px; font-size:9.2px; }
