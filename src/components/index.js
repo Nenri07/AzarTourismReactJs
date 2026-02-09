@@ -23,11 +23,13 @@ import DynamicSummarySection from "./DynamicComponets/DynamicSummarySection";
 import SuccessModal from "./SuccessModal";
 import InvoiceActionBar from "./InvoiceActionBar";
 import InvoiceTemplate from "./InvoiceTemplate";
+import NovotelInvoiceFooter from "./NovotelInvoiceFooter";
+import NovotelInvoiceHeader from "./NovotelInvoiceHeader";
 
 
 export {
     Header,
-    
+    NovotelInvoiceHeader,
     Input,
     Sidebar,
     Login,
@@ -51,5 +53,6 @@ export {
     DynamicSummarySection,
     SuccessModal,
     InvoiceActionBar,
-    InvoiceTemplate
+    InvoiceTemplate,
+    NovotelInvoiceFooter
 }
