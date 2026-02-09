@@ -708,413 +708,399 @@
 //     </div>
 //   );
 // }
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Download, Printer, ArrowLeft, Loader2 } from "lucide-react";
 import InvoiceApi from "../../Api/invoice.api";
-import { useParams, useNavigate,useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import html2pdf from 'html2pdf.js';
+import toast from "react-hot-toast";
 
 export default function InvoiceViewPage() {
-  const [invoice, setInvoice] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const location = useLocation();
-  const [error, setError] = useState(null);
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const [paginatedData, setPaginatedData] = useState([]);
-  const { novoid } = useParams();
-  const navigate = useNavigate();
-  const invoiceId = novoid;
+    const [invoice, setInvoice] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const location = useLocation();
+    const [error, setError] = useState(null);
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [paginatedData, setPaginatedData] = useState([]);
+    const invoiceRef = useRef(null);
+    const { novoid } = useParams();
+    const navigate = useNavigate();
+    const invoiceId = novoid;
 
-  const LOGO_URL = "/novotel_logo.png";
-  const STAMP_URL = "/novotel_stemp.png";
-  const ROWS_PER_PAGE = 24;
+    const LOGO_URL = "/novotel_logo.png";
+    const STAMP_URL = "/novotel_stemp.png";
+    const ROWS_PER_PAGE = 24;
 
-  const isPdfDownload = location.pathname.includes("/nvdownload-pdf");
+    const isPdfDownload = location.pathname.includes("/nvdownload-pdf");
 
-  useEffect(() => {
-  if (!invoiceId) return;  
-  fetchInvoiceData();
-}, [invoiceId]);
-
-
-  const fetchInvoiceData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await InvoiceApi.getCompleteInvoice(invoiceId);
-      const data = response.data || response;
+    useEffect(() => {
+        if (!invoiceId) return;
+        fetchInvoiceData();
+    }, [invoiceId]);
 
 
-      // Transform API data to match our format
-      const transformedData = transformApiData(data);
+    const fetchInvoiceData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
 
-      setInvoice(transformedData);
-    } catch (err) {
-      console.error("Error fetching invoice:", err);
-      setError(err.message || "Failed to load invoice data");
-    } finally {
-      setLoading(false);
-    }
-  };
+            const response = await InvoiceApi.getCompleteInvoice(invoiceId);
+            const data = response.data || response;
 
 
-  const transformApiData = (data) => {
-    const inv = data.invoice || {};
-    const lines = [];
+            // Transform API data to match our format
+            const transformedData = transformApiData(data);
 
-    // Get the first night's date
-    const firstNightDate =
-      data.accommodation_details?.[0]?.date ||
-      inv.invoice_date ||
-      inv.arrival_date;
-    const stampTaxAmount = parseFloat(inv.stamp_tax_total) || 0;
-
-    // Group items by date
-    const itemsByDate = {};
-
-    // Process accommodation details
-    data.accommodation_details?.forEach((d, index) => {
-      const date = d.date || inv.arrival_date;
-      if (!itemsByDate[date]) itemsByDate[date] = [];
-
-      itemsByDate[date].push({
-        date: formatDate(date),
-        description: d.description || "Hébergement",
-        debit: parseFloat(d.rate) || 0,
-        credit: 0,
-        order: 1, // First in sequence for each day
-      });
-    });
-
-    // Process city tax details
-    data.city_tax_details?.forEach((d, index) => {
-      const date = d.date || inv.arrival_date;
-      if (!itemsByDate[date]) itemsByDate[date] = [];
-
-      itemsByDate[date].push({
-        date: formatDate(date),
-        description: d.description || "Taxe de séjour",
-        debit: parseFloat(d.amount) || 0,
-        credit: 0,
-        order: 2, // Second in sequence for each day
-      });
-    });
-
-    // Add stamp tax ONLY on the first night's date
-    if (stampTaxAmount > 0 && firstNightDate) {
-      if (!itemsByDate[firstNightDate]) itemsByDate[firstNightDate] = [];
-
-      itemsByDate[firstNightDate].push({
-        date: formatDate(firstNightDate),
-        description: "Droit de timbre",
-        debit: stampTaxAmount,
-        credit: 0,
-        order: 3, // Third in sequence (only on first day)
-      });
-    }
-
-    // Process other services (laundry, etc.) - each on their own date
-    data.other_services?.forEach((s) => {
-      const serviceDate = s.date || inv.invoice_date;
-      if (!itemsByDate[serviceDate]) itemsByDate[serviceDate] = [];
-
-      itemsByDate[serviceDate].push({
-        date: formatDate(serviceDate),
-        description: s.name || "Service",
-        debit: parseFloat(s.amount) || 0,
-        credit: 0,
-        order: 4, // Fourth in sequence for that date
-      });
-    });
-
-    // Flatten and sort: by date, then by order within each date
-    Object.keys(itemsByDate).forEach((date) => {
-      const dateItems = itemsByDate[date];
-
-      // Sort items within this date by order
-      dateItems.sort((a, b) => a.order - b.order);
-
-      // Add to lines
-      lines.push(...dateItems);
-    });
-
-    // Sort all lines by date
-    lines.sort((a, b) => {
-      if (!a.date || !b.date) return 0;
-
-      // Convert DD/MM/YY to YYMMDD for comparison
-      const convertDate = (dateStr) => {
-        const parts = dateStr.split("/");
-        if (parts.length !== 3) return 0;
-        return parseInt(parts[2] + parts[1] + parts[0]);
-      };
-
-      return convertDate(a.date) - convertDate(b.date);
-    });
-
-    // Calculate totals
-    const accommodationTotal =
-      data.accommodation_details?.reduce(
-        (sum, d) => sum + (parseFloat(d.rate) || 0),
-        0,
-      ) || 0;
-    const otherServicesTotal =
-      data.other_services?.reduce(
-        (sum, s) => sum + (parseFloat(s.amount) || 0),
-        0,
-      ) || 0;
-    const totalFromForm = accommodationTotal + otherServicesTotal;
-
-    // Extract invoice data from API response
-    const invoiceData = {
-      // Guest info
-      guestName: inv.guest_name || "Guest",
-      persons: (inv.pax_adult || 0) + (inv.pax_child || 0),
-      roomNo: inv.room_no || "N/A",
-      referenceNo:inv.reference_no,
-      arrival: formatDate(inv.arrival_date),
-      departure: formatDate(inv.departure_date),
-      issueDate: formatDate(inv.invoice_date),
-
-      // Company info
-      companyName: inv.vd || "Azar Tourism Services",
-      companyAddress: "Algeria Square Building Number 12 First Floor, Tripoli, Libya.",
-      accountNo: inv.voucher_no || "ARZ2022TOU",
-      vatNo: inv.confirmation || "",
-      invoiceNo: inv.batch_no || "NOVO-13",
-      cashier: inv.passport_no || "8250",
-
-      // Financial info
-      currency: "TND",
-      exchangeRate: parseFloat(inv.exchange_rate) || 2.85,
-      lines: lines,
-
-      // Tax calculations
-      netTaxable: parseFloat(inv.sub_total || totalFromForm) || 0,
-      fdsct: parseFloat(inv.vat1_10 || 0),
-      vat7Total: parseFloat(inv.vat7 || 0),
-      cityTaxTotal: parseFloat(inv.city_tax_total) || 0,
-      stampTaxTotal: stampTaxAmount,
-      grossTotal: parseFloat(inv.grand_total || inv.grossTotal || 0),
-
-      // Other totals
-      subTotal: totalFromForm || 0,
-      vat1_10: parseFloat(inv.vat1_10 || 0),
-      vat7: parseFloat(inv.vat7 || 0),
-      vat20: 0,
-      grandTotal: parseFloat(inv.grand_total || inv.grossTotal || 0),
+            setInvoice(transformedData);
+        } catch (err) {
+            console.error("Error fetching invoice:", err);
+            setError(err.message || "Failed to load invoice data");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    return invoiceData;
-  };
 
-  
-  useEffect(() => {
-  if (
-    !isPdfDownload ||
-    !invoice ||
-    !Array.isArray(paginatedData) ||
-    paginatedData.length === 0
-  ) {
-    return;
-  }
+    const transformApiData = (data) => {
+        const inv = data.invoice || {};
+        const lines = [];
 
-  let cancelled = false;
+        // Get the first night's date
+        const firstNightDate =
+            data.accommodation_details?.[0]?.date ||
+            inv.invoice_date ||
+            inv.arrival_date;
+        const stampTaxAmount = parseFloat(inv.stamp_tax_total) || 0;
 
-  const autoDownload = async () => {
-    try {
-      // Small delay to ensure final render stability (important for prod)
-      await new Promise((res) => setTimeout(res, 300));
+        // Group items by date
+        const itemsByDate = {};
 
-      if (cancelled) return;
+        // Process accommodation details
+        data.accommodation_details?.forEach((d, index) => {
+            const date = d.date || inv.arrival_date;
+            if (!itemsByDate[date]) itemsByDate[date] = [];
 
-      await handleDownloadPDF();
-
-      if (!cancelled) {
-        navigate("/invoices", { replace: true });
-      }
-    } catch (e) {
-      console.error("Auto PDF failed:", e);
-    }
-  };
-
-  autoDownload();
-
-  return () => {
-    cancelled = true;
-  };
-}, [isPdfDownload, invoice, paginatedData, navigate]);
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "";
-    try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return dateStr;
-      const d = String(date.getDate()).padStart(2, "0");
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const y = String(date.getFullYear()).slice(-2);
-      return `${d}/${m}/${y}`;
-    } catch (e) {
-      console.error("Error formatting date:", dateStr, e);
-      return dateStr;
-    }
-  };
-
-  useEffect(() => {
-    if (invoice?.lines) {
-      const pages = [];
-      for (let i = 0; i < invoice.lines.length; i += ROWS_PER_PAGE) {
-        pages.push({
-          lines: invoice.lines.slice(i, i + ROWS_PER_PAGE),
-          pageNum: pages.length + 1,
-          isLastPage: i + ROWS_PER_PAGE >= invoice.lines.length,
+            itemsByDate[date].push({
+                date: formatDate(date),
+                description: d.description || "Hébergement",
+                debit: parseFloat(d.rate) || 0,
+                credit: 0,
+                order: 1, // First in sequence for each day
+            });
         });
-      }
-      // If no lines, still create one page
-      if (pages.length === 0) {
-        pages.push({
-          lines: [],
-          pageNum: 1,
-          isLastPage: true,
+
+        // Process city tax details
+        data.city_tax_details?.forEach((d, index) => {
+            const date = d.date || inv.arrival_date;
+            if (!itemsByDate[date]) itemsByDate[date] = [];
+
+            itemsByDate[date].push({
+                date: formatDate(date),
+                description: d.description || "Taxe de séjour",
+                debit: parseFloat(d.amount) || 0,
+                credit: 0,
+                order: 2, // Second in sequence for each day
+            });
         });
-      }
 
-      setPaginatedData(pages);
-    }
-  }, [invoice]);
+        // Add stamp tax ONLY on the first night's date
+        if (stampTaxAmount > 0 && firstNightDate) {
+            if (!itemsByDate[firstNightDate]) itemsByDate[firstNightDate] = [];
 
-  const getBase64ImageFromUrl = async (imageUrl) => {
-    try {
-      const res = await fetch(imageUrl);
-      const blob = await res.blob();
-      return await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-      });
-    } catch (e) {
-      console.warn("Image load failed:", imageUrl, e);
-      return null;
-    }
-  };
+            itemsByDate[firstNightDate].push({
+                date: formatDate(firstNightDate),
+                description: "Droit de timbre",
+                debit: stampTaxAmount,
+                credit: 0,
+                order: 3, // Third in sequence (only on first day)
+            });
+        }
 
-  
+        // Process other services (laundry, etc.) - each on their own date
+        data.other_services?.forEach((s) => {
+            const serviceDate = s.date || inv.invoice_date;
+            if (!itemsByDate[serviceDate]) itemsByDate[serviceDate] = [];
 
-  const handleDownloadPDF = async () => {
-  if (!invoice) {
-    alert("Invoice data not loaded");
-    return;
-  }
+            itemsByDate[serviceDate].push({
+                date: formatDate(serviceDate),
+                description: s.name || "Service",
+                debit: parseFloat(s.amount) || 0,
+                credit: 0,
+                order: 4, // Fourth in sequence for that date
+            });
+        });
 
-  if (!paginatedData || paginatedData.length === 0) {
-    console.warn("PDF blocked: pagination not ready");
-    return;
-  }
-  
-  try {
-    setPdfLoading(true);
+        // Flatten and sort: by date, then by order within each date
+        Object.keys(itemsByDate).forEach((date) => {
+            const dateItems = itemsByDate[date];
 
-    // ✅ Prepare payload EXACTLY as backend expects
-    const payload = {
-      invoice: {
-        referenceNo:invoice.referenceNo,
-        guestName: invoice.guestName,
-        persons: invoice.persons,
-        roomNo: invoice.roomNo,
-        arrival: invoice.arrival,
-        departure: invoice.departure,
-        issueDate: invoice.issueDate,
-        companyName: invoice.companyName,
-        companyAddress: invoice.companyAddress,
-        accountNo: invoice.accountNo,
-        vatNo: invoice.vatNo,
-        invoiceNo: invoice.invoiceNo,
-        cashier: invoice.cashier,
-        currency: invoice.currency,
-        exchangeRate: invoice.exchangeRate,
-        lines: invoice.lines,
-        netTaxable: invoice.netTaxable,
-        fdsct: invoice.fdsct,
-        vat7Total: invoice.vat7Total,
-        cityTaxTotal: invoice.cityTaxTotal,
-        stampTaxTotal: invoice.stampTaxTotal,
-        grossTotal: invoice.grossTotal,
-      },
-      paginatedData: paginatedData.map((page) => ({
-        lines: page.lines,
-        pageNum: page.pageNum,
-        isLastPage: page.isLastPage,
-      })),
+            // Sort items within this date by order
+            dateItems.sort((a, b) => a.order - b.order);
+
+            // Add to lines
+            lines.push(...dateItems);
+        });
+
+        // Sort all lines by date
+        lines.sort((a, b) => {
+            if (!a.date || !b.date) return 0;
+
+            // Convert DD/MM/YY to YYMMDD for comparison
+            const convertDate = (dateStr) => {
+                const parts = dateStr.split("/");
+                if (parts.length !== 3) return 0;
+                return parseInt(parts[2] + parts[1] + parts[0]);
+            };
+
+            return convertDate(a.date) - convertDate(b.date);
+        });
+
+        // Calculate totals
+        const accommodationTotal =
+            data.accommodation_details?.reduce(
+                (sum, d) => sum + (parseFloat(d.rate) || 0),
+                0,
+            ) || 0;
+        const otherServicesTotal =
+            data.other_services?.reduce(
+                (sum, s) => sum + (parseFloat(s.amount) || 0),
+                0,
+            ) || 0;
+        const totalFromForm = accommodationTotal + otherServicesTotal;
+
+        // Extract invoice data from API response
+        const invoiceData = {
+            // Guest info
+            guestName: inv.guest_name || "Guest",
+            persons: (inv.pax_adult || 0) + (inv.pax_child || 0),
+            roomNo: inv.room_no || "N/A",
+            referenceNo: inv.reference_no,
+            arrival: formatDate(inv.arrival_date),
+            departure: formatDate(inv.departure_date),
+            issueDate: formatDate(inv.invoice_date),
+
+            // Company info
+            companyName: inv.vd || "Azar Tourism Services",
+            companyAddress: "Algeria Square Building Number 12 First Floor, Tripoli, Libya.",
+            accountNo: inv.voucher_no || "ARZ2022TOU",
+            vatNo: inv.confirmation || "",
+            invoiceNo: inv.batch_no || "NOVO-13",
+            cashier: inv.passport_no || "8250",
+
+            // Financial info
+            currency: "TND",
+            exchangeRate: parseFloat(inv.exchange_rate) || 2.85,
+            lines: lines,
+
+            // Tax calculations
+            netTaxable: parseFloat(inv.sub_total || totalFromForm) || 0,
+            fdsct: parseFloat(inv.vat1_10 || 0),
+            vat7Total: parseFloat(inv.vat7 || 0),
+            cityTaxTotal: parseFloat(inv.city_tax_total) || 0,
+            stampTaxTotal: stampTaxAmount,
+            grossTotal: parseFloat(inv.grand_total || inv.grossTotal || 0),
+
+            // Other totals
+            subTotal: totalFromForm || 0,
+            vat1_10: parseFloat(inv.vat1_10 || 0),
+            vat7: parseFloat(inv.vat7 || 0),
+            vat20: 0,
+            grandTotal: parseFloat(inv.grand_total || inv.grossTotal || 0),
+        };
+
+        return invoiceData;
     };
 
-    // ✅ Axios returns Blob directly
-    const pdfBlob = await InvoiceApi.downloadPdf(payload);
 
-    if (!(pdfBlob instanceof Blob)) {
-      throw new Error("Invalid PDF response");
+    useEffect(() => {
+        if (
+            !isPdfDownload ||
+            !invoice ||
+            !Array.isArray(paginatedData) ||
+            paginatedData.length === 0
+        ) {
+            return;
+        }
+
+        let cancelled = false;
+
+        const autoDownload = async () => {
+            try {
+                // Small delay to ensure final render stability (important for prod)
+                await new Promise((res) => setTimeout(res, 300));
+
+                if (cancelled) return;
+
+                await handleDownloadPDF();
+
+                if (!cancelled) {
+                    navigate("/invoices", { replace: true });
+                }
+            } catch (e) {
+                console.error("Auto PDF failed:", e);
+            }
+        };
+
+        autoDownload();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isPdfDownload, invoice, paginatedData, navigate]);
+
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "";
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr;
+            const d = String(date.getDate()).padStart(2, "0");
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const y = String(date.getFullYear()).slice(-2);
+            return `${d}/${m}/${y}`;
+        } catch (e) {
+            console.error("Error formatting date:", dateStr, e);
+            return dateStr;
+        }
+    };
+
+    useEffect(() => {
+        if (invoice?.lines) {
+            const pages = [];
+            for (let i = 0; i < invoice.lines.length; i += ROWS_PER_PAGE) {
+                pages.push({
+                    lines: invoice.lines.slice(i, i + ROWS_PER_PAGE),
+                    pageNum: pages.length + 1,
+                    isLastPage: i + ROWS_PER_PAGE >= invoice.lines.length,
+                });
+            }
+            // If no lines, still create one page
+            if (pages.length === 0) {
+                pages.push({
+                    lines: [],
+                    pageNum: 1,
+                    isLastPage: true,
+                });
+            }
+
+            setPaginatedData(pages);
+        }
+    }, [invoice]);
+
+    const getBase64ImageFromUrl = async (imageUrl) => {
+        try {
+            const res = await fetch(imageUrl);
+            const blob = await res.blob();
+            return await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        } catch (e) {
+            console.warn("Image load failed:", imageUrl, e);
+            return null;
+        }
+    };
+
+
+
+    const handleDownloadPDF = async () => {
+        if (!invoiceRef.current) return;
+        setPdfLoading(true);
+
+        // 1. Style Guard (Tailwind v4 Bypass)
+        // Save and temporarily remove CSS files to avoid oklch crash
+        const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
+        headStyles.forEach(style => {
+            style.parentNode.removeChild(style);
+        });
+
+        try {
+            // 3. Image Loading Verification
+            const images = invoiceRef.current.querySelectorAll('img');
+            await Promise.all(Array.from(images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            }));
+
+            // Small delay to ensure layout is settled
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // 2 & 4. Targeting and Smart Pagination
+            const element = invoiceRef.current;
+            const opt = {
+                margin: 0,
+                filename: `${invoice.referenceNo || "Invoice"}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollY: 0,
+                    windowWidth: 794
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            };
+
+            // Generate PDF
+            await html2pdf().set(opt).from(element).save();
+            toast.success("PDF Downloaded Successfully");
+        } catch (error) {
+            console.error("❌ PDF Error:", error.message);
+            toast.error("Failed to generate PDF");
+        } finally {
+            // 5. Instant Recovery (Styles Restore)
+            headStyles.forEach(style => {
+                document.head.appendChild(style);
+            });
+            setPdfLoading(false);
+        }
+    };
+    const handlePrint = () => window.print();
+
+    if (loading) {
+        return (
+            <div className="h-screen flex items-center justify-center">
+                <Loader2 className="animate-spin text-slate-400" />
+            </div>
+        );
     }
 
-    // ✅ Download
-    const url = window.URL.createObjectURL(pdfBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${invoice.referenceNo}.pdf`;
-    document.body.appendChild(a);
-    a.click();
+    if (error) {
+        return (
+            <div className="h-screen flex flex-col items-center justify-center">
+                <div className="text-red-500 text-lg mb-4">Error: {error}</div>
+                <button
+                    onClick={() => navigate("/invoices")}
+                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                >
+                    Go Back
+                </button>
+            </div>
+        );
+    }
 
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    if (!invoice) {
+        return (
+            <div className="h-screen flex items-center justify-center">
+                <div className="text-gray-500">No invoice data found</div>
+            </div>
+        );
+    }
 
-  } catch (error) {
-    console.error("❌ PDF Error:", error.message);
-    alert("Failed to generate PDF");
-  } finally {
-    setPdfLoading(false);
-  }
-};
-  const handlePrint = () => window.print();
-
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin text-slate-400" />
-      </div>
+    const totalDebit = invoice.lines.reduce((s, l) => s + (l.debit || 0), 0);
+    const totalCredit = invoice.lines.reduce((s, l) => s + (l.credit || 0), 0);
+    const totalUSD = (totalDebit / (invoice.exchangeRate || 2.85) || 0).toFixed(
+        2,
     );
-  }
+    const totalPages = paginatedData.length;
 
-  if (error) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center">
-        <div className="text-red-500 text-lg mb-4">Error: {error}</div>
-        <button
-          onClick={() => navigate("/invoices")}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          Go Back
-        </button>
-      </div>
-    );
-  }
-
-  if (!invoice) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-gray-500">No invoice data found</div>
-      </div>
-    );
-  }
-
-  const totalDebit = invoice.lines.reduce((s, l) => s + (l.debit || 0), 0);
-  const totalCredit = invoice.lines.reduce((s, l) => s + (l.credit || 0), 0);
-  const totalUSD = (totalDebit / (invoice.exchangeRate || 2.85) || 0).toFixed(
-    2,
-  );
-  const totalPages = paginatedData.length;
-
-  return (
-    <div className="min-h-screen bg-gray-100 p-8 print:p-0">
-         <style>{`
+        <div className="min-h-screen bg-gray-100 p-8 print:p-0">
+            <style>{`
   @page {
     size: A4;
     margin: 0;
@@ -1180,267 +1166,268 @@ export default function InvoiceViewPage() {
 `}</style>
 
 
-      <div className="max-w-[210mm] mx-auto">
-        <div className="no-print flex justify-between mb-6">
-          <button
-            onClick={() => navigate("/invoices")}
-            className="flex items-center px-4 py-2 bg-black text-white border rounded hover:bg-gray-700"
-          >
-            <ArrowLeft size={16} className="mr-2" /> Back
-          </button>
-
-          <div className="space-x-2">
-            <button
-              onClick={handleDownloadPDF}
-              disabled={pdfLoading}
-              className="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {pdfLoading ? (
-                <>
-                  <Loader2 size={16} className="inline mr-2 animate-spin" />{" "}
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Download size={16} className="inline mr-2" /> Download PDF
-                </>
-              )}
-            </button>
-            <button
-              onClick={handlePrint}
-              className="px-4 py-2 bg-white border border-blue-700 text-blue-700 rounded hover:bg-blue-50"
-            >
-              <Printer size={16} className="inline mr-2" /> Print
-            </button>
-          </div>
-        </div>
-
-        {paginatedData.map((pageData, pageIdx) => (
-          <div key={pageIdx} className="invoice-page">
-            {/* Logo */}
-            <div className="text-center mb-4">
-              <img
-                src={LOGO_URL}
-                width="220"
-                alt="Novotel"
-                className="mx-auto mt-1.5 mb-1.5 h-15.5"
-              />
-            </div>
-
-            {/* Header - Two columns */}
-            <div
-              className="grid grid-cols-2 gap-4 mb-4"
-              style={{ fontSize: "11px", lineHeight: "1.4" }}
-            >
-              <div>
-                <div>Name : {invoice.guestName}</div>
-                <div>Person(s) : {invoice.persons}</div>
-                <div>Room No. : {invoice.roomNo}</div>
-                <div>Arrival : {invoice.arrival}</div>
-                <div>Departure : {invoice.departure}</div>
-                <div>Novotel Tunis Lac,</div>
-                <div>The {invoice.issueDate}</div>
-              </div>
-              <div>
-                <div>Company : {invoice.companyName}</div>
-                <div>Address : {invoice.companyAddress}</div>
-                <div className="mt-1">Account NO : {invoice.accountNo}</div>
-                <div>VAT No : {invoice.vatNo}</div>
-                <div>Invoice No: {invoice.invoiceNo}</div>
-                <div>Cashier : {invoice.cashier}</div>
-                <div>
-                  Pages : {pageData.pageNum} of {totalPages}
-                </div>
-              </div>
-            </div>
-
-            {/* Table */}
-            <table
-              className="w-full"
-              style={{ borderCollapse: "collapse", fontSize: "11px" }}
-            >
-              <thead>
-                <tr
-                  style={{
-                    backgroundColor: "#ebebeb",
-                    borderTop: "1px solid #000",
-                    borderBottom: "1px solid #000",
-                  }}
-                >
-                  <th className="text-left p-1" style={{ width: "15%" }}>
-                    Date
-                  </th>
-                  <th className="text-left p-1" style={{ width: "55%" }}>
-                    Description
-                  </th>
-                  <th className="text-right p-1" style={{ width: "15%" }}>
-                    Debits
-                    <br />
-                    {invoice.currency}
-                  </th>
-                  <th className="text-right p-1" style={{ width: "15%" }}>
-                    Credits
-                    <br />
-                    {invoice.currency}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageData.lines.length > 0 ? (
-                  pageData.lines.map((line, i) => (
-                    <tr key={i}>
-                      <td className="p-1">{line.date}</td>
-                      <td className="p-1">{line.description}</td>
-                      <td className="text-right p-1">
-                        {Number(line.debit).toFixed(3)}
-                      </td>
-                      <td className="text-right p-1">
-                        {Number(line.credit).toFixed(3)}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="text-center p-2">
-                      No invoice items found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-
-            {/* Footer - Only on last page */}
-            {pageData.isLastPage && (
-              <div className="mt-6" style={{ fontSize: "10px" }}>
-                <div style={{ borderTop: "1px solid #000", paddingTop: "8px" }}>
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Left - USD */}
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "end",
-                      }}
+            <div ref={invoiceRef} className="max-w-[210mm] mx-auto">
+                <div className="no-print flex justify-between mb-6">
+                    <button
+                        onClick={() => navigate("/invoices")}
+                        className="flex items-center px-4 py-2 bg-black text-white border rounded hover:bg-gray-700"
                     >
-                      <div
-                        className="flex justify-between"
-                        style={{ maxWidth: "200px" }}
-                      >
-                        <span>USD Exch. Rate:</span>
-                        <span>
-                          {(invoice.exchangeRate || 2.85).toFixed(2)}{" "}
-                          {invoice.currency}
-                        </span>
-                      </div>
-                      <div
-                        className="flex justify-between"
-                        style={{ maxWidth: "200px" }}
-                      >
-                        <span>Total in USD:</span>
-                        <span>{totalUSD} USD</span>
-                      </div>
-                    </div>
+                        <ArrowLeft size={16} className="mr-2" /> Back
+                    </button>
 
-                    {/* Right - Totals and taxes */}
-                    <div>
-                      <div className="flex justify-between border-b border-black pb-1 mb-1">
-                        <span
-                          style={{ marginLeft: "auto", marginRight: "80px" }}
+                    <div className="space-x-2">
+                        <button
+                            onClick={handleDownloadPDF}
+                            disabled={pdfLoading}
+                            className="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Total
-                        </span>
-                        <span className="text-right" style={{ width: "80px" }}>
-                          {totalDebit.toFixed(3)}
-                        </span>
-                        <span className="text-right" style={{ width: "80px" }}>
-                          {totalCredit.toFixed(3)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between mb-3">
-                        <span
-                          style={{ marginLeft: "auto", marginRight: "80px" }}
+                            {pdfLoading ? (
+                                <>
+                                    <Loader2 size={16} className="inline mr-2 animate-spin" />{" "}
+                                    Generating...
+                                </>
+                            ) : (
+                                <>
+                                    <Download size={16} className="inline mr-2" /> Download PDF
+                                </>
+                            )}
+                        </button>
+                        <button
+                            onClick={handlePrint}
+                            className="px-4 py-2 bg-white border border-blue-700 text-blue-700 rounded hover:bg-blue-50"
                         >
-                          Balance
-                        </span>
-                        <span
-                          className="text-center"
-                          style={{ width: "160px" }}
-                        >
-                          {totalDebit.toFixed(3)} {invoice.currency}
-                        </span>
-                      </div>
-
-                      <div className="text-right" style={{ lineHeight: "1.6" }}>
-                        <div className="flex justify-between">
-                          <span>Net Taxable</span>
-                          <span>
-                            {Number(invoice.netTaxable || 0).toFixed(3)}{" "}
-                            {invoice.currency}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>FDCST 1 %</span>
-                          <span>
-                            {Number(invoice.fdsct || 0).toFixed(3)}{" "}
-                            {invoice.currency}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>VAT 7%</span>
-                          <span>
-                            {Number(invoice.vat7Total || 0).toFixed(3)}{" "}
-                            {invoice.currency}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>VAT 19%</span>
-                          <span>0.000 {invoice.currency}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>City Tax</span>
-                          <span>
-                            {Number(invoice.cityTaxTotal || 0).toFixed(3)}{" "}
-                            {invoice.currency}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Stamp Tax</span>
-                          <span>
-                            {Number(invoice.stampTaxTotal || 0).toFixed(3)}{" "}
-                            {invoice.currency}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Non Revenue</span>
-                          <span>0.000 {invoice.currency}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Paid Out</span>
-                          <span>0.000 {invoice.currency}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Total Gross</span>
-                          <span>
-                            {Number(invoice.grossTotal || 0).toFixed(3)}{" "}
-                            {invoice.currency}
-                          </span>
-                        </div>
-                      </div>
+                            <Printer size={16} className="inline mr-2" /> Print
+                        </button>
                     </div>
-                  </div>
                 </div>
-              </div>
-            )}
 
-            {/* Stamp logo - bottom-right corner on EVERY page */}
-            <img
-              src={STAMP_URL}
-              alt="Novotel Stamp"
-              className="stamp-logo h-15  mb-1.5 print-stamp"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+                {paginatedData.map((pageData, pageIdx) => (
+                    <div key={pageIdx} className="invoice-page">
+                        {/* Logo */}
+                        <div className="text-center mb-4">
+                            <img
+                                src={LOGO_URL}
+                                width="220"
+                                alt="Novotel"
+                                className="mx-auto mt-1.5 mb-1.5 h-15.5"
+                            />
+                        </div>
+
+                        {/* Header - Two columns */}
+                        <div
+                            className="grid grid-cols-2 gap-4 mb-4"
+                            style={{ fontSize: "11px", lineHeight: "1.4" }}
+                        >
+                            <div>
+                                <div>Name : {invoice.guestName}</div>
+                                <div>Person(s) : {invoice.persons}</div>
+                                <div>Room No. : {invoice.roomNo}</div>
+                                <div>Arrival : {invoice.arrival}</div>
+                                <div>Departure : {invoice.departure}</div>
+                                <div>Novotel Tunis Lac,</div>
+                                <div>The {invoice.issueDate}</div>
+                            </div>
+                            <div>
+                                <div>Company : {invoice.companyName}</div>
+                                <div>Address : {invoice.companyAddress}</div>
+                                <div className="mt-1">Account NO : {invoice.accountNo}</div>
+                                <div>VAT No : {invoice.vatNo}</div>
+                                <div>Invoice No: {invoice.invoiceNo}</div>
+                                <div>Cashier : {invoice.cashier}</div>
+                                <div>
+                                    Pages : {pageData.pageNum} of {totalPages}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Table */}
+                        <table
+                            className="w-full"
+                            style={{ borderCollapse: "collapse", fontSize: "11px" }}
+                        >
+                            <thead>
+                                <tr
+                                    style={{
+                                        backgroundColor: "#ebebeb",
+                                        borderTop: "1px solid #000",
+                                        borderBottom: "1px solid #000",
+                                    }}
+                                >
+                                    <th className="text-left p-1" style={{ width: "15%" }}>
+                                        Date
+                                    </th>
+                                    <th className="text-left p-1" style={{ width: "55%" }}>
+                                        Description
+                                    </th>
+                                    <th className="text-right p-1" style={{ width: "15%" }}>
+                                        Debits
+                                        <br />
+                                        {invoice.currency}
+                                    </th>
+                                    <th className="text-right p-1" style={{ width: "15%" }}>
+                                        Credits
+                                        <br />
+                                        {invoice.currency}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {pageData.lines.length > 0 ? (
+                                    pageData.lines.map((line, i) => (
+                                        <tr key={i}>
+                                            <td className="p-1">{line.date}</td>
+                                            <td className="p-1">{line.description}</td>
+                                            <td className="text-right p-1">
+                                                {Number(line.debit).toFixed(3)}
+                                            </td>
+                                            <td className="text-right p-1">
+                                                {Number(line.credit).toFixed(3)}
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={4} className="text-center p-2">
+                                            No invoice items found
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+
+                        {/* Footer - Only on last page */}
+                        {pageData.isLastPage && (
+                            <div className="mt-6" style={{ fontSize: "10px" }}>
+                                <div style={{ borderTop: "1px solid #000", paddingTop: "8px" }}>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Left - USD */}
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                justifyContent: "end",
+                                            }}
+                                        >
+                                            <div
+                                                className="flex justify-between"
+                                                style={{ maxWidth: "200px" }}
+                                            >
+                                                <span>USD Exch. Rate:</span>
+                                                <span>
+                                                    {(invoice.exchangeRate || 2.85).toFixed(2)}{" "}
+                                                    {invoice.currency}
+                                                </span>
+                                            </div>
+                                            <div
+                                                className="flex justify-between"
+                                                style={{ maxWidth: "200px" }}
+                                            >
+                                                <span>Total in USD:</span>
+                                                <span>{totalUSD} USD</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Right - Totals and taxes */}
+                                        <div>
+                                            <div className="flex justify-between border-b border-black pb-1 mb-1">
+                                                <span
+                                                    style={{ marginLeft: "auto", marginRight: "80px" }}
+                                                >
+                                                    Total
+                                                </span>
+                                                <span className="text-right" style={{ width: "80px" }}>
+                                                    {totalDebit.toFixed(3)}
+                                                </span>
+                                                <span className="text-right" style={{ width: "80px" }}>
+                                                    {totalCredit.toFixed(3)}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between mb-3">
+                                                <span
+                                                    style={{ marginLeft: "auto", marginRight: "80px" }}
+                                                >
+                                                    Balance
+                                                </span>
+                                                <span
+                                                    className="text-center"
+                                                    style={{ width: "160px" }}
+                                                >
+                                                    {totalDebit.toFixed(3)} {invoice.currency}
+                                                </span>
+                                            </div>
+
+                                            <div className="text-right" style={{ lineHeight: "1.6" }}>
+                                                <div className="flex justify-between">
+                                                    <span>Net Taxable</span>
+                                                    <span>
+                                                        {Number(invoice.netTaxable || 0).toFixed(3)}{" "}
+                                                        {invoice.currency}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>FDCST 1 %</span>
+                                                    <span>
+                                                        {Number(invoice.fdsct || 0).toFixed(3)}{" "}
+                                                        {invoice.currency}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>VAT 7%</span>
+                                                    <span>
+                                                        {Number(invoice.vat7Total || 0).toFixed(3)}{" "}
+                                                        {invoice.currency}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>VAT 19%</span>
+                                                    <span>0.000 {invoice.currency}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>City Tax</span>
+                                                    <span>
+                                                        {Number(invoice.cityTaxTotal || 0).toFixed(3)}{" "}
+                                                        {invoice.currency}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Stamp Tax</span>
+                                                    <span>
+                                                        {Number(invoice.stampTaxTotal || 0).toFixed(3)}{" "}
+                                                        {invoice.currency}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Non Revenue</span>
+                                                    <span>0.000 {invoice.currency}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Paid Out</span>
+                                                    <span>0.000 {invoice.currency}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Total Gross</span>
+                                                    <span>
+                                                        {Number(invoice.grossTotal || 0).toFixed(3)}{" "}
+                                                        {invoice.currency}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Stamp logo - bottom-right corner on EVERY page */}
+                        <img
+                            src={STAMP_URL}
+                            alt="Novotel Stamp"
+                            className="stamp-logo h-15  mb-1.5 print-stamp"
+                        />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }
+
