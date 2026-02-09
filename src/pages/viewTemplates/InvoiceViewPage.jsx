@@ -1455,7 +1455,7 @@ export default function InvoiceViewPage() {
 
     const LOGO_URL = "/novotel_logo.png";
     const STAMP_URL = "/novotel_stemp.png";
-    const ROWS_PER_PAGE = 38;
+    const ROWS_PER_PAGE = 30;
 
     const isPdfDownload = location.pathname.includes("/nvdownload-pdf");
 
