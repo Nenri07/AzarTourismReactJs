@@ -7,7 +7,7 @@ import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import CVKInvoiceView from "./CVKInvoiceView";
 import TRYPInvoiceView from "./TRYPInvoiceView";
 import GrandArasInvoiceView from "./GrandarasInvoiceView";
-import NovotelInvoiceView from "./NovoTelInvoiceView";
+
 import InvoiceViewPage from "./InvoiceViewPage";
 
 
