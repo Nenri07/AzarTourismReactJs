@@ -1,3 +1,4 @@
+
 export default function NovotelInvoiceFooter({ 
   invoice, 
   totalDebit, 
@@ -5,9 +6,9 @@ export default function NovotelInvoiceFooter({
   totalUSD 
 }) {
   return (
-    <div style={{ marginTop: '24px', fontSize: '10px' }}>
-      <div style={{ borderTop: '1px solid #000', paddingTop: '8px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+    <div style={{ marginTop: '8px', fontSize: '10px' }}>
+      <div style={{ borderTop: '1px solid #000', paddingTop: '6px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           {/* Left - USD */}
           <div
             style={{
@@ -77,7 +78,7 @@ export default function NovotelInvoiceFooter({
               </span>
             </div>
 
-            <div style={{ textAlign: 'right', lineHeight: '1.6' }}>
+            <div style={{ textAlign: 'right', lineHeight: '1.4' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Net Taxable</span>
                 <span>
