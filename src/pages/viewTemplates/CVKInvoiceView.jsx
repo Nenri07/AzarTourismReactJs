@@ -369,7 +369,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .header { margin-bottom: 14px; }
         .logo-box { margin-bottom: 20px; }
         .logo-img { max-width: 180px; height: auto; }
-        .company-address { margin-bottom: 8px; }
+        .company-address { margin-bottom: 40px; }
         
         .info-row { display: flex; align-items: flex-start; }
         .info-lbl { display: inline-block; white-space: nowrap; }
@@ -381,7 +381,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .guest-grid {
           display: grid;
           grid-template-columns: 0.9fr 1.2fr 0.7fr 2.0fr 1.3fr;
-          gap: 4px 12px;
+          gap: 0px 12px;
           white-space: nowrap;
         }
         
@@ -432,7 +432,7 @@ export default function CVKInvoiceView({ invoiceData }) {
               <div className="meta-container">
                 <div>
                   <div className="info-row"><span className="info-lbl" style={{ width: '20px' }}>V.D.</span><span className="info-sep">:</span> {invoice.vd}</div>
-                  <div className="info-row"><span className="info-lbl" style={{ width: '20px' }}>V.No</span><span className="info-sep">:</span> {invoice.vno}</div>
+                  <div style={{marginTop:"-2px"}} className="info-row"><span className="info-lbl" style={{ width: '20px' }}>V.No</span><span className="info-sep">:</span> {invoice.vno}</div>
                 </div>
                 <div className="text-right">
                   Date/Tarih : {invoice.invoiceDate}
@@ -548,7 +548,7 @@ export default function CVKInvoiceView({ invoiceData }) {
                     <span>{invoice.totalIncVat}</span>
                   </div>
 
-                  <div >
+                  <div  style={{margin:"15px 0"}}>
                     <div className="totals-row">
                       <span>Payments/Ödemeler</span>
                       <span></span>
