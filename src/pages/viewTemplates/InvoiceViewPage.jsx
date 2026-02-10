@@ -1432,12 +1432,13 @@
 // }
 
 //final version invoice view by me umer 
+
 import { useEffect, useState, useRef } from "react";
 import { Download, Printer, ArrowLeft, Loader2 } from "lucide-react";
 import InvoiceApi from "../../Api/invoice.api";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import html2pdf from 'html2pdf.js';
-import { InvoiceTemplate,NovotelInvoiceFooter,NovotelInvoiceHeader } from "../../components";
+import { InvoiceTemplate ,NovotelInvoiceFooter,NovotelInvoiceHeader} from "../../components";
 import toast from "react-hot-toast";
 
 
@@ -1455,7 +1456,7 @@ export default function InvoiceViewPage() {
 
     const LOGO_URL = "/novotel_logo.png";
     const STAMP_URL = "/novotel_stemp.png";
-    const ROWS_PER_PAGE = 30;
+    const ROWS_PER_PAGE = 24;
 
     const isPdfDownload = location.pathname.includes("/nvdownload-pdf");
 
@@ -1817,7 +1818,7 @@ export default function InvoiceViewPage() {
 
   .invoice-page {
     position: relative;
-    padding: 12px 15px 45mm 15px; 
+    padding: 12px 15px 35mm 15px; 
     background: white;
     color: #000;
     min-height: 296mm;
@@ -1843,7 +1844,7 @@ export default function InvoiceViewPage() {
   }
 
   table {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
   @media print {
@@ -1860,7 +1861,7 @@ export default function InvoiceViewPage() {
     .invoice-page { 
       margin: 0; 
       border: 0;
-      padding: 12px 15px 45mm 15px;
+      padding: 12px 15px 35mm 15px;
     }
   }
 `}</style>
