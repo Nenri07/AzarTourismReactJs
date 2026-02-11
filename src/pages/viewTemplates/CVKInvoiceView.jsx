@@ -353,7 +353,7 @@ export default function CVKInvoiceView({ invoiceData }) {
           max-width: 794px;
           min-height: 296mm;
           margin: 0 auto;
-          padding: 40px 30px;
+          padding: 34px 50px 40px 27px;
           color: #000;
           position: relative;
           box-sizing: border-box;
@@ -375,13 +375,13 @@ export default function CVKInvoiceView({ invoiceData }) {
         .info-lbl { display: inline-block; white-space: nowrap; }
         .info-sep { padding: 0 4px 0 2px; }
 
-        .meta-container { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .meta-container { display: flex; justify-content: space-between; margin-bottom: -5px; }
         .guest-name { margin: 10px 0; }
         
         .guest-grid {
           display: grid;
           grid-template-columns: 0.9fr 1.2fr 0.7fr 2.0fr 1.3fr;
-          gap: 0px 12px;
+          gap: 1px 12px;
           white-space: nowrap;
         }
         
@@ -395,12 +395,12 @@ export default function CVKInvoiceView({ invoiceData }) {
         .footer-container { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9.1px !important; }
         .footer-left { width: 45%; }
         .footer-right { width: 38%; margin-top: -8px;}
-        .tax-table { width: 60%; border-collapse: collapse; margin-bottom: 15px; margin-top: -8px; }
+        .tax-table { width: 70%; border-collapse: collapse; margin-bottom: 15px; margin-top: -8px; }
         .tax-table th { background-color: #ededed;  font-weight: normal; }
         .tax-table td { padding: 1px; text-align: center; }
         .tax-table .text-center { text-align: right; }
         .exchange-rate { margin-top: 10px; }
-        .exchange-row { display: flex; justify-content: space-between; padding-right: 80px; margin-bottom: 2px; font-size: 10.5px !important; font-weight: bold;}
+        .exchange-row { display: flex; justify-content: space-between; padding-right: 65px; margin-bottom: 2px; font-size: 10.5px !important; font-weight: bold;}
         .totals-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
         .total-bold { font-weight: bold; padding-top: 8px; }
         .balance-box {  display: flex; justify-content: space-between; }
@@ -465,10 +465,10 @@ export default function CVKInvoiceView({ invoiceData }) {
             <table className="main-table">
               <thead>
                 <tr>
-                  <th style={{ width: "60%" }}>Açıklama/Description</th>
+                  <th style={{ width: "50%"}}>Açıklama/Description</th>
                   <th  style={{ width: "20%", textAlign: "right"}}>Date/Tarih</th>
                   <th className="text-right" style={{ width: "13%" ,textAlign: "right" }}>Debit/Borç</th>
-                  <th className="text-right" style={{ width: "15%" ,textAlign: "right", paddingLeft: "20px" }}>Credit/Alacak</th>
+                  <th className="text-right" style={{ width: "12%" ,textAlign: "right", paddingLeft: "20px" }}>Credit/Alacak</th>
                 </tr>
               </thead>
               <tbody>
@@ -520,7 +520,7 @@ export default function CVKInvoiceView({ invoiceData }) {
                       <span></span>
                     </div>
                     <div className="exchange-row">
-                      <span>Room Check-in Exch. Rate ( EUR ): </span>
+                      <span>Room Check-in Exch. Rate ( EUR ) : </span>
                       <span>{invoice.exchangeRate}</span>
                     </div>
                   </div>
