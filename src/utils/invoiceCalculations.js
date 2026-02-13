@@ -1,4 +1,3 @@
-
 /**
  * Safely parse a number value
  */
@@ -91,8 +90,9 @@ export const calculateAccommodation = (formData, hotelType) => {
     const accommodationTaxPerNight = parseNum(taxableAmountPerNight * 0.02);
     
     // Total for all nights
-    const totalPerNight = parseNum(taxableAmountPerNight * totalNights);
-    const vatTotalNights = parseNum(vat10PercentPerNight * totalNights);
+    // const totalPerNight = parseNum(taxableAmountPerNight * totalNights);
+    const totalPerNight = parseNum((roomAmountTry * totalNights)/1.12);
+    const vatTotalNights = parseNum(totalPerNight *0.1);
     const accTaxTotalNights = parseNum(accommodationTaxPerNight * totalNights);
     
     return {
