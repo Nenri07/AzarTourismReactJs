@@ -231,6 +231,14 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
     return `Yalnız ${lira.toLocaleString('tr-TR')} Türk Lirası ${kurus} Kuruştur`;
   };
 
+  const formatCurrency = (amount) => {
+    const num = parseFloat(amount) || 0;
+    return num.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
   useEffect(() => {
     if (invoice && invoice.transactions) {
       const pages = [];
@@ -364,7 +372,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
             max-width: 794px;
             min-height: 296mm; /* Slightly less than 297mm to prevent rounding errors adding blank pages */
             margin: 0 auto;
-            padding: 40px 50px;
+            padding: 43px 43px 43px 29px;
             color: #000;
             position: relative;
             box-sizing: border-box;
@@ -382,13 +390,13 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .logo-container { text-align: right; width: 35%; padding-right: 50px; }
           .logo-img { max-width: 110px; height: auto; }
 
-          .meta-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+          .meta-row { display: flex; justify-content: space-between; margin-bottom: -3px; }
           .guest-name { margin-top: 10px; margin-bottom: 10px;  }
 
           .info-grid {
             display: grid;
                 grid-template-columns: 0.9fr 1.2fr 0.7fr 2.0fr 1.3fr;
-            gap: 2px 10px;
+            gap: 1px 10px;
             margin-bottom: 5px;
           }
 
@@ -423,7 +431,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .footer-left { width: 45%; }
           .footer-right { width: 45%; text-align: right; margin-top: -10px; }
 
-          .tax-table { width: 65%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
+          .tax-table { width: 70%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
           .tax-table th { background-color: #f0f0f0; text-align: right; font-weight: normal; }
           .tax-table td { text-align: right; }
 
@@ -538,7 +546,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
                   </table>
 
                   <div className="exchange-info">
-                    EUR Toplam/Total in EUR  &nbsp;&nbsp; {invoice.totals.totalEuro.toFixed(2)} EUR <br />
+                    EUR Toplam/Total in EUR  &nbsp;&nbsp; {formatCurrency(invoice.totals.totalEuro.toFixed(2))} EUR <br />
                     Room Check-in Exch. Rate ( EUR ) :&nbsp;&nbsp; {invoice.totals.exchangeRates.eur.toFixed(5)} TRY
                   </div>
                 </div>
