@@ -1,4 +1,3 @@
-// src/pages/NotFound.jsx
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Home, ArrowLeft } from "lucide-react";

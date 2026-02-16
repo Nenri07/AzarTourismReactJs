@@ -15,7 +15,7 @@
     "axios": "^1.13.2",
     "daisyui": "^5.5.14",
     "decimal.js": "^10.6.0",
-    "html2pdf.js": "^0.13.0",
+    "html2pdf.js": "^0.14.0",
     "jspdf-autotable": "^5.0.7",
     "lodash": "^4.17.23",
     "lucide-react": "^0.562.0",

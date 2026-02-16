@@ -1,4 +1,3 @@
-// src/pages/Unauthorized.jsx
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { ShieldAlert, ArrowLeft, Home, HelpCircle } from "lucide-react";

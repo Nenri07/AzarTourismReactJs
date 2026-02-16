@@ -1,12 +1,3 @@
-/**
- * PDF Generation Utility for Invoice Downloads
- * 
- * This utility uses html2pdf.js to generate PDFs directly in the browser.
- * It's optimized for smaller file sizes while maintaining quality.
- * 
- * Installation: npm install html2pdf.js
- * or: <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
- */
 
 import html2pdf from 'html2pdf.js';
 
@@ -171,19 +162,6 @@ export const generatePDFBlob = async (elementId, filename = 'invoice') => {
   }
 };
 
-/**
- * Tips for minimizing PDF file size:
- * 
- * 1. Use JPEG instead of PNG for images
- * 2. Reduce html2canvas scale (1.5-2 is optimal)
- * 3. Enable jsPDF compression
- * 4. Reduce image quality (0.75-0.85 is good balance)
- * 5. Optimize your HTML/CSS before conversion:
- *    - Remove unnecessary elements
- *    - Use web fonts sparingly
- *    - Compress images before rendering
- * 6. Use putOnlyUsedFonts: true to embed only used font glyphs
- */
 
 export default {
   generatePDF,

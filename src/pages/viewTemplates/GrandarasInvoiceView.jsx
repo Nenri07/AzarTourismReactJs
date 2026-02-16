@@ -294,9 +294,9 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
       const opt = {
         margin: 0,
         filename: `${invoice.meta.refno}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg', quality: 2 },
         html2canvas: {
-          scale: 2,
+          scale: 3,
           useCORS: true,
           letterRendering: true,
           scrollY: 0,
@@ -326,7 +326,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
   // Helper component to ensure colons align perfectly
   // width prop determines how wide the label area is before the colon
   const InfoItem = ({ label, value, width = "65px" }) => (
-    <div className="grid-item" style={{ display: 'flex', alignItems: 'flex-start' }}>
+    <div className="grid-item" style={{ display: 'flex', alignItems: 'flex-start', height: '9.5px' }}>
       <div style={{
         width: width,
         minWidth: width,
@@ -363,7 +363,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
     >
       <div ref={invoiceRef}>
         <style>{`
-          @page { size: A4; margin: 0; }
+          @page { size: A4; margin: 6mm; }
           body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 8.9px; }
 
           .invoice-page {
@@ -372,7 +372,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
             max-width: 794px;
             min-height: 296mm; /* Slightly less than 297mm to prevent rounding errors adding blank pages */
             margin: 0 auto;
-            padding: 43px 43px 43px 29px;
+            padding: 40px;
             color: #000;
             position: relative;
             box-sizing: border-box;
@@ -384,25 +384,26 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
             page-break-after: auto;
           }
 
-          .header-section { display: flex; justify-content: space-between; margin-bottom: 20px; }
-          .company-details { display: flex; flex-direction: column; justify-content: center; width: 65%; line-height: 1.4; }
+          .header-section { display: flex; justify-content: space-between; margin-bottom: 0px; }
+          .company-details { margin-top: 40px; margin-bottom: 40px;}
           .company-name { font-weight: bold; text-transform: uppercase; font-size: 11px; margin-bottom: 2px; }
           .logo-container { text-align: right; width: 35%; padding-right: 50px; }
           .logo-img { max-width: 110px; height: auto; }
 
-          .meta-row { display: flex; justify-content: space-between; margin-bottom: -3px; }
-          .guest-name { margin-top: 10px; margin-bottom: 10px;  }
+          .meta-row { display: flex; justify-content: space-between; gap: 0; height: 9px }
+          .guest-name {margin: 4px 0 0 0; height: 15px}
 
-          .info-grid {
+          .guest-grid {
             display: grid;
-                grid-template-columns: 0.9fr 1.2fr 0.7fr 2.0fr 1.3fr;
-            gap: 1px 10px;
-            margin-bottom: 5px;
+            grid-template-columns: 0.9fr 1.2fr 0.7fr 2.0fr 1.3fr;
+            gap: 0px 12px;
+            white-space: nowrap;
+            margin-bottom: 6px;
           }
 
           .grid-item { white-space: nowrap; }
 
-          .main-table { width: 100%; border-spacing: 0; margin-bottom: 20px; border: 1px solid  rgba(0, 0, 0, 0.5); }
+          .main-table { width: 100%; border-spacing: 0; margin-bottom: 20px; border: 1pt solid  rgba(0, 0, 0, 0.3); }
           .main-table thead tr { background-color: #f0f0f0; }
           .main-table th { text-align: left; padding: 4px 6px; font-weight: normal; }
           .main-table td { padding: 2px 6px; vertical-align: top; }
@@ -424,7 +425,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
               text-align: right; 
               padding-right: 15px; 
             }
-          .desc-with-rate { display: flex; column-gap: 280px; align-items: center; }
+          .desc-with-rate { display: flex; column-gap: 280px; align-items: center;}
           .rate-value { padding-right: 20px; }
 
           .footer-section { display: flex; justify-content: space-between; margin-top: 20px; font-size:9.2px; }
@@ -451,8 +452,9 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           <div key={pageIdx} className="invoice-page">
             <div className="header-section">
               <div className="company-details">
-                <div className="company-sub">Azar Tourism Services</div>
-                <div>Algeria Square Building Number 12 First Floor, <br />Tripoli, Libya</div>
+                <div className="meta-row">Azar Tourism Services</div>
+                <div className="meta-row">Algeria Square Building Number 12 First Floor,</div>
+                <div className="meta-row">Tripoli, Libya</div>
               </div>
               <div className="logo-container">
                 <img src={invoice.meta.hotel.logoUrl} alt="Logo" className="logo-img" />
@@ -470,7 +472,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
 
             <div className="guest-name">{invoice.guest.name}</div>
 
-            <div className="info-grid">
+            <div className="guest-grid">
               {/* Row 1 */}
               <InfoItem label="Room/Oda" value={invoice.guest.room} width="50px" />
               <InfoItem label="Arrival/Giriş" value={invoice.guest.arrival} width="70px" />
@@ -557,9 +559,10 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
                   <div className="totals-row"><span>Total VAT/Hesaplanan KDV</span><span>{invoice.totals.summary.totalVat.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
                   <div className="totals-row"><span>Total Acc Tax/Konaklama Vergisi</span><span>{invoice.totals.summary.accTax.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
                   <div className="totals-row"><span>Total Inc.Vat/KDV Dahil Tutar</span><span>{invoice.totals.summary.totalIncVat.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
-
-                  <div className="payment-header">Payments/Ödemeler</div>
-                  <div className="totals-row"><span>Deposit Transfer at C/IN</span><span>{invoice.totals.summary.deposit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
+                  <div style={{ margin: '15px 0px' }}>
+                    <div className="payment-header">Payments/Ödemeler</div>
+                    <div className="totals-row"><span>Deposit Transfer at C/IN</span><span>{invoice.totals.summary.deposit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
+                  </div>
 
                   <div className="totals-row balance-row"><span>Balance/Bakiye</span><span>{invoice.totals.summary.balance.toFixed(2)}</span></div>
                 </div>

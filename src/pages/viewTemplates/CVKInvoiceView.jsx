@@ -288,9 +288,9 @@ export default function CVKInvoiceView({ invoiceData }) {
       const opt = {
         margin: 0,
         filename: `${invoice.refNo}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg', quality: 2 },
         html2canvas: {
-          scale: 2,
+          scale: 3,
           useCORS: true,
           letterRendering: true,
           scrollY: 0,
@@ -344,7 +344,7 @@ export default function CVKInvoiceView({ invoiceData }) {
       onBack={() => navigate("/invoices")}
     >
       <style>{`
-        @page { size: A4; margin: 0; }
+        @page { size: A4; margin: 6mm}
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 8.9px; }
 
         .invoice-page {
@@ -353,7 +353,7 @@ export default function CVKInvoiceView({ invoiceData }) {
           max-width: 794px;
           min-height: 296mm;
           margin: 0 auto;
-          padding: 34px 50px 40px 27px;
+          padding: 40px;
           color: #000;
           position: relative;
           box-sizing: border-box;
@@ -369,28 +369,28 @@ export default function CVKInvoiceView({ invoiceData }) {
         .header { margin-bottom: 14px; }
         .logo-box { margin-bottom: 20px; }
         .logo-img { max-width: 180px; height: auto; }
-        .company-address { margin-bottom: 40px; }
+        .company-details { margin-bottom: 40px;}
         
-        .info-row { display: flex; align-items: flex-start; }
+        .info-row { display: flex; align-items: flex-start; gap: 0; height: 9.5px}
         .info-lbl { display: inline-block; white-space: nowrap; }
         .info-sep { padding: 0 4px 0 2px; }
 
         .meta-container { display: flex; justify-content: space-between; margin-bottom: -5px; }
-        .guest-name { margin: 10px 0; }
+        .guest-name { margin: 10px 0 0 0; height: 15px;}
         
         .guest-grid {
           display: grid;
           grid-template-columns: 0.9fr 1.2fr 0.7fr 2.0fr 1.3fr;
-          gap: 1px 12px;
+          gap: 0px 12px;
           white-space: nowrap;
         }
         
-        .main-table { width: 100%; border-spacing:0 ; border: 1px solid rgba(0, 0, 0, 0.5); margin-bottom: 20px; }
+        .main-table { width: 100%; border-spacing:0 ; border: 1px solid rgba(0, 0, 0, 0.3); margin-bottom: 20px; }
         .main-table th { background-color: #ededed;  padding: 2px 4px 1px 6px; font-weight: normal; text-align: left; }
         .main-table td { padding: 3px 6px; }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
-        .desc-col { display: flex; justify-content: space-between; width: 100%; }
+        .desc-col { display: flex; justify-content: space-between; width: 100%; padding-right: 15px}
         .desc-val { margin-right: -35px; }
         .footer-container { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9.1px !important; }
         .footer-left { width: 45%; }
@@ -423,10 +423,10 @@ export default function CVKInvoiceView({ invoiceData }) {
                 <img src={logo} alt="CVK PARK BOSPHORUS HOTEL" className="logo-img" />
               </div>
 
-              <div className="company-address">
-                {invoice.companyName}<br />
-                {invoice.companyAddress}<br />
-                {invoice.companyCity}
+              <div className="company-details">
+                <div className="info-row">{invoice.companyName}</div>
+                <div className="info-row">{invoice.companyAddress}</div>
+                <div className="info-row">{invoice.companyCity}</div>
               </div>
 
               <div className="meta-container">
