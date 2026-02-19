@@ -12,6 +12,7 @@ import TRYPInvoiceView from "./viewTemplates/TRYPInvoiceView";
 import DynamicInvoiceViewPage from "./viewTemplates/DynamicInvoiceViewPage";
 import NotFoundPage from "./NotFoundPage";
 import GrandArasInvoiceView from "./viewTemplates/GrandarasInvoiceView";
+import StaybridgeInvoiceView from "./viewTemplates/StaybridgeInvoiceView";
 
 
 export {
@@ -20,6 +21,7 @@ export {
     CVKInvoiceView, HotelConfigPage, DynamicInvoiceFormPage,
     TRYPInvoiceView,DynamicInvoiceViewPage
     ,NotFoundPage,
-    GrandArasInvoiceView
+    GrandArasInvoiceView,
+    StaybridgeInvoiceView
 
 };

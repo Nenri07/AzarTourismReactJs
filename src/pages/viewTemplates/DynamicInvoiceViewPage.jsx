@@ -7,6 +7,7 @@ import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import CVKInvoiceView from "./CVKInvoiceView";
 import TRYPInvoiceView from "./TRYPInvoiceView";
 import GrandArasInvoiceView from "./GrandarasInvoiceView";
+import StaybridgeInvoiceView from "./StaybridgeInvoiceView";
 
 import InvoiceViewPage from "./InvoiceViewPage";
 
@@ -60,6 +61,8 @@ export default function DynamicInvoiceViewPage() {
         detectedType = "TRYP";
       } else if (hotelName.includes("novotel")) {
         detectedType = "Novotel";
+      } else if (hotelName.includes("staybridge")) {
+        detectedType = "Staybridge";
       } else if (hotelName.includes("grand") || hotelName.includes("aras")) {
         detectedType = "GrandAras";
       }
@@ -118,6 +121,8 @@ export default function DynamicInvoiceViewPage() {
     return <TRYPInvoiceView invoiceData={invoice} />;
   } else if (hotelType === "Novotel") {
     return <InvoiceViewPage />;
+  } else if (hotelType === "Staybridge") {
+    return <StaybridgeInvoiceView invoiceData={invoice} />;
   } else if (hotelType === "GrandAras") {
     return <GrandArasInvoiceView invoiceData={invoice} />;
   } else {
