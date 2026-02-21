@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-const logo = '/staybridge-logo.png';
-import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
+const logo = '/staybridge_logo.png';
+import cairoInvoiceApi from "../../Api/cairoInvoice.api";
 import toast from "react-hot-toast";
-import { InvoiceTemplate } from "../../components";
 import html2pdf from 'html2pdf.js';
+import { InvoiceTemplate } from "../../components";
 
 const StaybridgeInvoiceView = ({ invoiceData }) => {
   const { invoiceId } = useParams();
@@ -16,20 +16,18 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [paginatedData, setPaginatedData] = useState([]);
   const invoiceRef = useRef(null);
-  const ROWS_PER_PAGE = 38;
+  
+  // Strict row count for A4 layout matching the reference image's density
+  const ROWS_PER_PAGE = 28; 
 
   const isPdfDownload = location.pathname.includes("/download-pdf");
 
   useEffect(() => {
     if (invoiceData) {
-      const transformed = transformInvoiceData(invoiceData);
-      setInvoice(transformed);
+      setInvoice(transformInvoiceData(invoiceData));
       setLoading(false);
     } else if (invoiceId) {
       fetchInvoiceData();
-    } else {
-      setError("No invoice identifier provided");
-      setLoading(false);
     }
   }, [invoiceData, invoiceId]);
 
@@ -38,7 +36,7 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
       const timer = setTimeout(async () => {
         await handleDownloadPDF();
         navigate("/invoices", { replace: true });
-      }, 800);
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, [isPdfDownload, invoice]);
@@ -46,19 +44,20 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
   const fetchInvoiceData = async () => {
     try {
       setLoading(true);
-      const response = await turkeyInvoiceApi.getInvoiceById(invoiceId);
-      let data = response.data || response;
-      if (data.data && typeof data.data === 'object') {
-        data = data.data;
-        if (data.data && typeof data.data === 'object') {
-          data = data.data;
+      const response = await cairoInvoiceApi.getInvoiceById(invoiceId);
+      
+      let rawData = response.data || response;
+      if (rawData.data) {
+        rawData = rawData.data;
+        if (rawData.data) {
+          rawData = rawData.data;
         }
       }
-      const transformed = transformInvoiceData(data);
-      setInvoice(transformed);
+      
+      setInvoice(transformInvoiceData(rawData));
     } catch (err) {
-      console.error("❌ Error fetching invoice:", err);
-      setError(err.message || "Failed to load invoice data");
+      console.error("Error fetching Egypt invoice:", err);
+      setError("Failed to load invoice data");
       toast.error("Failed to load invoice");
     } finally {
       setLoading(false);
@@ -68,132 +67,60 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
   const transformInvoiceData = (data) => {
     if (!data) return null;
 
-    const otherServices = data.otherServices || [];
     const transactions = [];
-
-    const nights = data.nights || 1;
-    const dailyRoomAmount = (data.total_room_all_nights || 0) / nights;
-
-    for (let i = 0; i < nights; i++) {
-        const currentDate = new Date(data.arrivalDate);
-        currentDate.setDate(currentDate.getDate() + i);
-
-        transactions.push({
-            id: i + 1,
-            description: "Room",
-            rate: `${(data.actualRate || 0).toFixed(2)} EUR / ${(data.exchangeRate || 0).toFixed(5)}`,
-            date: formatDate(currentDate),
-            debit: dailyRoomAmount.toFixed(2),
-            credit: null,
-            sortDate: new Date(currentDate)
+    
+    if (data.accommodationDetails && Array.isArray(data.accommodationDetails)) {
+        data.accommodationDetails.forEach(item => {
+            // Match the format USD / .XXXXXXX as seen in the image
+            const exchangeFactor = data.exchangeRate ? data.exchangeRate.toString() : "0";
+            const formattedFactor = exchangeFactor.startsWith('0.') ? exchangeFactor.substring(1) : exchangeFactor;
+            
+            transactions.push({
+                date: formatDate(item.date),
+                text: item.description || "Accommodation",
+                exchangeRate: `${(data.usdAmount / data.nights || 0).toFixed(0)} USD / ${formattedFactor}`,
+                charges: item.rate || 0,
+                credits: 0
+            });
         });
     }
 
-    let serviceId = transactions.length + 1;
-    otherServices.forEach(service => {
-        const serviceDate = service.date || service.service_date || data.arrivalDate;
-        transactions.push({
-            id: serviceId++,
-            description: service.name || service.service_name || "Service",
-            rate: "",
-            date: formatDate(serviceDate),
-            debit: service.amount || service.gross_amount || 0,
-            credit: null,
-            sortDate: new Date(serviceDate)
+    if (data.otherServices && Array.isArray(data.otherServices)) {
+        data.otherServices.forEach(service => {
+            transactions.push({
+                date: formatDate(service.date),
+                text: service.name || "Service",
+                exchangeRate: "",
+                charges: service.amount || 0,
+                credits: 0
+            });
         });
-    });
-
-    transactions.sort((a, b) => a.sortDate - b.sortDate);
-    transactions.forEach((txn, index) => { txn.id = index + 1; });
-
-    const taxableAmountRoom = parseFloat(data.taxable_amount_room || data.taxable_amount || 0);
-    const taxableAmountServices = otherServices.reduce((sum, s) => sum + parseFloat(s.taxable_amount || 0), 0);
-    const totalTaxableAmount = taxableAmountRoom + taxableAmountServices;
-
-    const vat10Percent = parseFloat(data.vat7 || data.vat_10_percent || data.vat1_10 || 0);
-    const otherServicesVat = otherServices.reduce((sum, s) => sum + parseFloat(s.vat_20_percent || 0), 0);
-    const totalVat = data.vatTotal || (vat10Percent + otherServicesVat);
-    const accommodationTax = parseFloat(data.accommodation_tax || data.accommodationTaxTotal || 0);
-    const grandTotal = parseFloat(data.grandTotal || 0);
-    const exchangeRate = parseFloat(data.exchangeRate || 0);
-    const totalEuro = exchangeRate > 0 ? (grandTotal / exchangeRate) : 0;
+    }
 
     return {
-      meta: {
-        refno: data.referenceNo || "",
-        folio: data.folio_number || data.vNo || "",
-        date: formatDate(data.invoiceDate),
-        vatOffice: data.vd || "Alemdar",
-        vatNo: data.vNo || "7810505191",
-        company: {
-          name: "Staybridge Suites Istanbul Umraniye",
-          addressLine1: "Eksioglu Esas Is Merkezi Saray Mah. Dr. Fazıl Kucuk Cad.",
-          addressLine2: "Cakmak Mah. No 64 Umraniye Istanbul",
-          phone: "+90 216 290 70 00",
-          azarBranding: {
-              name: "AZAR TOURISM",
-              subName: "Azar Tourism Services",
-              address: "Algeria Square Building Number 12 First Floor, Tripoli, Libya"
-          }
-        },
-        hotel: { logoUrl: logo }
-      },
-      guest: {
-        name: data.guestName || "Guest",
-        room: data.roomNo || "",
-        arrival: formatDate(data.arrivalDate),
-        departure: formatDate(data.departureDate),
-        adults: data.paxAdult || 1,
-        children: data.paxChild || 0,
-        passport: data.passportNo || data.confirmation || "",
-        user: data.userId || " ",
-        cashierNo: data.batchNo || data.cshNo || data.cashNo || "",
-        voucherNo: data.voucherNo || "",
-        crsNo: data.voucherNo || ""
-      },
+      ...data,
       transactions,
-      totals: {
-        taxTable: [
-          { rate: "%10", base: taxableAmountRoom, amount: vat10Percent },
-          { rate: "%20", base: taxableAmountServices, amount: otherServicesVat }
-        ].filter(tax => tax.base > 0 || tax.amount > 0),
-        exchangeRates: { eur: exchangeRate },
-        totalEuro: totalEuro,
-        textAmount: numberToTurkishWords(grandTotal),
-        summary: {
-          totalAmount: totalTaxableAmount,
-          taxableAmount: totalTaxableAmount,
-          totalVat: totalVat,
-          accTax: accommodationTax,
-          totalIncVat: grandTotal,
-          deposit: -grandTotal,
-          balance: 0.00
-        }
-      }
+      formattedInvoiceDate: formatDate(data.invoiceDate),
+      formattedArrivalDate: formatDate(data.arrivalDate),
+      formattedDepartureDate: formatDate(data.departureDate),
     };
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
     try {
-      const date = new Date(dateString);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = String(date.getFullYear());
-      return `${day}.${month}.${year}`;
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return dateString;
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yy = String(d.getFullYear()).slice(-2);
+        return `${dd}-${mm}-${yy}`; // Hyphens as per reference image
     } catch { return dateString; }
   };
 
-  const numberToTurkishWords = (amount) => {
-    const rounded = Math.round(amount * 100) / 100;
-    const lira = Math.floor(rounded);
-    const kurus = Math.round((rounded - lira) * 100);
-    return `Yalnız ${lira.toLocaleString('tr-TR')} Türk Lirası ${kurus} Kuruştur`;
-  };
-
-  const formatCurrency = (amount) => {
-    const num = parseFloat(amount) || 0;
-    return num.toLocaleString('en-US', {
+  const formatCurrency = (val) => {
+    if (val === undefined || val === null || val === "") return "";
+    return parseFloat(val).toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
@@ -202,24 +129,20 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
   useEffect(() => {
     if (invoice && invoice.transactions) {
       const pages = [];
-      const totalTransactions = invoice.transactions.length;
-
-      for (let i = 0; i < totalTransactions; i += ROWS_PER_PAGE) {
+      const totalTx = invoice.transactions.length;
+      
+      for (let i = 0; i < totalTx; i += ROWS_PER_PAGE) {
         pages.push({
-          transactions: invoice.transactions.slice(i, i + ROWS_PER_PAGE),
+          items: invoice.transactions.slice(i, i + ROWS_PER_PAGE),
           pageNum: pages.length + 1,
-          isLastPage: i + ROWS_PER_PAGE >= totalTransactions
+          isLast: i + ROWS_PER_PAGE >= totalTx
         });
       }
-
+      
       if (pages.length === 0) {
-        pages.push({
-          transactions: [],
-          pageNum: 1,
-          isLastPage: true
-        });
+          pages.push({ items: [], pageNum: 1, isLast: true });
       }
-
+      
       setPaginatedData(pages);
     }
   }, [invoice]);
@@ -227,79 +150,31 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
   const handleDownloadPDF = async () => {
     if (!invoiceRef.current) return;
     setPdfLoading(true);
-
-    const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
-    headStyles.forEach(style => {
-      style.parentNode.removeChild(style);
-    });
-
     try {
-      const images = invoiceRef.current.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise(resolve => {
-          img.onload = resolve;
-          img.onerror = resolve;
-        });
-      }));
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `${invoice.meta.refno || 'Staybridge'}.pdf`,
-        image: { type: 'jpeg', quality: 2 },
-        html2canvas: {
-          scale: 3,
-          useCORS: true,
-          letterRendering: true,
-          scrollY: 0,
-          windowWidth: 794
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
+        filename: `Staybridge_Invoice_${invoice.invoiceNo || 'Staybridge'}.pdf`,
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { scale: 3, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
-
       await html2pdf().set(opt).from(element).save();
       toast.success("PDF Downloaded Successfully");
     } catch (err) {
-      console.error("❌ PDF Error:", err);
+      console.error("PDF Error:", err);
       toast.error("Failed to generate PDF");
     } finally {
-      headStyles.forEach(style => {
-        document.head.appendChild(style);
-      });
       setPdfLoading(false);
     }
   };
 
-  const handlePrint = () => window.print();
-
-  const InfoItem = ({ label, value, width = "70px" }) => (
-    <div className="grid-item" style={{ display: 'flex', alignItems: 'flex-start', height: '11px' }}>
-      <div style={{
-        width: width,
-        minWidth: width,
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginRight: '6px'
-      }}>
-        <span>{label}</span>
-        <span>:</span>
-      </div>
-      <div style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-        {value}
-      </div>
-    </div>
-  );
-
   if (!invoice) {
-    return (
-      <InvoiceTemplate loading={loading} error={error} invoice={invoice} onBack={() => navigate("/invoices")}>
-        <></>
-      </InvoiceTemplate>
-    );
+      return (
+          <InvoiceTemplate loading={loading} error={error} invoice={invoice} onBack={() => navigate("/invoices")}>
+              <></>
+          </InvoiceTemplate>
+      );
   }
 
   return (
@@ -309,316 +184,309 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
       invoice={invoice}
       pdfLoading={pdfLoading}
       onDownloadPDF={handleDownloadPDF}
-      onPrint={handlePrint}
+      onPrint={() => window.print()}
       onBack={() => navigate("/invoices")}
     >
-      <div ref={invoiceRef}>
+      <div ref={invoiceRef} className="staybridge-invoice-wrapper">
         <style>{`
-          @page { size: A4; margin: 0; }
-          body { 
-            margin: 0; 
-            padding: 0; 
-            font-family: "Times New Roman", Times, serif; 
-            font-size: 11px; 
-            color: #000;
+          @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap');
+          
+          .staybridge-invoice-wrapper {
+            background-color: #e5e7eb;
+            padding: 40px 0;
+            min-height: 100vh;
           }
-
-          .invoice-page {
-            background-color: white;
-            width: 100%;
-            max-width: 794px;
+          
+          .sb-page {
+            width: 210mm;
             min-height: 297mm;
-            margin: 0 auto;
-            padding: 40px;
+            padding: 15mm 20mm;
+            margin: 0 auto 10mm auto;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
             box-sizing: border-box;
-            page-break-after: always;
-          }
-
-          .invoice-page:last-child {
-            page-break-after: auto;
-          }
-
-          .header-section { 
-            display: flex; 
-            justify-content: space-between; 
-            margin-bottom: 20px; 
+            font-family: "Times New Roman", Times, serif;
+            color: #000;
+            line-height: normal;
           }
           
-          .company-details { 
-            width: 60%;
+          @media print {
+            .staybridge-invoice-wrapper { padding: 0; background: none; }
+            .sb-page { margin: 0; box-shadow: none; page-break-after: always; }
+          }
+
+          .sb-logo-container {
+            position: absolute;
+            top: 5mm;
+            right: 15mm;
+            text-align: center;
           }
           
-          .hotel-name { 
-            font-weight: bold; 
-            font-size: 14px; 
+          .sb-logo-img {
+            width: 190px;
+            display: block;
+          }
+          
+          .sb-header-title {
+            font-weight: bold;
+            font-size: 11pt;
+            margin-top: 25mm;
+            margin-bottom: 5mm;
+          }
+          
+          .sb-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            margin-bottom: 25mm;
+            font-size: 9.5pt;
+          }
+          
+          .sb-info-row {
+            display: flex;
             margin-bottom: 4px;
           }
           
-          .hotel-address { 
-            font-size: 10px; 
-            line-height: 1.2;
-          }
-
-          .logo-container { 
-            text-align: right; 
-            width: 35%; 
+          .sb-label {
+            width: 105px;
+            flex-shrink: 0;
           }
           
-          .logo-img { 
-            max-width: 140px; 
-            height: auto; 
+          .sb-value {
+            flex: 1;
           }
 
-          .meta-row { 
-            display: flex; 
-            justify-content: space-between; 
-            margin-bottom: 2px;
-            font-size: 11px;
-          }
-
-          .guest-info-section {
-            margin-top: 15px;
-            margin-bottom: 15px;
-            border-top: 1px solid #000;
-            padding-top: 10px;
-          }
-
-          .guest-name {
-            font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-          }
-
-          .guest-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2px 40px;
-            margin-bottom: 15px;
-          }
-
-          .main-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-bottom: 20px; 
+          .sb-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9.5pt;
           }
           
-          .main-table thead tr { 
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
+          .sb-table thead th {
+            border-top: 1pt solid #000;
+            border-bottom: 1pt solid #000;
+            padding: 10px 4px;
+            text-align: left;
+            font-weight: normal;
           }
           
-          .main-table th { 
-            text-align: left; 
-            padding: 6px 4px; 
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 10px;
-          }
-          
-          .main-table td { 
-            padding: 4px; 
+          .sb-table tbody td {
+            padding: 6px 4px;
             vertical-align: top;
-            font-size: 11px;
           }
 
-          .col-date { width: 15%; }
-          .col-desc { width: 55%; }
-          .col-debit { width: 15%; text-align: right !important; }
-          .col-credit { width: 15%; text-align: right !important; }
-
-          .footer-section { 
-            display: flex; 
-            justify-content: space-between; 
-            margin-top: 30px;
-          }
-          
-          .footer-left { 
-            width: 50%; 
-          }
-          
-          .footer-right { 
-            width: 40%; 
+          .sb-summary-divider {
+            border-top: 1pt solid #000;
+            margin-top: 2mm;
           }
 
-          .tax-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-bottom: 15px;
-          }
-          
-          .tax-table th { 
-            border-bottom: 1px solid #000; 
-            text-align: right; 
-            font-size: 9px;
-            padding-bottom: 2px;
-          }
-          
-          .tax-table td { 
-            text-align: right; 
-            padding: 2px 0;
-            font-size: 10px;
+          .sb-total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2mm;
+            padding-right: 4px;
+            font-size: 10pt;
           }
 
-          .totals-row { 
-            display: flex; 
-            justify-content: space-between; 
-            margin-bottom: 4px; 
-            font-size: 11px;
+          .sb-summary-section {
+            margin-top: 10mm;
+            display: flex;
+            font-size: 10pt;
           }
           
-          .total-label { font-weight: normal; }
-          .total-value { font-weight: bold; }
+          .sb-summary-left {
+            width: 45%;
+            font-style: italic;
+          }
           
-          .balance-row { 
-            margin-top: 10px;
-            padding-top: 5px;
-            border-top: 1px solid #000;
-            font-weight: bold;
-            font-size: 12px;
+          .sb-summary-right {
+            width: 55%;
+          }
+          
+          .sb-summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding-left: 20px;
           }
 
-          .azar-footer {
+          .sb-balance-label {
+            width: 100px;
+          }
+          
+          .sb-footer {
             position: absolute;
-            bottom: 40px;
-            left: 40px;
-            right: 40px;
-            font-size: 9px;
+            bottom: 10mm;
+            left: 0;
+            right: 0;
             text-align: center;
-            border-top: 0.5px solid #ccc;
-            padding-top: 5px;
-            color: #666;
+            font-size: 8pt;
+            line-height: 1.4;
           }
 
-          @media print {
-            .invoice-page { padding: 40px; }
-            .no-print { display: none !important; }
-          }
+          .text-right { text-align: right; }
+          .font-bold { font-weight: bold; }
+          .w-80 { width: 80px; }
+          .w-100 { width: 100px; }
+          .w-120 { width: 120px; }
+          .w-150 { width: 150px; }
+          .w-40 { width: 40px; }
         `}</style>
 
-        {paginatedData.map((page, pageIdx) => (
-          <div key={pageIdx} className="invoice-page">
-            <div className="header-section">
-              <div className="company-details">
-                <div className="hotel-name">{invoice.meta.company.name}</div>
-                <div className="hotel-address">
-                  {invoice.meta.company.addressLine1}<br />
-                  {invoice.meta.company.addressLine2}<br />
-                  Tel: {invoice.meta.company.phone}<br />
-                  Tax Office: {invoice.meta.vatOffice} | Tax No: {invoice.meta.vatNo}
+        {paginatedData.map((page, idx) => (
+          <div key={idx} className="sb-page">
+            {/* Logo */}
+            <div className="sb-logo-container">
+              <img src={logo} alt="Staybridge Logo" className="sb-logo-img" />
+            </div>
+
+            {/* Header Title */}
+            <div className="sb-header-title">INFORMATION INVOICE</div>
+
+            {/* Information Grid */}
+            <div className="sb-grid">
+              <div className="space-y-1">
+                <div className="sb-info-row">
+                  <span className="sb-label">Guest Name:</span>
+                  <span className="sb-value">{invoice.guestName}</span>
+                </div>
+                <div className="sb-info-row">
+                  <span className="sb-label">Address:</span>
+                  <span className="sb-value">{invoice.address}</span>
+                </div>
+                <div className="sb-info-row" style={{ marginTop: '5mm' }}>
+                  <span className="sb-label">Company Name:</span>
+                  <span className="sb-value">{invoice.companyName}</span>
+                </div>
+                <div className="sb-info-row">
+                  <span className="sb-label">A/R Number:</span>
+                  <span className="sb-value">{invoice.arNumber}</span>
+                </div>
+                <div className="sb-info-row" style={{ marginTop: '5mm' }}>
+                  <span className="sb-label">IHG Rewards Number:</span>
+                  <span className="sb-value">{invoice.ihgRewardsNumber}</span>
                 </div>
               </div>
-              <div className="logo-container">
-                <img src={invoice.meta.hotel.logoUrl} alt="Staybridge Logo" className="logo-img" />
+
+              <div className="space-y-1">
+                <div className="sb-info-row">
+                  <span className="sb-label">Room No.:</span>
+                  <span className="sb-value">{invoice.roomNo}</span>
+                </div>
+                <div className="sb-info-row">
+                  <span className="sb-label">Arrival:</span>
+                  <span className="sb-value">{invoice.formattedArrivalDate}</span>
+                </div>
+                <div className="sb-info-row">
+                  <span className="sb-label">Departure:</span>
+                  <span className="sb-value">{invoice.formattedDepartureDate}</span>
+                </div>
+                <div className="sb-info-row">
+                  <span className="sb-label">Cashier:</span>
+                  <span className="sb-value">{invoice.cashierId}</span>
+                </div>
+                
+                <div className="sb-info-row" style={{ marginTop: '5mm' }}>
+                  <span className="sb-label">Date:</span>
+                  <span className="sb-value">{invoice.formattedInvoiceDate}</span>
+                  <span className="sb-label" style={{ width: '40px', marginLeft: '10mm' }}>Time:</span>
+                  <span className="sb-value">{invoice.formattedInvoiceDate}</span>
+                </div>
+                <div className="sb-info-row">
+                  <span className="sb-label">Date:</span>
+                  <span className="sb-value">{invoice.formattedInvoiceDate}</span>
+                </div>
+                <div className="sb-info-row">
+                  <span className="sb-label">Page No.:</span>
+                  <span className="sb-value">{page.pageNum} of {paginatedData.length}</span>
+                </div>
+                <div className="sb-info-row">
+                  <span className="sb-label">Invoice No.:</span>
+                  <span className="sb-value">{invoice.invoiceNo}</span>
+                </div>
               </div>
             </div>
 
-            <div className="meta-row" style={{ marginTop: '20px' }}>
-              <div style={{ fontWeight: 'bold' }}>Invoice</div>
-              <div>Date: {invoice.meta.date}</div>
-            </div>
-            <div className="meta-row">
-              <div>Folio No: {invoice.meta.folio}</div>
-              <div>Ref No: {invoice.meta.refno}</div>
-            </div>
-
-            <div className="guest-info-section">
-              <div className="guest-name">{invoice.guest.name}</div>
-              <div className="guest-grid">
-                <div>
-                  <InfoItem label="Room" value={invoice.guest.room} />
-                  <InfoItem label="Arrival" value={invoice.guest.arrival} />
-                  <InfoItem label="Departure" value={invoice.guest.departure} />
-                </div>
-                <div>
-                  <InfoItem label="Adult/Child" value={`${invoice.guest.adults} / ${invoice.guest.children}`} />
-                  <InfoItem label="Voucher" value={invoice.guest.voucherNo} />
-                  <InfoItem label="Page" value={`${page.pageNum} / ${paginatedData.length}`} />
-                </div>
-              </div>
-            </div>
-
-            <table className="main-table">
+            {/* Main Table */}
+            <table className="sb-table">
               <thead>
                 <tr>
-                  <th className="col-date">Date</th>
-                  <th className="col-desc">Description</th>
-                  <th className="col-debit">Debit</th>
-                  <th className="col-credit">Credit</th>
+                  <th className="w-80">Date</th>
+                  <th>Text</th>
+                  <th className="w-150">Exchange Rate</th>
+                  <th className="text-right w-100">Charges</th>
+                  <th className="w-40 text-center">EGP</th>
+                  <th className="text-right w-80">Credits</th>
+                  <th className="w-40 text-center">EGP</th>
                 </tr>
               </thead>
               <tbody>
-                {page.transactions.map((txn) => (
-                  <tr key={txn.id}>
-                    <td className="col-date">{txn.date}</td>
-                    <td className="col-desc">
-                      {txn.description}
-                      {txn.rate && <span style={{ fontSize: '9px', marginLeft: '10px', color: '#555' }}>({txn.rate})</span>}
-                    </td>
-                    <td className="col-debit">{txn.debit ? formatCurrency(txn.debit) : ''}</td>
-                    <td className="col-credit">{txn.credit ? formatCurrency(txn.credit) : ''}</td>
+                {page.items.map((it, midx) => (
+                  <tr key={midx}>
+                    <td>{it.date}</td>
+                    <td>{it.text}</td>
+                    <td>{it.exchangeRate}</td>
+                    <td className="text-right">{formatCurrency(it.charges)}</td>
+                    <td className="text-center">{it.charges ? "" : ""}</td>
+                    <td className="text-right">{formatCurrency(it.credits)}</td>
+                    <td className="text-center">{it.credits ? "" : ""}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            {page.isLastPage && (
-              <div className="footer-section">
-                <div className="footer-left">
-                  <table className="tax-table">
-                    <thead>
-                      <tr>
-                        <th>Tax Rate</th>
-                        <th>Tax Base</th>
-                        <th>Tax Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {invoice.totals.taxTable.map((tax, index) => (
-                        <tr key={index}>
-                          <td>{tax.rate}</td>
-                          <td>{formatCurrency(tax.base)}</td>
-                          <td>{formatCurrency(tax.amount)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <div style={{ fontSize: '10px', marginTop: '10px' }}>
-                    <strong>Exchange Rate:</strong> 1 EUR = {invoice.totals.exchangeRates.eur.toFixed(5)} TRY
-                  </div>
-                  <div style={{ fontSize: '9px', marginTop: '5px', fontStyle: 'italic' }}>
-                    {invoice.totals.textAmount}
-                  </div>
+            {/* Final Totals */}
+            {page.isLast && (
+              <>
+                <div className="sb-summary-divider"></div>
+                <div className="sb-total-row">
+                    <div style={{ width: '100px', marginLeft: '45%' }}>Total</div>
+                    <div className="text-right w-120" style={{ marginRight: '75px' }}>{formatCurrency(invoice.grandTotalEgp)}</div>
+                    <div className="text-right w-80">0.00</div>
                 </div>
 
-                <div className="footer-right">
-                  <div className="totals-row">
-                    <span className="total-label">Total Amount</span>
-                    <span className="total-value">{formatCurrency(invoice.totals.summary.totalAmount)}</span>
+                <div className="sb-summary-section">
+                  <div className="sb-summary-left">
+                    Exchanges Rates of Current Date
                   </div>
-                  <div className="totals-row">
-                    <span className="total-label">Total VAT</span>
-                    <span className="total-value">{formatCurrency(invoice.totals.summary.totalVat)}</span>
-                  </div>
-                  <div className="totals-row">
-                    <span className="total-label">Accommodation Tax</span>
-                    <span className="total-value">{formatCurrency(invoice.totals.summary.accTax)}</span>
-                  </div>
-                  <div className="totals-row" style={{ fontWeight: 'bold' }}>
-                    <span className="total-label">Total Inc. VAT</span>
-                    <span className="total-value">{formatCurrency(invoice.totals.summary.totalIncVat)}</span>
-                  </div>
-                  <div className="totals-row balance-row">
-                    <span>Balance</span>
-                    <span>{formatCurrency(invoice.totals.summary.balance)}</span>
+                  <div className="sb-summary-right border-t border-black pt-4">
+                    <div className="sb-summary-row">
+                        <span>Balance EGP</span>
+                        <span className="w-120 text-right">{formatCurrency(invoice.grandTotalEgp)}</span>
+                    </div>
+                    <div className="sb-summary-row">
+                        <span>Balance USD</span>
+                        <span className="w-120 text-right">{formatCurrency(invoice.balanceUsd)}</span>
+                    </div>
+                    <div className="sb-summary-row">
+                        <span>Balance EUR</span>
+                        <span className="w-120 text-right">0.00</span>
+                    </div>
+
+                    <div style={{ marginTop: '5mm' }}>
+                        <div className="sb-summary-row">
+                            <span style={{ width: '120px' }}>Vat 14% :</span>
+                            <span className="sb-value">{formatCurrency(invoice.vat14Percent)}</span>
+                        </div>
+                        <div className="sb-summary-row">
+                            <span style={{ width: '120px' }}>Service Charge :</span>
+                            <span className="sb-value">{formatCurrency(invoice.serviceCharge)}</span>
+                        </div>
+                        <div className="sb-summary-row">
+                            <span style={{ width: '120px' }}>City Tax :</span>
+                            <span className="sb-value">{formatCurrency(invoice.cityTax)}</span>
+                        </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </>
             )}
 
-            <div className="azar-footer">
-              <strong>{invoice.meta.company.azarBranding.subName}</strong> - {invoice.meta.company.azarBranding.address}
+            {/* Footer */}
+            <div className="sb-footer">
+              Staybridge Suites - Cairo Citystars, Emtedad Makram Ebeid St., Heliopolis, Cairo, 11737, Egypt<br />
+              tel +20 (2) 24 803 333 | fax +20 (2) 24 803 330 | 0800 00 096 91 | StaybridgeSuites.com<br />
+              email info.sbcitystars@ihg.com
             </div>
           </div>
         ))}

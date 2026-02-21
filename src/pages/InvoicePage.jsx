@@ -134,30 +134,109 @@ export default function InvoicePage() {
           });
         }
 
-        // 2. Turkey & Egypt invoices (Assuming Egypt will come through this route for now)
+        // 2. Turkey invoices
         if (response.data.turkey_hotels && response.data.turkey_hotels.records) {
-          response.data.turkey_hotels.records.forEach((invoice, index) => {
-            let data = invoice.data || {};
-            if (data.data && typeof data.data === "object") data = data.data;
+          const turkeyInvoices = response.data.turkey_hotels.records;
+          console.log(`📊 Found ${turkeyInvoices.length} Turkey invoices`);
 
-            invoicesList.push({
+          turkeyInvoices.forEach((invoice, index) => {
+            let invoiceData = invoice.data || {};
+
+            if (invoiceData.data && typeof invoiceData.data === "object") {
+              invoiceData = invoiceData.data;
+            }
+
+            const data = invoiceData;
+
+            const transformed = {
               id: invoice.id || invoice._id || `turkey-${index}`,
-              invoiceNumber: data.referenceNo || data.voucherNo || data.reference_no || `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
-              reference: data.referenceNo || data.voucherNo || data.reference_no || `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              invoiceNumber:
+                data.referenceNo ||
+                data.voucherNo ||
+                data.reference_no ||
+                `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              reference:
+                data.referenceNo ||
+                data.voucherNo ||
+                data.reference_no ||
+                `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
               hotelName: data.hotel || data.hotelName || "Unknown Hotel",
               guestName: data.guestName || "Guest",
               roomNumber: data.roomNo || data.room_number || "N/A",
-              arrivalDate: data.arrivalDate || data.arrival_date || new Date().toISOString(),
-              departureDate: data.departureDate || data.departure_date || new Date().toISOString(),
+              arrivalDate:
+                data.arrivalDate ||
+                data.arrival_date ||
+                new Date().toISOString(),
+              departureDate:
+                data.departureDate ||
+                data.departure_date ||
+                new Date().toISOString(),
               nights: data.nights || 0,
-              grandTotal: parseFloat(data.grandTotal || data.total || data.grandTotalEgp || 0), // Added grandTotalEgp check
-              currency: isEgyptInvoice(data.hotel) ? "EGP" : (data.currency || "TRY"), // Dynamic Currency
+              grandTotal: parseFloat(data.grandTotal || data.total || 0),
+              currency: data.currency || "TRY",
               status: data.status || "ready",
               pdfPath: data.pdfPath || null,
-              createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
+              createdAt:
+                invoice.created_at ||
+                invoice.createdAt ||
+                new Date().toISOString(),
               rawData: invoice,
-              invoiceType: isEgyptInvoice(data.hotel) ? "egypt" : "turkey", // Dynamic Type
-            });
+              invoiceType: "turkey",
+            };
+            invoicesList.push(transformed);
+          });
+        }
+
+        // 3. Egypt invoices
+        if (response.data.egypt_hotels && response.data.egypt_hotels.records) {
+          const egyptInvoices = response.data.egypt_hotels.records;
+          console.log(`📊 Found ${egyptInvoices.length} Egypt invoices`);
+
+          egyptInvoices.forEach((invoice, index) => {
+            let invoiceData = invoice.data || {};
+
+            if (invoiceData.data && typeof invoiceData.data === "object") {
+              invoiceData = invoiceData.data;
+            }
+
+            const data = invoiceData;
+
+            const transformed = {
+              id: invoice.id || invoice._id || `egypt-${index}`,
+              invoiceNumber:
+                data.referenceNo ||
+                data.voucherNo ||
+                data.reference_no ||
+                `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              reference:
+                data.referenceNo ||
+                data.voucherNo ||
+                data.reference_no ||
+                `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              hotelName: data.hotel || data.hotelName || "Unknown Hotel",
+              guestName: data.guestName || "Guest",
+              roomNumber: data.roomNo || data.room_number || "N/A",
+              arrivalDate:
+                data.arrivalDate ||
+                data.arrival_date ||
+                new Date().toISOString(),
+              departureDate:
+                data.departureDate ||
+                data.departure_date ||
+                new Date().toISOString(),
+              nights: data.nights || 0,
+              grandTotal: parseFloat(data.grandTotalEgp || data.total || 0),
+              currency: data.currency || "EGP",
+              status: data.status || "ready",
+              pdfPath: data.pdfPath || null,
+              createdAt:
+                invoice.created_at ||
+                invoice.createdAt ||
+                new Date().toISOString(),
+              rawData: invoice,
+              invoiceType: "egypt",
+            };
+            invoicesList.push(transformed);
           });
         }
       }
@@ -168,6 +247,13 @@ export default function InvoicePage() {
         return;
       }
 
+      toast.success(
+        `Loaded ${invoicesList.length} invoice${invoicesList.length !== 1 ? "s" : ""}`,
+        {
+          duration: 2000,
+        },
+      );
+
       invoicesList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setInvoices(invoicesList);
     } catch (error) {
@@ -176,6 +262,8 @@ export default function InvoicePage() {
     } finally {
       setLoading(false);
     }
+
+
   };
 
   const handleCreateInvoice = () => {
@@ -366,11 +454,11 @@ export default function InvoicePage() {
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Invoices List</h1>
           <p className="text-slate-500 text-xs sm:text-sm mt-1">Manage and track hotel invoices • {filteredInvoices.length} total</p>
         </div>
-        <div className="flex gap-2 sm:gap-3">
+        {/* <div className="flex gap-2 sm:gap-3">
           <button className="btn btn-sm h-9 sm:h-10 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 gap-1 sm:gap-2 shadow-sm font-medium text-xs sm:text-sm px-3 sm:px-4">
             <Download size={14} className="sm:w-4 sm:h-4" /><span className="hidden sm:inline">Bulk</span> PDF
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 mb-4 sm:mb-6">

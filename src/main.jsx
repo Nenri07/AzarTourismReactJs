@@ -265,6 +265,14 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
+      {
+        path: "egypt-invoice/download-pdf/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceViewPage />
+          </AuthLayout>
+        ),
+      },
     ],
   },
   
@@ -286,7 +294,7 @@ const router = createBrowserRouter([
     element: <TRYPInvoiceView />,
   },
   {
-    path: "egypt-invoice/view/:invoiceNumber",
+    path: "egypt-invoice/view/:invoiceId",
     element: <DynamicInvoiceViewPage />,
   },
   
