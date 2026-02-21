@@ -25,8 +25,8 @@ import InvoiceActionBar from "./InvoiceActionBar";
 import InvoiceTemplate from "./InvoiceTemplate";
 import NovotelInvoiceFooter from "./NovotelInvoiceFooter";
 import NovotelInvoiceHeader from "./NovotelInvoiceHeader";
-
-
+import EgyptConditionalSection from "./EgyptDynamicComponents/EgyptConditionalSection";
+import EgyptSummarySection from "./EgyptDynamicComponents/EgyptSummarySection";
 export {
     Header,
     NovotelInvoiceHeader,
@@ -54,5 +54,8 @@ export {
     SuccessModal,
     InvoiceActionBar,
     InvoiceTemplate,
+    EgyptConditionalSection,
+    EgyptSummarySection,
     NovotelInvoiceFooter
+    
 }

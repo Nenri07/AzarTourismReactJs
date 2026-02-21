@@ -1,3 +1,4 @@
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -7,6 +8,7 @@ import store from "./store/store";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import usePersistLogin from "./hooks/usePersistLogin";
 import { useSelector } from "react-redux";
+
 
 // Pages & Components
 import Login from "./components/Login";
@@ -21,6 +23,7 @@ import {
   TRYPInvoiceView,
   DynamicInvoiceFormPage, 
   DynamicInvoiceViewPage,
+  DynamicInvoiceFormPageEgypt,
   NotFoundPage
 } from "./pages";
 
@@ -232,6 +235,33 @@ const router = createBrowserRouter([
         element: (
           <AuthLayout authentication={true} allowedRoles={["super_admin"]}>
             <ComingSoon />
+          </AuthLayout>
+        ),
+      },
+      // ==========================================
+      // EGYPT INVOICES (STAYBRIDGE)
+      // ==========================================
+      {
+        path: "egypt-invoice/create/:hotelId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["super_admin", "employee"]}>
+            <DynamicInvoiceFormPageEgypt />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "egypt-invoice/edit/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPageEgypt />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "egypt-invoice/duplicate/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPageEgypt />
           </AuthLayout>
         ),
       },
