@@ -285,6 +285,11 @@ const router = createBrowserRouter([
     path: "invoice/trypview/:invoiceNumber",
     element: <TRYPInvoiceView />,
   },
+  {
+    path: "egypt-invoice/view/:invoiceNumber",
+    element: <DynamicInvoiceViewPage />,
+  },
+  
   
   // ERROR ROUTES
   {
