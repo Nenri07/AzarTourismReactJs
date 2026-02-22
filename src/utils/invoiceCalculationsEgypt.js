@@ -35,7 +35,8 @@ export const calculateAccommodation = (formData, hotelType) => {
     roomAmountEgp = usdAmount * exchangeRate;
   }
   
-  const totalRoomAllNights = roomAmountEgp * totalNights;
+  const updateRoomAmountEgp = roomAmountEgp.toFixed(2);
+  const totalRoomAllNights = updateRoomAmountEgp * totalNights;
 
   return {
     usdAmount, // Keep unrounded internally
@@ -145,8 +146,9 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       hotel: formData.hotel_name || '',
       invoiceNo: formData.invoice_no || '',
       guestName: capitalizeWords(formData.guest_name) || 'Guest',
-      address: formData.address || '',
-      companyName: formData.company_name || '',
+      address: formData.address || 'Algeria Square Building Number 12 First Floor, Tripoli, Libya',
+      companyName: formData.company_name || 'Azar Tourism Services',
+      referenceNo: formData.reference_no || '',
       arNumber: formData.ar_number || '',
       roomNo: formData.room_number || '',
       arrivalDate: formatDate(formData.arrival_date),

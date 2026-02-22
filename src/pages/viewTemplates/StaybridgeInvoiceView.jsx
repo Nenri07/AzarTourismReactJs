@@ -19,7 +19,7 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
   const invoiceRef = useRef(null);
   
   // Strict row count for pagination matching the Turkey invoice logic
-  const ROWS_PER_PAGE = 19; 
+  const ROWS_PER_PAGE = invoiceData.nights+invoiceData.otherServices.length > 19 ? 19 : 16;
 
   const isPdfDownload = location.pathname.includes("/download-pdf");
 
@@ -73,15 +73,17 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
     if (data.accommodationDetails && Array.isArray(data.accommodationDetails)) {
         data.accommodationDetails.forEach(item => {
             // Match the format USD / .XXXXXXX as seen in the image
-            const exchangeFactor = data.exchangeRate ? data.exchangeRate.toString() : "0";
-            const formattedFactor = exchangeFactor.startsWith('0.') ? exchangeFactor.substring(1) : exchangeFactor;
+            // const exchangeFactor = data.exchangeRate ? data.exchangeRate.toString() : "0";
+            // const formattedFactor = exchangeFactor.startsWith('0.') ? exchangeFactor.substring(1) : exchangeFactor;
             
             transactions.push({
                 date: formatDate(item.date),
+                rawDate: new Date(item.date),
                 text: item.description || "Accommodation",
-                exchangeRate: `${(data.usdAmount / data.nights || 0).toFixed(0)} USD / ${formattedFactor}`,
+                exchangeRate: `${(data.usdAmount || 0).toFixed(0)} USD / ${data.exchangeRate.toFixed(7)}`,
                 charges: item.rate || 0,
-                credits: 0
+                credits: 0,
+                type: 'accommodation'
             });
         });
     }
@@ -90,13 +92,24 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
         data.otherServices.forEach(service => {
             transactions.push({
                 date: formatDate(service.date),
+                rawDate: new Date(service.date),
                 text: service.name || "Service",
                 exchangeRate: "",
                 charges: service.amount || 0,
-                credits: 0
+                credits: 0,
+                type: 'service'
             });
         });
     }
+
+    // Sort by date. If dates are the same, accommodation (night) comes first.
+    transactions.sort((a, b) => {
+      const timeDiff = a.rawDate.getTime() - b.rawDate.getTime();
+      if (timeDiff !== 0) return timeDiff;
+      if (a.type === 'accommodation' && b.type !== 'accommodation') return -1;
+      if (a.type !== 'accommodation' && b.type === 'accommodation') return 1;
+      return 0;
+    });
 
     return {
       ...data,
@@ -156,8 +169,17 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
     const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
     headStyles.forEach(style => {
         const text = style.textContent || "";
-        if (!text.includes('font-family: "Times New Roman"') && 
-            !text.includes('font-family: "GOHQLJ+Times,New Roman"')) {
+        const href = style.href || "";
+        
+        // Match our custom font by name or filename
+        const isOurFont = text.includes('GOHQLJ+Times,New Roman') || 
+                         text.includes('Times New Roman') ||
+                         href.includes('StaybridgeFont');
+
+        if (isOurFont) return; // Keep it
+
+        // Remove other styles that might interfere with PDF (Tailwind v4 issues)
+        if (style.parentNode) {
             style.parentNode.removeChild(style);
         }
     });
@@ -229,18 +251,16 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
     >
       <div ref={invoiceRef} className="staybridge-invoice-wrapper">
         <style>{`
-        @page { size: A4; margin: 6mm; }
-
-
+          @page { size: A4; margin: 6mm; }
           .staybridge-invoice-wrapper * {
             font-family: "GOHQLJ+Times,New Roman", "Times New Roman", Times, serif !important;
           }
           
           .sb-page {
             width: 210mm;
-            min-height: 297mm;
+            min-height: 296mm;
             padding: 6mm;
-            margin: 0 auto 10mm auto;
+            margin: 0 auto;
             background: #fff;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
@@ -251,7 +271,8 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
           
           @media print {
             .staybridge-invoice-wrapper { padding: 0 !important; background: none !important; }
-            .sb-page { margin: 0 !important; box-shadow: none !important; page-break-after: always !important; }
+            .sb-page { margin: 0 !important; box-shadow: none !important; }
+            .sb-page:not(:last-child) { page-break-after: always !important; }
             .no-print { display: none !important; }
           }
 
@@ -268,27 +289,31 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
           
           .sb-header-title {
             font-size: 11pt;
-            margin-top: 22mm;
-            margin-bottom: 25px;
+            margin-top: 25mm;
+            margin-bottom: 10px;
             font-weight: normal;
           }
           
+
           .sb-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            column-gap: 50px;
+            column-gap: 75px;
             margin-bottom: 25px;
             font-size: 9pt;
           }
           
           .sb-info-row {
             display: flex;
-            margin-bottom: 4px;
+            margin-bottom: 10px;
+            width: fit-content;
           }
           
           .sb-label {
-            width: 105px;
+            width: 100px;
             flex-shrink: 0;
+            width: 100%
+            white-space: nowrap;
           }
           
           .sb-value {
@@ -313,40 +338,83 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
             padding: 6px 4px;
             vertical-align: top;
           }
+          
+          .th-date{
+            text-align: left;
+            width: 95px;
+          }
+
+          .th-text{
+            text-align: left;
+            min-width: 220px;
+            white-space: nowrap;
+          }
+
+          .th-rate{
+            text-align: center !important;
+            min-width: 200px;
+            white-space: nowrap;
+          }
+
+          .th-charges{
+            text-align: center !important;
+            min-width: 100px;
+            white-space: nowrap;
+          }
+
+          .th-egp1{
+            text-align: center !important;
+            width: 40px;
+          }
+
+          .th-credits{
+            text-align: center !important;
+            width: 40px;
+          }
+
+          .th-egp2{
+            text-align: right !important;
+            width: 60px;
+          }
 
           .sb-summary-divider {
             border-top: 1pt solid #000;
             margin-top: 2mm;
+            margin-bottom: 7mm;
           }
 
           .sb-total-row {
             display: flex;
             justify-content: space-between;
-            margin-top: 2mm;
+            height: 14px;
             padding-right: 4px;
             font-size: 10pt;
           }
 
           .sb-summary-section {
-            margin-top: 10mm;
+            margin-top: 7mm;
             display: flex;
+            justify-content: flex-end;
             font-size: 10pt;
           }
           
           .sb-summary-left {
-            width: 45%;
-            font-style: italic;
+            padding-top: 15px;
+            width: 37%;
+            font-size: 10pt;
           }
           
           .sb-summary-right {
+            padding-top: 15px;
+            align-items: end;
             width: 55%;
+            font-size: 10pt;
           }
           
           .sb-summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
-            padding-left: 20px;
+            margin-bottom: 10px;
           }
 
           .sb-balance-label {
@@ -391,9 +459,9 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                 </div>
                 <div className="sb-info-row">
                   <span className="sb-label">Address:</span>
-                  <span className="sb-value">{invoice.address}</span>
+                  <span className="sb-value"><p>Algeria Square Building Number 12 First Floor,</p><p>Tripoli, Libya</p></span>
                 </div>
-                <div className="sb-info-row" style={{ marginTop: '5mm' }}>
+                <div className="sb-info-row" style={{ marginTop: '10mm' }}>
                   <span className="sb-label">Company Name:</span>
                   <span className="sb-value">{invoice.companyName}</span>
                 </div>
@@ -401,13 +469,17 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                   <span className="sb-label">A/R Number:</span>
                   <span className="sb-value">{invoice.arNumber}</span>
                 </div>
-                <div className="sb-info-row" style={{ marginTop: '5mm' }}>
+                <div className="sb-info-row" style={{ marginTop: '10mm', whiteSpace: 'nowrap' }}>
                   <span className="sb-label">IHG Rewards Number:</span>
-                  <span className="sb-value">{invoice.ihgRewardsNumber}</span>
+                  <span className="sb-value" style={{ marginLeft: '32px' }}>{invoice.ihgRewardsNumber}</span>
                 </div>
               </div>
 
               <div className="space-y-1">
+                <div className="sb-info-row h-5">
+                  <span className="sb-label"></span>
+                  <span className="sb-value"></span>
+                </div>
                 <div className="sb-info-row">
                   <span className="sb-label">Room No.:</span>
                   <span className="sb-value">{invoice.roomNo}</span>
@@ -425,21 +497,17 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                   <span className="sb-value">{invoice.cashierId}</span>
                 </div>
                 
-                <div className="sb-info-row" style={{ marginTop: '5mm' }}>
+                <div className="sb-info-row" style={{ marginTop: '10mm' }}>
                   <span className="sb-label">Date:</span>
-                  <span className="sb-value">{invoice.formattedInvoiceDate}</span>
-                  <span className="sb-label" style={{ width: '40px', marginLeft: '10mm' }}>Time:</span>
-                  <span className="sb-value">{invoice.formattedInvoiceDate}</span>
-                </div>
-                <div className="sb-info-row">
-                  <span className="sb-label">Date:</span>
-                  <span className="sb-value">{invoice.formattedInvoiceDate}</span>
+                  <span className="sb-value w-100">{invoice.formattedInvoiceDate}</span>
+                  <span className="sb-label" style={{ width: '40px', marginLeft: '15mm' }}>Time:</span>
+                  <span className="sb-value">{invoice.invoiceTime}</span>
                 </div>
                 <div className="sb-info-row">
                   <span className="sb-label">Page No.:</span>
                   <span className="sb-value">{page.pageNum} of {paginatedData.length}</span>
                 </div>
-                <div className="sb-info-row">
+                <div className="sb-info-row" style={{ marginTop: '5mm' }}>
                   <span className="sb-label">Invoice No.:</span>
                   <span className="sb-value">{invoice.invoiceNo}</span>
                 </div>
@@ -450,13 +518,13 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
             <table className="sb-table">
               <thead>
                 <tr>
-                  <th className="w-80">Date</th>
-                  <th>Text</th>
-                  <th className="w-150">Exchange Rate</th>
-                  <th className="text-right w-100">Charges</th>
-                  <th className="w-40 text-center">EGP</th>
-                  <th className="text-right w-80">Credits</th>
-                  <th className="w-40 text-center">EGP</th>
+                  <th className="th-date">Date</th>
+                  <th className="th-text">Text</th>
+                  <th className="th-rate">Exchange Rate</th>
+                  <th className="th-charges">Charges</th>
+                  <th className="th-egp1">EGP</th>
+                  <th className="th-credits">Credits</th>
+                  <th className="th-egp2">EGP</th>
                 </tr>
               </thead>
               <tbody>
@@ -464,11 +532,11 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                   <tr key={midx}>
                     <td>{it.date}</td>
                     <td>{it.text}</td>
-                    <td>{it.exchangeRate}</td>
-                    <td className="text-right">{formatCurrency(it.charges)}</td>
-                    <td className="text-center">{it.charges ? "" : ""}</td>
-                    <td className="text-right">{formatCurrency(it.credits)}</td>
-                    <td className="text-center">{it.credits ? "" : ""}</td>
+                    <td style={{textAlign: 'center'}}>{it.exchangeRate}</td>
+                    <td style={{textAlign: 'center'}}>{formatCurrency(it.charges)}</td>
+                    <td style={{textAlign: 'center'}}>{it.charges ? "" : ""}</td>
+                    <td style={{textAlign: 'center'}}>{it.credits ? "" : ""}</td>
+                    <td style={{textAlign: 'right'}}>{it.credits ? "" : ""}</td>
                   </tr>
                 ))}
               </tbody>
@@ -480,29 +548,30 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                 <div className="sb-summary-divider"></div>
                 <div className="sb-total-row">
                     <div style={{ width: '100px', marginLeft: '45%' }}>Total</div>
-                    <div className="text-right w-120" style={{ marginRight: '75px' }}>{formatCurrency(invoice.grandTotalEgp)}</div>
-                    <div className="text-right w-80">0.00</div>
+                    <div className="text-right w-120" style={{ marginRight: '25px' }}>{formatCurrency(invoice.grandTotalEgp)}</div>
+                    <div className="text-right w-80" style={{ marginRight: '60px' }}>0.00</div>
                 </div>
 
                 <div className="sb-summary-section">
-                  <div className="sb-summary-left">
-                    Exchanges Rates of Current Date
+                  <div className="sb-summary-left" style={{display: 'flex', gap: '18px', paddingRight: '10px'}}>
+                    <span>Exchanges Rates of Current Date</span>
+                    <span>{invoice.exchangeRate}</span>
                   </div>
-                  <div className="sb-summary-right border-t border-black pt-4">
-                    <div className="sb-summary-row">
+                  <div className="sb-summary-right" style={{borderTop: '1px solid black'}}>
+                    <div style={{display: 'flex', gap: '80px', marginBottom: '16px'}}>
                         <span>Balance EGP</span>
                         <span className="w-120 text-right">{formatCurrency(invoice.grandTotalEgp)}</span>
                     </div>
-                    <div className="sb-summary-row">
-                        <span>Balance USD</span>
+                    <div style={{display: 'flex', gap: '80px', marginBottom: '16px'}}>
+                        <span>Total in USD</span>
                         <span className="w-120 text-right">{formatCurrency(invoice.balanceUsd)}</span>
-                    </div>
-                    <div className="sb-summary-row">
-                        <span>Balance EUR</span>
-                        <span className="w-120 text-right">0.00</span>
                     </div>
 
                     <div style={{ marginTop: '5mm' }}>
+                          <div className="sb-summary-row">
+                            <span style={{ width: '120px' }}>Net Amount :</span>
+                            <span className="sb-value">{formatCurrency(invoice.baseTaxableAmount)}</span>
+                        </div>
                         <div className="sb-summary-row">
                             <span style={{ width: '120px' }}>Vat 14% :</span>
                             <span className="sb-value">{formatCurrency(invoice.vat14Percent)}</span>
@@ -520,13 +589,6 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                 </div>
               </>
             )}
-
-            {/* Footer */}
-            <div className="sb-footer">
-              Staybridge Suites - Cairo Citystars, Emtedad Makram Ebeid St., Heliopolis, Cairo, 11737, Egypt<br />
-              tel +20 (2) 24 803 333 | fax +20 (2) 24 803 330 | 0800 00 096 91 | StaybridgeSuites.com<br />
-              email info.sbcitystars@ihg.com
-            </div>
           </div>
         ))}
       </div>
