@@ -5,6 +5,7 @@ import cairoInvoiceApi from "../../Api/cairoInvoice.api";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
+import "../../assets/fonts/StaybridgeFont.css";
 
 const StaybridgeInvoiceView = ({ invoiceData }) => {
   const { invoiceId } = useParams();
@@ -17,8 +18,8 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
   const [paginatedData, setPaginatedData] = useState([]);
   const invoiceRef = useRef(null);
   
-  // Strict row count for A4 layout matching the reference image's density
-  const ROWS_PER_PAGE = 28; 
+  // Strict row count for pagination matching the Turkey invoice logic
+  const ROWS_PER_PAGE = 19; 
 
   const isPdfDownload = location.pathname.includes("/download-pdf");
 
@@ -145,29 +146,68 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
       
       setPaginatedData(pages);
     }
-  }, [invoice]);
+  }, [invoice, ROWS_PER_PAGE]);
 
   const handleDownloadPDF = async () => {
     if (!invoiceRef.current) return;
     setPdfLoading(true);
+
+    // 1. Style Guard (Tailwind v4 Bypass) - Match Turkey Invoice View Logic
+    const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
+    headStyles.forEach(style => {
+        const text = style.textContent || "";
+        if (!text.includes('font-family: "Times New Roman"') && 
+            !text.includes('font-family: "GOHQLJ+Times,New Roman"')) {
+            style.parentNode.removeChild(style);
+        }
+    });
+
     try {
+      // Image Verification
+      const images = invoiceRef.current.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+              img.onload = resolve;
+              img.onerror = resolve;
+          });
+      }));
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
         filename: `Staybridge_Invoice_${invoice.invoiceNo || 'Staybridge'}.pdf`,
-        image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 3, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { 
+            scale: 3, 
+            useCORS: true, 
+            letterRendering: true,
+            scrollY: 0,
+            windowWidth: 794
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
       };
+      
       await html2pdf().set(opt).from(element).save();
       toast.success("PDF Downloaded Successfully");
     } catch (err) {
       console.error("PDF Error:", err);
       toast.error("Failed to generate PDF");
     } finally {
+      // 5. Instant Recovery (Styles Restore)
+      headStyles.forEach(style => {
+          if (!style.parentNode) {
+              document.head.appendChild(style);
+          }
+      });
       setPdfLoading(false);
     }
   };
+
+  const handlePrint = () => window.print();
 
   if (!invoice) {
       return (
@@ -184,62 +224,61 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
       invoice={invoice}
       pdfLoading={pdfLoading}
       onDownloadPDF={handleDownloadPDF}
-      onPrint={() => window.print()}
+      onPrint={handlePrint}
       onBack={() => navigate("/invoices")}
     >
       <div ref={invoiceRef} className="staybridge-invoice-wrapper">
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap');
-          
-          .staybridge-invoice-wrapper {
-            background-color: #e5e7eb;
-            padding: 40px 0;
-            min-height: 100vh;
+        @page { size: A4; margin: 6mm; }
+
+
+          .staybridge-invoice-wrapper * {
+            font-family: "GOHQLJ+Times,New Roman", "Times New Roman", Times, serif !important;
           }
           
           .sb-page {
             width: 210mm;
             min-height: 297mm;
-            padding: 15mm 20mm;
+            padding: 6mm;
             margin: 0 auto 10mm auto;
             background: #fff;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
             box-sizing: border-box;
-            font-family: "Times New Roman", Times, serif;
             color: #000;
-            line-height: normal;
+            line-height: 1.25;
           }
           
           @media print {
-            .staybridge-invoice-wrapper { padding: 0; background: none; }
-            .sb-page { margin: 0; box-shadow: none; page-break-after: always; }
+            .staybridge-invoice-wrapper { padding: 0 !important; background: none !important; }
+            .sb-page { margin: 0 !important; box-shadow: none !important; page-break-after: always !important; }
+            .no-print { display: none !important; }
           }
 
           .sb-logo-container {
             position: absolute;
-            top: 5mm;
-            right: 15mm;
-            text-align: center;
+            top: 2mm;
+            right: 6mm;
           }
           
           .sb-logo-img {
-            width: 190px;
+            width: 175px;
             display: block;
           }
           
           .sb-header-title {
-            font-weight: bold;
             font-size: 11pt;
-            margin-top: 25mm;
-            margin-bottom: 5mm;
+            margin-top: 22mm;
+            margin-bottom: 25px;
+            font-weight: normal;
           }
           
           .sb-grid {
             display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            margin-bottom: 25mm;
-            font-size: 9.5pt;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 50px;
+            margin-bottom: 25px;
+            font-size: 9pt;
           }
           
           .sb-info-row {
