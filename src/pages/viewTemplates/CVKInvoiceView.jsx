@@ -288,9 +288,9 @@ export default function CVKInvoiceView({ invoiceData }) {
       const opt = {
         margin: 0,
         filename: `${invoice.refNo}.pdf`,
-        image: { type: 'jpeg', quality: 2 },
+        image: { type: 'jpeg', quality: 3 },
         html2canvas: {
-          scale: 3,
+          scale: 4,
           useCORS: true,
           letterRendering: true,
           scrollY: 0,
@@ -394,7 +394,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         .desc-val { margin-right: -35px; }
         .footer-container { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9.1px !important; }
         .footer-left { width: 45%; }
-        .footer-right { width: 38%; margin-top: -8px;}
+        .footer-right { width: 36%; margin-top: -8px;}
         .tax-table { width: 70%; border-collapse: collapse; margin-bottom: 15px; margin-top: -8px; }
         .tax-table th { background-color: #ededed;  font-weight: normal; }
         .tax-table td { padding: 1px; text-align: center; }
