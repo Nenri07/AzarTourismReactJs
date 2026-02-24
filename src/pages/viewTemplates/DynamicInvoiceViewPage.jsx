@@ -148,6 +148,8 @@ import TRYPInvoiceView from "./TRYPInvoiceView";
 import GrandArasInvoiceView from "./GrandarasInvoiceView";
 import StaybridgeInvoiceView from "./StaybridgeInvoiceView"; 
 import InvoiceViewPage from "./InvoiceViewPage";
+import RaddisonInvoiceView from "./RaddisonInvoiceView";
+import IntercontinentalInvoiceView from "./intercontinentalInvoiceView";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -208,14 +210,22 @@ export default function DynamicInvoiceViewPage() {
         detectedType = "TRYP";
       } else if (hotelName.includes("novotel")) {
         detectedType = "Novotel";
-      } else if (hotelName.includes("staybridge") || hotelName.includes("cairo")) {
+      } else if (hotelName.includes("staybridge") ) {
         detectedType = "Staybridge"; // ✅ Detect Staybridge
-      } else if (hotelName.includes("grand") || hotelName.includes("aras")) {
+      } else if (hotelName.includes(" radisson residences") || hotelName.includes("radisson")) {
+        detectedType = "Raddison1";
+      }
+      else if (hotelName.includes("intercontinental")) {
+        detectedType = "Intercontinental";
+      }
+      else if (hotelName.includes("grand") || hotelName.includes("aras")) {
         detectedType = "GrandAras";
       }
       
       console.log("🎯 Detected hotel type:", detectedType);
       setHotelType(detectedType);
+      
+
       
     } catch (error) {
       console.error("❌ Error loading invoice:", error);
@@ -272,7 +282,13 @@ export default function DynamicInvoiceViewPage() {
     return <StaybridgeInvoiceView invoiceData={invoice} />; 
   } else if (hotelType === "GrandAras") {
     return <GrandArasInvoiceView invoiceData={invoice} />;
-  } else {
+  } else if(hotelType === "Raddison1") {
+    return <RaddisonInvoiceView invoiceData={invoice} />;
+  }else if(hotelType === "Intercontinental") {
+    return <IntercontinentalInvoiceView invoiceData={invoice} />;
+  }
+
+  else {
     // Default fallback
     return <GrandArasInvoiceView invoiceData={invoice} />;
   }

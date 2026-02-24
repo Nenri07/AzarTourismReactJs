@@ -24,6 +24,8 @@ import {
   DynamicInvoiceFormPage, 
   DynamicInvoiceViewPage,
   DynamicInvoiceFormPageEgypt,
+  RaddisonInvoiceView,
+  IntercontinentalInvoiceView,
   NotFoundPage
 } from "./pages";
 
@@ -286,6 +288,10 @@ const router = createBrowserRouter([
     element: <InvoiceViewPage />,
   },
   {
+    path: "invoice/view/radison",
+    element: <RaddisonInvoiceView />,
+  },
+  {
     path: "invoice/view/:invoiceId",
     element: <DynamicInvoiceViewPage />,
   },
@@ -297,7 +303,10 @@ const router = createBrowserRouter([
     path: "egypt-invoice/view/:invoiceId",
     element: <DynamicInvoiceViewPage />,
   },
-  
+ {
+    path: "invoice/view/intercontinental",
+    element: <IntercontinentalInvoiceView />,
+  },
   
   // ERROR ROUTES
   {
