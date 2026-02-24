@@ -825,9 +825,9 @@ export default function NovotelInvoiceView({ invoiceData }) {
             const opt = {
                 margin: 0,
                 filename: `${invoice.referenceNo || "Invoice"}.pdf`,
-                image: { type: "jpeg", quality: 0.98 },
+                image: { type: "jpeg", quality: 3 },
                 html2canvas: {
-                    scale: 2,
+                    scale: 4,
                     useCORS: true,
                     letterRendering: true,
                     backgroundColor: "#ffffff",

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holiday Inn Invoice</title>
+    <style>
+        /* General Reset and Page Setup */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #e0e0e0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .page-container {
+            width: 210mm; /* A4 Width */
+            min-height: 297mm; /* A4 Height */
+            background-color: #fff;
+            padding: 40px 50px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header & Logo */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+        }
+
+        .logo-container {
+            width: 200px;
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .invoice-title-area {
+            text-align: right;
+        }
+
+        .invoice-title-area h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .invoice-title-area h2 {
+            font-size: 14px;
+            font-weight: normal;
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        /* Guest & Stay Details */
+        .details-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            row-gap: 8px;
+        }
+
+        .details-grid .label {
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* Main Table */
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .invoice-table th, .invoice-table td {
+            padding: 8px 5px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        /* Only the header has a bottom border now */
+        .invoice-table th {
+            border-bottom: 1px solid #000;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* Removed border-bottom from td to clear the extra lines */
+        .invoice-table td {
+            border-bottom: none; 
+        }
+
+        .text-right {
+            text-align: right !important;
+        }
+
+        /* Totals Section */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+            margin-bottom: 40px;
+        }
+
+        .totals-grid {
+            display: grid;
+            grid-template-columns: 150px 100px;
+            row-gap: 8px;
+            font-size: 13px;
+        }
+
+        .totals-grid .label {
+            text-align: right;
+            padding-right: 15px;
+            color: #555;
+        }
+
+        .totals-grid .value {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .totals-grid .bold-label {
+            font-weight: bold;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-container">
+
+    <div class="header">
+        <div class="logo-container">
+            <img src="holidayIn-logo.png" alt="Holiday Inn Cairo Citystars">
+        </div>
+        <div class="invoice-title-area">
+            <h1>Your Stay</h1>
+            <h2>INVOICE INFORMATION</h2>
+        </div>
+    </div>
+
+    <div class="details-section">
+        <div class="details-grid">
+            <div class="label">Guest Name</div>
+            <div class="value">Mr Abdulssalam Abujrad</div>
+
+            <div class="label">Confirmation No.</div>
+            <div class="value">5052893</div>
+
+            <div class="label">Cashier</div>
+            <div class="value">969</div>
+
+            <div class="label">IHG One Rewards No.</div>
+            <div class="value"></div>
+
+            <div class="label">Charge to</div>
+            <div class="value">AZAR Tourism (Static)</div>
+        </div>
+
+        <div class="details-grid">
+            <div class="label">Print Date</div>
+            <div class="value">11-05-25</div>
+
+            <div class="label">Room No.</div>
+            <div class="value">0261</div>
+
+            <div class="label">Arrival</div>
+            <div class="value">26-04-25</div>
+
+            <div class="label">Departure</div>
+            <div class="value">07-05-25</div>
+
+            <div class="label">Page</div>
+            <div class="value">1 of 2</div>
+
+            <div class="label">Invoice No.</div>
+            <div class="value">562639</div>
+        </div>
+    </div>
+
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Date</th>
+                <th style="width: 35%;">Description</th>
+                <th style="width: 20%;">Reference</th>
+                <th class="text-right" style="width: 15%;">Charges</th>
+                <th class="text-right" style="width: 15%;">Credits</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>26-04-25</td>
+                <td>Accommodation</td>
+                <td>129473531</td>
+                <td class="text-right">9,980.10</td>
+                <td class="text-right"></td>
+            </tr>
+            <tr>
+                <td>27-04-25</td>
+                <td>Accommodation</td>
+                <td>129489325</td>
+                <td class="text-right">9,980.10</td>
+                <td class="text-right"></td>
+            </tr>
+            <tr>
+                <td>28-04-25</td>
+                <td>Bank Transfer<br><span style="font-size: 10px; color: #555;">2145 USD x 51.18<br>Deducted from BT with amount 4253555</span></td>
+                <td></td>
+                <td class="text-right"></td>
+                <td class="text-right">109,781.10</td>
+            </tr>
+            <tr>
+                <td>28-04-25</td>
+                <td>Accommodation</td>
+                <td>129514095</td>
+                <td class="text-right">9,945.00</td>
+                <td class="text-right">19,960.20</td>
+            </tr>
+            <tr>
+                <td>29-04-25</td>
+                <td>Accommodation</td>
+                <td>129524465</td>
+                <td class="text-right">9,945.00</td>
+                <td class="text-right"></td>
+            </tr>
+            <tr>
+                <td>30-04-25</td>
+                <td>Accommodation</td>
+                <td>129543872</td>
+                <td class="text-right">9,945.00</td>
+                <td class="text-right"></td>
+            </tr>
+            <tr>
+                <td>01-05-25</td>
+                <td>Accommodation</td>
+                <td>129569420</td>
+                <td class="text-right">9,945.00</td>
+                <td class="text-right"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="totals-section">
+        <div class="totals-grid">
+            <div class="label">Total excl. VAT</div>
+            <div class="value">96,350.94</div>
+
+            <div class="label">VAT Amount</div>
+            <div class="value">13,430.16</div>
+
+            <div class="label bold-label">Total incl. VAT</div>
+            <div class="value">109,781.10</div>
+            
+            <div class="label bold-label" style="margin-top: 15px;">Total Balance EGP</div>
+            <div class="value" style="margin-top: 15px;">0.00</div>
+
+            <div class="label bold-label">Total Balance USD</div>
+            <div class="value">0.00</div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

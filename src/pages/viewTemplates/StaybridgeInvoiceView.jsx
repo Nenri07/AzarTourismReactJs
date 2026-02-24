@@ -18,8 +18,7 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
   const [paginatedData, setPaginatedData] = useState([]);
   const invoiceRef = useRef(null);
   
-  // Strict row count for pagination matching the Turkey invoice logic
-  const ROWS_PER_PAGE = invoiceData.nights+invoiceData.otherServices.length > 19 ? 19 : 16;
+  // Pagination logic handled in useEffect based on total transactions
 
   const isPdfDownload = location.pathname.includes("/download-pdf");
 
@@ -143,23 +142,47 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
   useEffect(() => {
     if (invoice && invoice.transactions) {
       const pages = [];
-      const totalTx = invoice.transactions.length;
-      
-      for (let i = 0; i < totalTx; i += ROWS_PER_PAGE) {
+      const transactions = invoice.transactions;
+      const totalTx = transactions.length;
+
+      if (totalTx > 19) {
+        // If greater than 19 rows, break the page (chunk size 19)
+        const CHUNK_SIZE = 19;
+        for (let i = 0; i < totalTx; i += CHUNK_SIZE) {
+          pages.push({
+            items: transactions.slice(i, i + CHUNK_SIZE),
+            pageNum: pages.length + 1,
+            isLast: i + CHUNK_SIZE >= totalTx
+          });
+        }
+      } else if (totalTx >= 15) {
+        // If 14 to 19 rows, show all rows on page 1 and shift totals to page 2
         pages.push({
-          items: invoice.transactions.slice(i, i + ROWS_PER_PAGE),
-          pageNum: pages.length + 1,
-          isLast: i + ROWS_PER_PAGE >= totalTx
+          items: transactions,
+          pageNum: 1,
+          isLast: false // Hide totals on page 1
+        });
+        pages.push({
+          items: [],
+          pageNum: 2,
+          isLast: true // Show totals on page 2
+        });
+      } else {
+        // Less than 14 rows, show everything on one page
+        pages.push({
+          items: transactions,
+          pageNum: 1,
+          isLast: true
         });
       }
       
       if (pages.length === 0) {
-          pages.push({ items: [], pageNum: 1, isLast: true });
+        pages.push({ items: [], pageNum: 1, isLast: true });
       }
       
       setPaginatedData(pages);
     }
-  }, [invoice, ROWS_PER_PAGE]);
+  }, [invoice]);
 
   const handleDownloadPDF = async () => {
     if (!invoiceRef.current) return;
@@ -201,9 +224,9 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
       const opt = {
         margin: 0,
         filename: `Staybridge_Invoice_${invoice.invoiceNo || 'Staybridge'}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
+        image: { type: 'jpeg', quality: 3 },
         html2canvas: { 
-            scale: 3, 
+            scale: 4, 
             useCORS: true, 
             letterRendering: true,
             scrollY: 0,
@@ -251,7 +274,7 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
     >
       <div ref={invoiceRef} className="staybridge-invoice-wrapper">
         <style>{`
-          @page { size: A4; margin: 6mm; }
+          @page { size: A4; margin: 0mm; }
           .staybridge-invoice-wrapper * {
             font-family: "GOHQLJ+Times,New Roman", "Times New Roman", Times, serif !important;
           }
@@ -299,13 +322,13 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
             display: grid;
             grid-template-columns: 1fr 1fr;
             column-gap: 75px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 9pt;
           }
           
           .sb-info-row {
             display: flex;
-            margin-bottom: 10px;
+            margin-bottom: 7px;
             width: fit-content;
           }
           
@@ -358,8 +381,14 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
 
           .th-charges{
             text-align: center !important;
-            min-width: 100px;
+            // min-width: 100px;
+            margin-right: 50px;
             white-space: nowrap;
+          }
+
+          .th-dummy{
+            text-align: center !important;
+            min-width: 25px;
           }
 
           .th-egp1{
@@ -522,6 +551,7 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                   <th className="th-text">Text</th>
                   <th className="th-rate">Exchange Rate</th>
                   <th className="th-charges">Charges</th>
+                  <th className="th-dummy"></th>
                   <th className="th-egp1">EGP</th>
                   <th className="th-credits">Credits</th>
                   <th className="th-egp2">EGP</th>
@@ -533,7 +563,7 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                     <td>{it.date}</td>
                     <td>{it.text}</td>
                     <td style={{textAlign: 'center'}}>{it.exchangeRate}</td>
-                    <td style={{textAlign: 'center'}}>{formatCurrency(it.charges)}</td>
+                    <td style={{textAlign: 'right'}}>{formatCurrency(it.charges)}</td>
                     <td style={{textAlign: 'center'}}>{it.charges ? "" : ""}</td>
                     <td style={{textAlign: 'center'}}>{it.credits ? "" : ""}</td>
                     <td style={{textAlign: 'right'}}>{it.credits ? "" : ""}</td>
@@ -555,7 +585,7 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                 <div className="sb-summary-section">
                   <div className="sb-summary-left" style={{display: 'flex', gap: '18px', paddingRight: '10px'}}>
                     <span>Exchanges Rates of Current Date</span>
-                    <span>{invoice.exchangeRate}</span>
+                    <span>{invoice.exchangeRate.toFixed(7)}</span>
                   </div>
                   <div className="sb-summary-right" style={{borderTop: '1px solid black'}}>
                     <div style={{display: 'flex', gap: '80px', marginBottom: '16px'}}>
