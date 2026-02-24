@@ -13,6 +13,8 @@ import DynamicInvoiceViewPage from "./viewTemplates/DynamicInvoiceViewPage";
 import NotFoundPage from "./NotFoundPage";
 import GrandArasInvoiceView from "./viewTemplates/GrandarasInvoiceView";
 import DynamicInvoiceFormPageEgypt from './DynamicInvoiceFormPageEgypt'
+import RaddisonInvoiceView from "./viewTemplates/RaddisonInvoiceView";
+import IntercontinentalInvoiceView from "./viewTemplates/intercontinentalInvoiceView";
 
 
 export {
@@ -21,6 +23,8 @@ export {
     CVKInvoiceView, HotelConfigPage, DynamicInvoiceFormPage,
     TRYPInvoiceView,DynamicInvoiceViewPage,DynamicInvoiceFormPageEgypt
     ,NotFoundPage,
-    GrandArasInvoiceView
+    GrandArasInvoiceView,
+    RaddisonInvoiceView,
+    IntercontinentalInvoiceView
 
 };
