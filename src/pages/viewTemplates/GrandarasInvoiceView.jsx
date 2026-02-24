@@ -294,9 +294,9 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
       const opt = {
         margin: 0,
         filename: `${invoice.meta.refno}.pdf`,
-        image: { type: 'jpeg', quality: 2 },
+        image: { type: 'jpeg', quality: 3 },
         html2canvas: {
-          scale: 3,
+          scale: 4,
           useCORS: true,
           letterRendering: true,
           scrollY: 0,
@@ -387,8 +387,8 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
           .header-section { display: flex; justify-content: space-between; margin-bottom: 0px; }
           .company-details { margin-top: 40px; margin-bottom: 40px;}
           .company-name { font-weight: bold; text-transform: uppercase; font-size: 11px; margin-bottom: 2px; }
-          .logo-container { text-align: right; width: 35%; padding-right: 50px; }
-          .logo-img { max-width: 110px; height: auto; }
+          .logo-container { text-align: right; width: 25%; padding-right: 50px; }
+          .logo-img { max-width: 80px; height: auto; }
 
           .meta-row { display: flex; justify-content: space-between; gap: 0; height: 9px }
           .guest-name {margin: 4px 0 0 0; height: 15px}
@@ -430,7 +430,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
 
           .footer-section { display: flex; justify-content: space-between; margin-top: 20px; font-size:9.2px; }
           .footer-left { width: 45%; }
-          .footer-right { width: 45%; text-align: right; margin-top: -10px; }
+          .footer-right { width: 36%; text-align: right; margin-top: -10px; }
 
           .tax-table { width: 70%; border-collapse: collapse; margin-bottom: 15px; margin-top: -10px; }
           .tax-table th { background-color: #f0f0f0; text-align: right; font-weight: normal; }
