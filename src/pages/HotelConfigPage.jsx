@@ -4,7 +4,8 @@ import { getHotelConfigs, createHotelConfig, updateHotelConfig, deleteHotelConfi
 
 const SAMPLE_HOTEL_CONFIG = {
   "hotel_name": "Novotel Tunis Lac",
-  "currency": "EUR",
+  "currency": "TRY",
+  "country": "Tunis",
   "form_fields": [
     {"field_id": "company_name", "label": "Company Name", "data_type": "string", "required": true, "max_length": 100, "example": "Azar Tourism Services"},
     {"field_id": "address", "label": "Company Address", "data_type": "string", "required": true, "max_length": 200, "example": "Algeria Square Building Tripoli Libyan Arab Jamal"},
@@ -24,7 +25,7 @@ const SAMPLE_HOTEL_CONFIG = {
       "object_name": "accommodation",
       "fields": [
         {"field_id": "total_nights", "label": "Total Nights", "data_type": "integer", "auto_calculated": true, "calculation": "departure_date - arrival_date", "example": 7},
-        {"field_id": "room_rate", "label": "Room Rate per Night", "data_type": "decimal", "required": true, "example": 150.00, "currency": "EUR"},
+        {"field_id": "room_rate", "label": "Room Rate per Night", "data_type": "decimal", "required": true, "example": 150.00, "currency": "TRY"},
         {"field_id": "room_type", "label": "Room Type", "data_type": "string", "required": false, "example": "Standard", "options": ["Standard", "Deluxe", "Suite", "Executive"]},
         {"field_id": "board_basis", "label": "Board Basis", "data_type": "string", "required": false, "example": "Room Only", "options": ["Room Only", "Bed & Breakfast", "Half Board", "Full Board"]}
       ],
@@ -69,7 +70,8 @@ const SAMPLE_HOTEL_CONFIG = {
   }
 }
 
-const CURRENCIES = ['EUR', 'USD', 'TRY', 'AED', 'GBP', 'SAR', 'QAR', 'OMR', 'KWD', 'BHD'];
+const CURRENCIES = ['EUR', 'TRY', 'EGP', 'USD', 'AED', 'GBP', 'SAR', 'QAR', 'OMR', 'KWD', 'BHD'];
+const COUNTRIES = ['Turkey', 'Egypt', 'Tunis', 'Malaysia', 'London', 'Germany', 'Qatar', 'Bahrain', 'Oman', 'Kuwait'];
 
 const HotelConfigPage = () => {
   const [configs, setConfigs] = useState([]);
@@ -79,7 +81,8 @@ const HotelConfigPage = () => {
   const [success, setSuccess] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [hotelName, setHotelName] = useState('');
-  const [currency, setCurrency] = useState('EUR');
+  const [currency, setCurrency] = useState('TRY');
+  const [country, setCountry] = useState('Turkey');
   const [jsonConfig, setJsonConfig] = useState('');
 
   useEffect(() => {
@@ -117,8 +120,8 @@ const HotelConfigPage = () => {
     try {
       const parsed = JSON.parse(jsonString);
       
-      if (!parsed.hotel_name || !parsed.currency) {
-        return 'Missing hotel_name or currency';
+      if (!parsed.hotel_name || !parsed.currency || !parsed.country) {
+        return 'Missing hotel_name, currency or country';
       }
       if (!Array.isArray(parsed.form_fields)) {
         return 'form_fields must be an array';
@@ -160,7 +163,16 @@ const HotelConfigPage = () => {
     updateJsonField('currency', newCurrency);
   }, [updateJsonField]);
 
+    const handleCountryChange = useCallback((e) => {
+    const newCountry = e.target.value;
+    setCountry(newCountry);
+    updateJsonField('country', newCountry);
+  }, [updateJsonField]);
+
   const handleSave = async () => {
+
+    console.log("this is country name", country);
+    
     setError('');
     setSuccess('');
 
@@ -183,6 +195,11 @@ const HotelConfigPage = () => {
     try {
       setSaving(true);
       const parsedConfig = JSON.parse(jsonConfig);
+
+      // Force top-level fields to match the UI states to ensure they are saved
+      parsedConfig.hotel_name = hotelName;
+      parsedConfig.currency = currency;
+      parsedConfig.country = country;
 
       if (editingId) {
         await updateHotelConfig(editingId, parsedConfig);
@@ -212,6 +229,7 @@ const HotelConfigPage = () => {
     setEditingId(config.id);
     setHotelName(config.hotel_name);
     setCurrency(config.currency);
+    setCountry(config.country || 'Turkey');
     
     const { id, created_at, ...configData } = config;
     setJsonConfig(JSON.stringify(configData, null, 2));
@@ -244,7 +262,8 @@ const HotelConfigPage = () => {
   const resetForm = useCallback(() => {
     setEditingId(null);
     setHotelName('');
-    setCurrency('EUR');
+    setCurrency('TRY');
+    setCountry('Turkey');
     setJsonConfig('');
     setError('');
   }, []);
@@ -305,6 +324,21 @@ const HotelConfigPage = () => {
               >
                 {CURRENCIES.map(curr => (
                   <option key={curr} value={curr}>{curr}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Country <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={country}
+                onChange={handleCountryChange}
+                className="w-full h-12 px-4 text-base text-slate-900 bg-white border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              >
+                {COUNTRIES.map(country => (
+                  <option key={country} value={country}>{country}</option>
                 ))}
               </select>
             </div>
@@ -397,6 +431,9 @@ const HotelConfigPage = () => {
                       <div className="flex items-center gap-4 text-sm text-slate-500">
                         <span>
                           Currency: <span className="font-medium text-slate-700">{config.currency}</span>
+                        </span>
+                        <span>
+                          Country: <span className="font-medium text-slate-700">{config.country}</span>
                         </span>
                         <span>
                           ID: <span className="font-mono font-medium text-slate-700">{config.id}</span>
