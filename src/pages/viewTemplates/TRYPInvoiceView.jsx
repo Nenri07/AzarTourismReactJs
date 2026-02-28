@@ -385,7 +385,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         .main-table { width: 100%; border-spacing: 0; margin-bottom: 20px; border: 1px solid  rgba(0, 0, 0, 0.3); }
         .main-table thead tr { background-color: #f0f0f0; }
         .main-table th { text-align: left; padding: 4px 6px; font-weight: normal; }
-        .main-table td { padding: 4px 6px; vertical-align: top; }
+        .main-table td { padding: 2px 6px; vertical-align: top; }
 
         .col-desc { width: 75%; }
         .col-date { width: 15%; }

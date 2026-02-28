@@ -387,7 +387,7 @@ export default function CVKInvoiceView({ invoiceData }) {
         
         .main-table { width: 100%; border-spacing:0 ; border: 1px solid rgba(0, 0, 0, 0.3); margin-bottom: 20px; }
         .main-table th { background-color: #ededed;  padding: 2px 4px 1px 6px; font-weight: normal; text-align: left; }
-        .main-table td { padding: 3px 6px; }
+        .main-table td { padding: 2px 6px; }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .desc-col { display: flex; justify-content: space-between; width: 100%; padding-right: 15px}

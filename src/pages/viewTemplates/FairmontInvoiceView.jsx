@@ -461,9 +461,8 @@ const FairmontInvoiceView = ({ invoiceData }) => {
               <div className="fm-guest-details">
                 {invoice.guestName}<br />
                 {invoice.companyName || "Azar Tourism"}<br />
-                Algeria Square Building Number 12<br />
-                First Floor, Tripoli 1254 Tripoli<br />
-                Libya<br /><br />
+                Algeria Square Building Number 12 First Floor,<br />
+                Tripoli, Libya<br /><br />
                 <table className="fm-info-table">
                   <tbody>
                     <tr><td colSpan="2" style={{ paddingBottom: '5px' }}>COPY OF INVOICE</td></tr>
@@ -508,7 +507,7 @@ const FairmontInvoiceView = ({ invoiceData }) => {
                 {page.items.map((it, midx) => (
                   <tr key={midx}>
                     <td>{it.date}</td>
-                    <td>{it.description}{" on BB basis"}</td>
+                    <td>{it.description}</td>
                     <td>{formatCurrency(it.chargesEGP)}</td>
                     <td>{it.creditsEGP > 0 ? formatCurrency(it.creditsEGP) : ""}</td>
                     <td>{formatCurrency(it.chargesUSD)}</td>

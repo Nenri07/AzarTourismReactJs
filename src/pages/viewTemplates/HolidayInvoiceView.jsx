@@ -481,13 +481,13 @@ const HolidayInvoiceView = ({ invoiceData }) => {
                     <span className="text-left">{formatCurrency(invoice.balanceUsd)}</span>
                     
                     <span className="hi-label" style={{marginTop: '10px'}}>Total excl. VAT</span>
-                    <span className="text-left" style={{marginTop: '10px'}}>{formatCurrency(invoice.baseTaxableAmount)}</span>
+                    <span className="text-left" style={{marginTop: '10px'}}>{formatCurrency(invoice.totalExVat)}</span>
                     
                     <span className="hi-label">VAT Amount</span>
                     <span className="text-left">{formatCurrency(invoice.vat14Percent)}</span>
                     
                     <span className="hi-label" style={{marginTop: '10px'}}>Total incl. VAT</span>
-                    <span className="text-left" style={{marginTop: '10px'}}>{formatCurrency((invoice.baseTaxableAmount || 0) + (invoice.vat14Percent || 0))}</span>
+                    <span className="text-left" style={{marginTop: '10px'}}>{formatCurrency(invoice.totalInclVat)}</span>
                     <span className="hi-label">Exchange Rate 1 USD</span>
                     <span className="text-left">{invoice.exchangeRate}</span>
                   </div>
