@@ -488,9 +488,9 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                 </div>
                 <div className="sb-info-row">
                   <span className="sb-label">Address:</span>
-                  <span className="sb-value"><p>Algeria Square Building Number 12 First Floor,</p><p>Tripoli, Libya</p></span>
+                  <span className="sb-value"><span>Algeria Square Building Number 12 First Floor,</span><span>Tripoli, Libya</span></span>
                 </div>
-                <div className="sb-info-row" style={{ marginTop: '10mm' }}>
+                <div className="sb-info-row" style={{ marginTop: '9mm' }}>
                   <span className="sb-label">Company Name:</span>
                   <span className="sb-value">{invoice.companyName}</span>
                 </div>
@@ -498,18 +498,14 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                   <span className="sb-label">A/R Number:</span>
                   <span className="sb-value">{invoice.arNumber}</span>
                 </div>
-                <div className="sb-info-row" style={{ marginTop: '10mm', whiteSpace: 'nowrap' }}>
+                <div className="sb-info-row" style={{ marginTop: '9.5mm', whiteSpace: 'nowrap' }}>
                   <span className="sb-label">IHG Rewards Number:</span>
                   <span className="sb-value" style={{ marginLeft: '32px' }}>{invoice.ihgRewardsNumber}</span>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <div className="sb-info-row h-5">
-                  <span className="sb-label"></span>
-                  <span className="sb-value"></span>
-                </div>
-                <div className="sb-info-row">
+                <div className="sb-info-row" style={{ marginTop: '6mm' }}>
                   <span className="sb-label">Room No.:</span>
                   <span className="sb-value">{invoice.roomNo}</span>
                 </div>
@@ -526,11 +522,15 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                   <span className="sb-value">{invoice.cashierId}</span>
                 </div>
                 
-                <div className="sb-info-row" style={{ marginTop: '10mm' }}>
+                <div className="sb-info-row" style={{ marginTop: '8.5mm' }}>
                   <span className="sb-label">Date:</span>
                   <span className="sb-value w-100">{invoice.formattedInvoiceDate}</span>
                   <span className="sb-label" style={{ width: '40px', marginLeft: '15mm' }}>Time:</span>
                   <span className="sb-value">{invoice.invoiceTime}</span>
+                </div>
+                <div className="sb-info-row">
+                  <span className="sb-label">Date:</span>
+                  <span className="sb-value w-100">{invoice.formattedInvoiceDate}</span>
                 </div>
                 <div className="sb-info-row">
                   <span className="sb-label">Page No.:</span>

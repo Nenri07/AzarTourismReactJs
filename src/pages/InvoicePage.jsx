@@ -50,7 +50,14 @@ export default function InvoicePage() {
   // ✅ Helper to identify Egypt invoices globally
   const isEgyptInvoice = (hotelName) => {
     const name = (hotelName || "").toLowerCase();
-    return name.includes("staybridge") || name.includes("cairo");
+    return name.includes("staybridge") || 
+           name.includes("cairo") || 
+           name.includes("fairmont") || 
+           name.includes("fairmount") || 
+           name.includes("holiday") || 
+           name.includes("radisson") || 
+           name.includes("raddison") ||
+           name.includes("intercontinental");
   };
 
   useEffect(() => {
