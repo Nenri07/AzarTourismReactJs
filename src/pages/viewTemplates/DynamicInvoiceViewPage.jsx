@@ -150,6 +150,7 @@ import StaybridgeInvoiceView from "./StaybridgeInvoiceView";
 import InvoiceViewPage from "./InvoiceViewPage";
 import RaddisonInvoiceView from "./RaddisonInvoiceView";
 import IntercontinentalInvoiceView from "./intercontinentalInvoiceView";
+import HiltonInvoiceViewPage from "./HiltonInvoiceViewPage";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -217,6 +218,10 @@ export default function DynamicInvoiceViewPage() {
       }
       else if (hotelName.includes("intercontinental")) {
         detectedType = "Intercontinental";
+      }
+
+      else if(hotelName.includes("hilton")){
+        detectedType = "Hilton";
       }
       else if (hotelName.includes("grand") || hotelName.includes("aras")) {
         detectedType = "GrandAras";
@@ -286,6 +291,9 @@ export default function DynamicInvoiceViewPage() {
     return <RaddisonInvoiceView invoiceData={invoice} />;
   }else if(hotelType === "Intercontinental") {
     return <IntercontinentalInvoiceView invoiceData={invoice} />;
+  }
+  else if(hotelType === "Hilton") {
+    return <HiltonInvoiceViewPage invoiceData={invoice} />;
   }
 
   else {

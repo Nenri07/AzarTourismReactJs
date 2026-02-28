@@ -832,13 +832,14 @@ const RaddisonInvoiceView = ({ invoiceData }) => {
               margin-bottom: 40px;
           }
           .logo-container img {
+          margin-right:17px;
               width: 200px; 
               height: auto;
           }
           .info-section {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 30px;
+              margin-bottom: 15px;
           }
           .left-col, .right-col {
               width: 48%;
@@ -857,11 +858,11 @@ const RaddisonInvoiceView = ({ invoiceData }) => {
           .grid-info-right {
               display: grid;
               /* Changed from: 100px 15px auto */
-              grid-template-columns: 92px 12px auto; 
+              grid-template-columns: 110px 12px auto; 
               row-gap: 4px;
               font-weight: bold;
               justify-content: right;
-              padding-right: 46px;
+              padding-right: 12px;
           }
           .invoice-table {
               width: 100%;
@@ -874,7 +875,7 @@ const RaddisonInvoiceView = ({ invoiceData }) => {
               background-color: #000 !important;
               color: #fff !important;
               text-align: left;
-              padding: 6px 8px;
+              padding: 0 6px 8px;
               font-weight: normal;
               vertical-align: top;
               -webkit-print-color-adjust: exact !important;
@@ -901,7 +902,7 @@ const RaddisonInvoiceView = ({ invoiceData }) => {
           .total-cell-border {
               border-top: 1px solid #000;
               border-bottom: 1px solid #000;
-              padding: 10px 8px; 
+              padding: 2px 8px 10px 8px; 
               font-weight: bold;
               box-sizing: border-box;
           }
@@ -909,9 +910,7 @@ const RaddisonInvoiceView = ({ invoiceData }) => {
               display: block;
               margin-left: auto; 
               width: 100px; 
-              border-top: 1px solid #000;
-              border-bottom: 1px solid #000;
-              padding: 10px 8px;
+              padding: 2px 8px 10px 8px; 
               font-weight: bold;
               text-align: right;
               box-sizing: border-box;
@@ -927,7 +926,7 @@ const RaddisonInvoiceView = ({ invoiceData }) => {
               border-collapse: collapse;
               font-weight: bold;
           }
-          .totals-table td { padding: 4px 0; }
+          .totals-table td { padding: 2.5px 0; }
           .totals-table .amount { text-align: left; }
           
           /* Browser Print Rules */
@@ -1006,8 +1005,8 @@ const RaddisonInvoiceView = ({ invoiceData }) => {
             <table className="invoice-table">
               <thead>
                 <tr>
-                  <th style={{ width: '15%' }}>Date</th>
-                  <th style={{ width: '35%' }}>Description</th>
+                  <th style={{ width: '12.5%' }}>Date</th>
+                  <th style={{ width: '37.5%' }}>Description</th>
                   <th className="right-align" style={{ width: '12.5%' }}>Charges<br />EGP</th>
                   <th className="right-align" style={{ width: '12.5%' }}>Credits<br />EGP</th>
                   <th className="right-align" style={{ width: '12.5%' }}>Charges<br />EGP</th>
@@ -1076,6 +1075,10 @@ const RaddisonInvoiceView = ({ invoiceData }) => {
                     <tr>
                       <td>1% City Tax</td>
                       <td className="amount">{formatCurrency(invoice.cityTax)}</td>
+                    </tr>
+                    <tr>
+                      <td>Exchnage Rate 1 USD</td>
+                      <td className="amount">{formatCurrency(invoice.exchangeRate)}</td>
                     </tr>
                   </tbody>
                 </table>

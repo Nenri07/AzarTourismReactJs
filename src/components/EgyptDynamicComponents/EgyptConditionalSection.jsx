@@ -128,11 +128,7 @@
 // };
 
 // export default EgyptConditionalSection;
-
-
-
-
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Copy } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { calculateAccommodation, detectHotelType } from "../../utils/invoiceCalculationsEgypt";
 import DatePicker from "../DatePicker";
@@ -149,10 +145,19 @@ const EgyptConditionalSection = ({ sectionKey, section, formData, onFieldChange,
   
   const hotelType = detectHotelType(hotelConfig);
 
+  const getMinDate = () => {
+    if (!arrivalDate) return "";
+    return arrivalDate.split('T')[0];
+  };
+
+  const getMaxDate = () => {
+    if (!departureDate) return "";
+    return departureDate.split('T')[0];
+  };
+
   const validateDate = useCallback((dateValue, fieldKey) => {
     if (!dateValue || !arrivalDate || !departureDate) return true;
     
-    // Strip time to avoid strict timezone mismatches
     const selected = new Date(dateValue).setHours(0,0,0,0);
     const min = new Date(arrivalDate).setHours(0,0,0,0);
     const max = new Date(departureDate).setHours(0,0,0,0);
@@ -172,13 +177,11 @@ const EgyptConditionalSection = ({ sectionKey, section, formData, onFieldChange,
       if (acc.usd_amount > 0 && acc.exchange_rate > 0) {
         const calculated = calculateAccommodation(formData, hotelType);
         
-        // Base updates for all hotels
         const updates = {
           room_amount_egp: calculated.roomAmountEgp.toFixed(2),
           total_room_all_nights: calculated.totalRoomAllNights.toFixed(2),
         };
 
-        // NEW: Populate the dynamic Radisson single-day fields if they exist
         if (calculated.radissonBreakdown) {
           updates.nightly_base_egp = calculated.radissonBreakdown.a.toFixed(2);
           updates.nightly_sc_egp = calculated.radissonBreakdown.b.toFixed(2);
@@ -205,6 +208,22 @@ const EgyptConditionalSection = ({ sectionKey, section, formData, onFieldChange,
     });
   };
 
+  const handleDuplicateEntry = (index) => {
+    setFormData(prev => {
+      const newEntries = [...(prev[sectionKey] || [])];
+      const duplicate = { ...newEntries[index], id: Date.now() + Math.random() };
+      newEntries.splice(index + 1, 0, duplicate);
+      return { ...prev, [sectionKey]: newEntries };
+    });
+  };
+
+  const handleDeleteEntry = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      [sectionKey]: prev[sectionKey].filter((_, i) => i !== index),
+    }));
+  };
+
   const renderField = (field, value, onChange, isArray = false, idx = null) => {
     const isReadOnly = field.auto_calculated || field.read_only;
     const isRequired = field.required && !isReadOnly;
@@ -214,7 +233,15 @@ const EgyptConditionalSection = ({ sectionKey, section, formData, onFieldChange,
       return (
         <div key={field.field_id} className="form-control">
           <label className={labelClass}>{field.label} {isRequired && <span className="text-red-500">*</span>}</label>
-          <DatePicker value={value || ""} onChange={(val) => { onChange(val); validateDate(val, fieldKey); }} disabled={isReadOnly} required={isRequired} />
+          <DatePicker
+            value={value || ""}
+            onChange={(val) => { onChange(val); validateDate(val, fieldKey); }}
+            minDate={getMinDate()}
+            maxDate={getMaxDate()}
+            disabled={isReadOnly}
+            required={isRequired}
+            placeholder="Select date"
+          />
           {dateErrors[fieldKey] && <p className="text-xs text-red-600 mt-1">⚠️ {dateErrors[fieldKey]}</p>}
         </div>
       );
@@ -238,7 +265,24 @@ const EgyptConditionalSection = ({ sectionKey, section, formData, onFieldChange,
         {section.multiple_entries ? (
           sectionData.map((entry, index) => (
             <div key={entry.id || index} className="p-4 border border-slate-200 rounded-lg bg-slate-50 relative">
-              <button onClick={() => setFormData(prev => ({ ...prev, [sectionKey]: prev[sectionKey].filter((_, i) => i !== index) }))} className="absolute top-2 right-2 text-red-500 hover:text-red-700"><Trash2 size={16} /></button>
+
+              <div className="absolute top-2 right-2 flex items-center gap-1">
+                <button
+                  onClick={() => handleDuplicateEntry(index)}
+                  className="text-blue-500 hover:text-blue-700"
+                  title="Duplicate this entry"
+                >
+                  <Copy size={16} />
+                </button>
+                <button
+                  onClick={() => handleDeleteEntry(index)}
+                  className="text-red-500 hover:text-red-700"
+                  title="Delete this entry"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {section.fields?.map(f => renderField(f, entry[f.field_id], (val) => handleEntryFieldChange(index, f.field_id, val), true, index))}
               </div>

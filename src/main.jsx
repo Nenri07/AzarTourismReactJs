@@ -26,6 +26,7 @@ import {
   DynamicInvoiceFormPageEgypt,
   RaddisonInvoiceView,
   IntercontinentalInvoiceView,
+  HiltonInvoiceViewPage,
   NotFoundPage
 } from "./pages";
 
@@ -306,6 +307,10 @@ const router = createBrowserRouter([
  {
     path: "invoice/view/intercontinental",
     element: <IntercontinentalInvoiceView />,
+  },
+  {
+    path: "invoice/view/hilton",
+    element: <HiltonInvoiceViewPage />,
   },
   
   // ERROR ROUTES

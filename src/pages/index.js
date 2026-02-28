@@ -15,6 +15,7 @@ import GrandArasInvoiceView from "./viewTemplates/GrandarasInvoiceView";
 import DynamicInvoiceFormPageEgypt from './DynamicInvoiceFormPageEgypt'
 import RaddisonInvoiceView from "./viewTemplates/RaddisonInvoiceView";
 import IntercontinentalInvoiceView from "./viewTemplates/intercontinentalInvoiceView";
+import HiltonInvoiceViewPage from "./viewTemplates/HiltonInvoiceViewPage";
 
 
 export {
@@ -25,6 +26,7 @@ export {
     ,NotFoundPage,
     GrandArasInvoiceView,
     RaddisonInvoiceView,
-    IntercontinentalInvoiceView
+    IntercontinentalInvoiceView,
+    HiltonInvoiceViewPage,
 
 };
