@@ -30,6 +30,16 @@ import {
   NotFoundPage
 } from "./pages";
 
+document.addEventListener(
+  "wheel",
+  (e) => {
+    if (document.activeElement?.type === "number") {
+      document.activeElement.blur(); 
+    }
+  },
+  { passive: false }
+);
+
 if (import.meta.env.VITE_ENV ==='production') {
   console.log = () => {};
   console.error = () => {};
