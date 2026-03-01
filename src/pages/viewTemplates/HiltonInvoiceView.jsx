@@ -71,17 +71,8 @@ const HiltonInvoiceViewPage = ({ invoiceData }) => {
     const allRows = [];
 
     // Generate a random 5-letter uppercase string for other services (once per invoice)
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let randomServiceId = '';
-    for (let i = 0; i < 5; i++) {
-      randomServiceId += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    let randomId = '';
-    for (let i = 0; i < 5; i++) {
-      randomId += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
+    
+    
     // 1. Gather Accommodation Rows
     if (data.accommodationDetails && Array.isArray(data.accommodationDetails)) {
       data.accommodationDetails.forEach((item, index) => {
@@ -101,7 +92,7 @@ const HiltonInvoiceViewPage = ({ invoiceData }) => {
           description: item.description || 'ACCOMMODATION',
           rate:        rateVal,
           exchangeRate: exchVal,
-          refId:       randomId,
+          refId:       data.accommodationRefId,
           guestCharge: formatCurrency(item.guestCharge || item.chargesEgp || 0),
           credit:      '',
           amount:      '',
@@ -120,7 +111,7 @@ const HiltonInvoiceViewPage = ({ invoiceData }) => {
           description: service.name || 'Service',
           rate:        '',
           exchangeRate: '',
-          refId:       randomServiceId, // <-- Uses the random 5-letter ID generated above
+          refId:       data.servicesRefId, // <-- Uses the random 5-letter ID generated above
           guestCharge: formatCurrency(service.amount || 0),
           credit:      '',
           amount:      '',
@@ -135,7 +126,7 @@ const HiltonInvoiceViewPage = ({ invoiceData }) => {
     });
 
     // 4. Assign sequential Ref Numbers to the perfectly sorted array
-    let currentRefNo = Math.floor(1000000 + Math.random() * 9000000);
+    let currentRefNo = data.startingRefNo;
     const charges = allRows.map(({ _rawDate, _sortOrder, ...row }) => {
       // Force an unbroken ascending sequence for every single row
       row.refNo = (currentRefNo++).toString();

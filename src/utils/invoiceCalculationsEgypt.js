@@ -469,6 +469,9 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       usdAmount:     parseNum(accCalc.usdAmount),
       exchangeRate:  parseNum(accCalc.exchangeRate, 7),
       roomAmountEgp: parseNum(accCalc.roomAmountEgp),
+      accommodationRefId: formData.accommodation_ref_id || [...Array(5)].map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''),
+servicesRefId: formData.services_ref_id || [...Array(5)].map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''),
+startingRefNo: formData.starting_ref_no || Math.floor(1000000 + Math.random() * 9000000),
 
       // Totals
       totalRoomGrossEgp:     parseNum(accCalc.totalRoomAllNights),

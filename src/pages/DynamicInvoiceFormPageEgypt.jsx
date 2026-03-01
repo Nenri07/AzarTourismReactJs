@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 // APIs
 import { getHotelConfigById, getHotelConfigs } from "../Api/hotelConfig.api";
-import cairoInvoiceApi from "../Api/cairoInvoice.api"; 
+import cairoInvoiceApi from "../Api/cairoInvoice.api";
 
 // Shared UI components
 import { DynamicFormSection, SuccessModal, EgyptConditionalSection, EgyptSummarySection } from '../components';
@@ -18,7 +18,7 @@ import { calculateFinalSummary, mapToBackendSchema } from "../utils/invoiceCalcu
 export default function DynamicInvoiceFormPageEgypt() {
   const navigate = useNavigate();
   const params = useParams();
-  
+
   const isDuplicateMode = window.location.pathname.includes('/duplicate/');
   const isEditMode = Boolean(params.invoiceId && !params.hotelId && !isDuplicateMode);
   const invoiceId = params.invoiceId;
@@ -47,7 +47,7 @@ export default function DynamicInvoiceFormPageEgypt() {
 
     const arrival = new Date(formData.arrival_date);
     const departure = new Date(formData.departure_date);
-    
+
     if (departure <= arrival) {
       setDateError("Departure date must be after arrival date");
       if (formData.accommodation_details?.total_nights) {
@@ -55,7 +55,7 @@ export default function DynamicInvoiceFormPageEgypt() {
       }
       return;
     }
-    
+
     setDateError("");
     const diffDays = Math.ceil((departure - arrival) / (1000 * 60 * 60 * 24));
 
@@ -67,7 +67,7 @@ export default function DynamicInvoiceFormPageEgypt() {
   useEffect(() => {
     if (hotelConfig && formData.accommodation_details) {
       try {
-        const newSummary = calculateFinalSummary(formData, hotelConfig ? hotelConfig.hotel_name : ""); 
+        const newSummary = calculateFinalSummary(formData, hotelConfig ? hotelConfig.hotel_name : "");
         setSummary(newSummary);
       } catch (err) {
         console.error("Error calculating summary:", err);
@@ -83,14 +83,14 @@ export default function DynamicInvoiceFormPageEgypt() {
       if (invoiceData.data?.data) invoiceData.data = invoiceData.data.data;
 
       const data = invoiceData.data || invoiceData;
-      const hotelName = data.hotel || "Staybridge Suites Cairo-Citystars"; 
-      
+      const hotelName = data.hotel || "Staybridge Suites Cairo-Citystars";
+
       const allConfigsResponse = await getHotelConfigs();
       const allConfigs = allConfigsResponse.data || allConfigsResponse || [];
       let loadedConfig = allConfigs.find(config => config.hotel_name === hotelName) || allConfigs[0];
-      
+
       if (!loadedConfig) throw new Error(`No hotel configuration found`);
-      
+
       setHotelConfig(loadedConfig);
       setFormData(mapInvoiceToForm(invoiceData, loadedConfig));
       toast.success(isDuplicateMode ? "Invoice loaded for duplication" : "Invoice loaded successfully", { duration: 2000 });
@@ -118,11 +118,11 @@ export default function DynamicInvoiceFormPageEgypt() {
     let data = invoiceData;
     if (data?.data) data = data.data;
     if (data?.data) data = data.data;
-    
+
     const accConfig = hotelConfig?.conditional_sections?.accommodation_details;
     const servicesConfig = hotelConfig?.conditional_sections?.other_services;
     const accommodationDetails = {};
-    
+
     // Map existing Accommodation Details + The Single Night Breakdown Math
     if (accConfig?.fields) {
       accConfig.fields.forEach(field => {
@@ -141,7 +141,7 @@ export default function DynamicInvoiceFormPageEgypt() {
         else accommodationDetails[fieldId] = data[fieldId] !== undefined ? data[fieldId] : '';
       });
     }
-    
+
     const otherServices = [];
     if (servicesConfig?.fields && Array.isArray(data.otherServices)) {
       data.otherServices.forEach(service => {
@@ -156,7 +156,7 @@ export default function DynamicInvoiceFormPageEgypt() {
         otherServices.push(mappedService);
       });
     }
-    
+
     return {
       hotel_name: data.hotel || hotelConfig?.hotel_name || '',
       currency: hotelConfig?.currency || 'EGP',
@@ -173,7 +173,7 @@ export default function DynamicInvoiceFormPageEgypt() {
       room_number: data.roomNo || '',
       cashier_id: data.cashierId || data.userId || '',
       ihg_rewards_number: data.ihgRewardsNumber || '',
-      
+
       // Fixed: Mapped all Radisson Root Fields
       reference_no: data.referenceNo || '',
       membership_no: data.membershipNo || '',
@@ -184,18 +184,21 @@ export default function DynamicInvoiceFormPageEgypt() {
       custom_ref: data.customRef || '',
       adults: String(data.paxAdult || 1),
       children: String(data.paxChild || 0),
- //new fields
-        rate_plan: data.ratePlan || '',
+      //new fields
+      rate_plan: data.ratePlan || '',
       honors_no: data.honorNo || '',
       vat_no: data.vatNo || '',
       invoice_copy_no: data.invoiceCopyNo || '',
       a_l: data.aL || '',
       checkin_time: data.checkInTime || '',
       checkout_time: data.checkOutTime || '',
+      accommodation_ref_id: data.accommodationRefId || '',
+      services_ref_id: data.servicesRefId || '',
+      starting_ref_no: data.startingRefNo || '',
 
       // Fixed: Mapped all Fairmont Root Fields
       user_id: data.userId || '',
-      
+
       accommodation_details: accommodationDetails,
       other_services: otherServices,
       status: data.status || 'pending',
@@ -208,14 +211,14 @@ export default function DynamicInvoiceFormPageEgypt() {
     const hh = String(now.getHours()).padStart(2, '0');
     const mm = String(now.getMinutes()).padStart(2, '0');
 
-    const initialData = { 
-      hotel_name: config.hotel_name, 
-      currency: config.currency, 
-      status: "pending", 
+    const initialData = {
+      hotel_name: config.hotel_name,
+      currency: config.currency,
+      status: "pending",
       note: "",
-      invoice_time: `${hh}:${mm}` 
+      invoice_time: `${hh}:${mm}`
     };
-    
+
     config.form_fields?.forEach(field => {
       if (field.field_id !== 'invoice_time') {
         initialData[field.field_id] = "";
@@ -251,18 +254,18 @@ export default function DynamicInvoiceFormPageEgypt() {
 
     setIsSaving(true);
     const loadingToast = toast.loading("Saving Egypt invoice...", { position: "top-center" });
-    
+
     try {
       const invoicePayload = mapToBackendSchema(formData, hotelConfig);
-      
+
       if (isEditMode) {
         await cairoInvoiceApi.updateInvoice(invoiceId, invoicePayload);
       } else {
         await cairoInvoiceApi.createInvoice(invoicePayload);
       }
-      
+
       toast.dismiss(loadingToast);
-      
+
       setSavedInvoiceData({
         isEdit: isEditMode,
         invoiceNumber: formData.company_name || 'NEW',
@@ -270,7 +273,7 @@ export default function DynamicInvoiceFormPageEgypt() {
         grandTotal: summary?.grand_total || 0,
         currency: hotelConfig.currency
       });
-      
+
       setTimeout(() => {
         const modalElement = document.getElementById('success_modal');
         if (modalElement) {
@@ -280,7 +283,7 @@ export default function DynamicInvoiceFormPageEgypt() {
           navigate("/invoices");
         }
       }, 100);
-      
+
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("Failed to save invoice", { duration: 6000 });
@@ -322,12 +325,12 @@ export default function DynamicInvoiceFormPageEgypt() {
 
         <div className="space-y-4 md:space-y-6">
           <DynamicFormSection title="Invoice Information" fields={hotelConfig.form_fields || []} formData={formData} onFieldChange={handleFieldChange} />
-          
+
           {Object.entries(hotelConfig.conditional_sections || {}).map(([sectionKey, section]) => {
             if (!section.enabled) return null;
             return <EgyptConditionalSection key={sectionKey} sectionKey={sectionKey} section={section} formData={formData} onFieldChange={handleFieldChange} setFormData={setFormData} hotelConfig={hotelConfig} />;
           })}
-          
+
           <EgyptSummarySection config={hotelConfig} formData={formData} summary={summary} onStatusChange={(val) => handleFieldChange('status', val)} onNoteChange={(val) => handleFieldChange('note', val)} />
         </div>
 
@@ -340,7 +343,7 @@ export default function DynamicInvoiceFormPageEgypt() {
             >
               Cancel
             </button>
-           <button
+            <button
               onClick={handleSave}
               disabled={isSaving || !!dateError}
               className="w-full sm:w-auto bg-[#002a5c] hover:bg-[#001a3c] text-white px-6 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -348,19 +351,19 @@ export default function DynamicInvoiceFormPageEgypt() {
               {isSaving ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  {isDuplicateMode 
-                    ? "Creating Duplicate..." 
-                    : isEditMode 
-                      ? "Updating..." 
+                  {isDuplicateMode
+                    ? "Creating Duplicate..."
+                    : isEditMode
+                      ? "Updating..."
                       : "Saving..."}
                 </>
               ) : (
                 <>
                   <Save size={16} />
-                  {isDuplicateMode 
-                    ? "Create Duplicate" 
-                    : isEditMode 
-                      ? "Update Invoice" 
+                  {isDuplicateMode
+                    ? "Create Duplicate"
+                    : isEditMode
+                      ? "Update Invoice"
                       : "Save Invoice"}
                 </>
               )}
@@ -376,7 +379,7 @@ export default function DynamicInvoiceFormPageEgypt() {
           status={savedInvoiceData.status}
           grandTotal={savedInvoiceData.grandTotal}
           currency={savedInvoiceData.currency}
-          onClose={() => navigate("/invoices")} 
+          onClose={() => navigate("/invoices")}
         />
       )}
     </div>
