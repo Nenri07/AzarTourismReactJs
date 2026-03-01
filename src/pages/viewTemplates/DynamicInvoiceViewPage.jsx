@@ -1,22 +1,35 @@
-
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Loader2, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
+
+// APIs
 import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
+import cairoInvoiceApi from "../../Api/cairoInvoice.api"; 
+
+// Views
 import CVKInvoiceView from "./CVKInvoiceView";
 import TRYPInvoiceView from "./TRYPInvoiceView";
 import GrandArasInvoiceView from "./GrandarasInvoiceView";
-
+import StaybridgeInvoiceView from "./StaybridgeInvoiceView"; 
 import InvoiceViewPage from "./InvoiceViewPage";
-
+import RaddisonInvoiceView from "./RaddisonInvoiceView";
+import IntercontinentalInvoiceView from "./intercontinentalInvoiceView";
+import FairmontInvoiceView from "./FairmontInvoiceView";
+import HolidayInvoiceView from "./HolidayInvoiceView";
+import HiltonInvoiceView from "./HiltonInvoiceView";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); 
+
   const [loading, setLoading] = useState(true);
   const [invoice, setInvoice] = useState(null);
   const [hotelType, setHotelType] = useState(null);
+
+  // Check if we are on the Egypt route
+  const isEgyptRoute = location.pathname.includes('egypt-invoice');
 
   useEffect(() => {
     if (invoiceId) {
@@ -29,26 +42,31 @@ export default function DynamicInvoiceViewPage() {
   const loadInvoice = async () => {
     setLoading(true);
     try {
+      let response;
       
-      const response = await turkeyInvoiceApi.getInvoiceById(invoiceId);
+      // ✅ SMART FETCH: Route to correct API based on URL
+      if (isEgyptRoute) {
+        console.log("Fetching from Cairo API...");
+        response = await cairoInvoiceApi.getInvoiceById(invoiceId);
+      } else {
+        console.log("Fetching from Turkey API...");
+        response = await turkeyInvoiceApi.getInvoiceById(invoiceId);
+      }
       
       let invoiceData = response.data || response;
       
-      // ✅ FIX: Handle triple-nested structure
+      // Handle triple-nested structure safely
       if (invoiceData.data && typeof invoiceData.data === 'object') {
         invoiceData = invoiceData.data;
-        
-        // Check for another nested level
         if (invoiceData.data && typeof invoiceData.data === 'object') {
           invoiceData = invoiceData.data;
         }
       }
 
       console.log("📦 Final processed invoice data:", invoiceData);
-      
       setInvoice(invoiceData);
       
-      // ✅ FIX: Get hotel name from the correct location
+      // Get hotel name from the correct location
       const hotelName = (invoiceData.hotel || "").toLowerCase();
       console.log("🏨 Hotel name:", hotelName);
       
@@ -60,12 +78,33 @@ export default function DynamicInvoiceViewPage() {
         detectedType = "TRYP";
       } else if (hotelName.includes("novotel")) {
         detectedType = "Novotel";
-      } else if (hotelName.includes("grand") || hotelName.includes("aras")) {
+      } else if (hotelName.includes("staybridge") ) {
+        detectedType = "Staybridge"; // ✅ Detect Staybridge
+      } else if (hotelName.includes(" radisson residences") || hotelName.includes("radisson")) {
+        detectedType = "Raddison1";
+      }
+      else if (hotelName.includes("intercontinental")) {
+        detectedType = "Intercontinental";
+      }
+
+      else if(hotelName.includes("hilton")){
+        detectedType = "Hilton";
+      }
+      else if (hotelName.includes("grand") || hotelName.includes("aras")) {
         detectedType = "GrandAras";
       }
+      else if (hotelName.includes("holiday")) {
+        detectedType = "HolidayInn";
+      }
+      else if (hotelName.includes("fairmont") || hotelName.includes("fairmount")) {
+        detectedType = "Fairmont";
+      }
+
       
       console.log("🎯 Detected hotel type:", detectedType);
       setHotelType(detectedType);
+      
+
       
     } catch (error) {
       console.error("❌ Error loading invoice:", error);
@@ -118,9 +157,23 @@ export default function DynamicInvoiceViewPage() {
     return <TRYPInvoiceView invoiceData={invoice} />;
   } else if (hotelType === "Novotel") {
     return <InvoiceViewPage />;
+  } else if (hotelType === "Staybridge") {
+    return <StaybridgeInvoiceView invoiceData={invoice} />; 
   } else if (hotelType === "GrandAras") {
     return <GrandArasInvoiceView invoiceData={invoice} />;
-  } else {
+  } else if(hotelType === "Raddison1") {
+    return <RaddisonInvoiceView invoiceData={invoice} />;
+  }else if(hotelType === "Intercontinental") {
+    return <IntercontinentalInvoiceView invoiceData={invoice} />;
+  }else if(hotelType === "HolidayInn") {
+    return <HolidayInvoiceView invoiceData={invoice} />;
+  }else if(hotelType === "Fairmont") {
+    return <FairmontInvoiceView invoiceData={invoice} />;
+  }else if(hotelType === "Hilton") {
+    return <HiltonInvoiceView invoiceData={invoice} />;
+  }
+
+  else {
     // Default fallback
     return <GrandArasInvoiceView invoiceData={invoice} />;
   }

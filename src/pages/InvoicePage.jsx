@@ -1,9 +1,9 @@
 "use client";
+import React from "react";
 
 import { useState, useEffect } from "react";
 import {
   Search,
-  Download,
   Copy,
   Plus,
   Edit2,
@@ -11,6 +11,7 @@ import {
   CalendarIcon,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   FileText,
   Eye,
   X,
@@ -19,8 +20,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import turkeyInvoiceApi from "../Api/turkeyInvoice.api";
-import { getHotelConfigs, getallInvoices } from "../Api/hotelConfig.api";
 import invoiceApi from "../Api/invoice.api";
+import cairoInvoiceApi from "../Api/cairoInvoice.api";
+import { getHotelConfigs, getallInvoices } from "../Api/hotelConfig.api";
 
 export default function InvoicePage() {
   const navigate = useNavigate();
@@ -42,11 +44,28 @@ export default function InvoicePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+  
+  // New states for Cascading searchable dropdowns
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [hotelSearchTerm, setHotelSearchTerm] = useState("");
+  const [isHotelDropdownOpen, setIsHotelDropdownOpen] = useState(false);
+  const [activeHotelIndex, setActiveHotelIndex] = useState(0);
 
-  const daysInMonth = (date) =>
-    new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = (date) =>
-    new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  const daysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+
+  // ✅ Helper to identify Egypt invoices globally
+  const isEgyptInvoice = (hotelName) => {
+    const name = (hotelName || "").toLowerCase();
+    return name.includes("staybridge") || 
+           name.includes("cairo") || 
+           name.includes("fairmont") || 
+           name.includes("fairmount") || 
+           name.includes("holiday") || 
+           name.includes("radisson") || 
+           name.includes("raddison") ||
+           name.includes("intercontinental");
+  };
 
   useEffect(() => {
     loadHotels();
@@ -63,12 +82,40 @@ export default function InvoicePage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showCalendar]);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isHotelDropdownOpen && !e.target.closest(".hotel-dropdown-container")) {
+        setIsHotelDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isHotelDropdownOpen]);
+
+  // Derived data
+  const availableCountries = React.useMemo(() => {
+    const countries = hotels
+      .map(h => (h.country || "").trim())
+      .filter(Boolean);
+    return [...new Set(countries)].sort();
+  }, [hotels]);
+  
+  const filteredHotelsByCountry = React.useMemo(() => {
+    return hotels.filter(h => {
+      const hotelCountry = (h.country || "").trim().toLowerCase();
+      const targetCountry = (selectedCountry || "").trim().toLowerCase();
+      
+      const matchesCountry = !targetCountry || hotelCountry === targetCountry;
+      const matchesSearch = !hotelSearchTerm || (h.name && h.name.toLowerCase().includes(hotelSearchTerm.toLowerCase()));
+      
+      return matchesCountry && matchesSearch;
+    });
+  }, [hotels, selectedCountry, hotelSearchTerm]);
+
   const loadHotels = async () => {
     setLoadingHotels(true);
     try {
       const response = await getHotelConfigs();
-      console.log("📥 Hotels API Response:", response);
-
       let hotelsList = [];
       if (response && response.data && Array.isArray(response.data)) {
         hotelsList = response.data;
@@ -81,11 +128,13 @@ export default function InvoicePage() {
         name: config.hotel_name,
         code: config.currency || "TRY",
         currency: config.currency || "TRY",
+        country: config.country || "Turkey",
       }));
+
+      console.log("transformedHotels", transformedHotels);
 
       setHotels(transformedHotels);
     } catch (error) {
-      console.error("❌ Error loading hotels:", error);
       toast.error("Failed to load hotel configurations");
       setHotels([]);
     } finally {
@@ -97,36 +146,21 @@ export default function InvoicePage() {
     setLoading(true);
     try {
       const response = await getallInvoices();
-      console.log("📥 Raw Turkey Invoice API Response:", response);
-
-      if (
-        typeof response === "string" &&
-        response.includes("<!doctype html>")
-      ) {
-        console.error(
-          "❌ API returned HTML instead of JSON - check API endpoint URL",
-        );
+      if (typeof response === "string" && response.includes("<!doctype html>")) {
         toast.error("API endpoint error - Please check backend configuration");
         setInvoices([]);
         setLoading(false);
         return;
       }
 
-      console.log("📋 Full API Response Structure:", response);
-
       let invoicesList = [];
 
       if (response && response.data) {
-        // Combine BOTH Tunisia invoices AND Turkey invoices
-
-        // 1. Add Tunisia invoices (Novotel Tunis Lac)
+        // 1. Tunisia invoices
         if (response.data.invoices && response.data.invoices.records) {
-          const tunisiaInvoices = response.data.invoices.records;
-          console.log(`📊 Found ${tunisiaInvoices.length} Tunisia invoices`);
-
-          tunisiaInvoices.forEach((invoiceRecord) => {
+          response.data.invoices.records.forEach((invoiceRecord) => {
             const invoice = invoiceRecord.invoice;
-            const transformed = {
+            invoicesList.push({
               id: invoice.id || `tunisia-${invoice.id}`,
               invoiceNumber: invoice.reference_no || `TUN-${invoice.id}`,
               reference: invoice.reference_no || "",
@@ -143,16 +177,12 @@ export default function InvoicePage() {
               createdAt: invoice.created_at || new Date().toISOString(),
               rawData: invoiceRecord,
               invoiceType: "tunisia",
-            };
-            invoicesList.push(transformed);
+            });
           });
         }
 
-        // 2. Add Turkey invoices
-        if (
-          response.data.turkey_hotels &&
-          response.data.turkey_hotels.records
-        ) {
+        // 2. Turkey invoices
+        if (response.data.turkey_hotels && response.data.turkey_hotels.records) {
           const turkeyInvoices = response.data.turkey_hotels.records;
           console.log(`📊 Found ${turkeyInvoices.length} Turkey invoices`);
 
@@ -204,37 +234,65 @@ export default function InvoicePage() {
           });
         }
 
-        console.log(
-          `📈 Total invoices found: ${invoicesList.length} (Tunisia + Turkey)`,
-        );
-      } else {
-        console.warn("⚠️ Unexpected response structure:", response);
-        toast.error("Unexpected response format from server");
+        // 3. Egypt invoices
+        if (response.data.egypt_hotels && response.data.egypt_hotels.records) {
+          const egyptInvoices = response.data.egypt_hotels.records;
+          console.log(`📊 Found ${egyptInvoices.length} Egypt invoices`);
+
+          egyptInvoices.forEach((invoice, index) => {
+            let invoiceData = invoice.data || {};
+
+            if (invoiceData.data && typeof invoiceData.data === "object") {
+              invoiceData = invoiceData.data;
+            }
+
+            const data = invoiceData;
+
+            const transformed = {
+              id: invoice.id || invoice._id || `egypt-${index}`,
+              invoiceNumber:
+                data.referenceNo ||
+                data.voucherNo ||
+                data.reference_no ||
+                `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              reference:
+                data.referenceNo ||
+                data.voucherNo ||
+                data.reference_no ||
+                `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              hotelName: data.hotel || data.hotelName || "Unknown Hotel",
+              guestName: data.guestName || "Guest",
+              roomNumber: data.roomNo || data.room_number || "N/A",
+              arrivalDate:
+                data.arrivalDate ||
+                data.arrival_date ||
+                new Date().toISOString(),
+              departureDate:
+                data.departureDate ||
+                data.departure_date ||
+                new Date().toISOString(),
+              nights: data.nights || 0,
+              grandTotal: parseFloat(data.grandTotalEgp || data.total || 0),
+              currency: data.currency || "EGP",
+              status: data.status || "ready",
+              pdfPath: data.pdfPath || null,
+              createdAt:
+                invoice.created_at ||
+                invoice.createdAt ||
+                new Date().toISOString(),
+              rawData: invoice,
+              invoiceType: "egypt",
+            };
+            invoicesList.push(transformed);
+          });
+        }
       }
 
-      console.log("📋 Processing Combined Invoices List:", invoicesList);
-
-      if (!Array.isArray(invoicesList) || invoicesList.length === 0) {
-        console.log("ℹ️ No invoices found in database");
+      if (invoicesList.length === 0) {
         setInvoices([]);
-        toast.success("No invoices yet. Create your first invoice!", {
-          duration: 2000,
-        });
-        setLoading(false);
+        toast.success("No invoices yet. Create your first invoice!");
         return;
       }
-
-      // Sort invoices by creation date (newest first)
-      invoicesList.sort((a, b) => {
-        const dateA = new Date(a.createdAt);
-        const dateB = new Date(b.createdAt);
-        return dateB - dateA;
-      });
-
-      console.log(
-        `✅ Successfully transformed ${invoicesList.length} invoices`,
-      );
-      setInvoices(invoicesList);
 
       toast.success(
         `Loaded ${invoicesList.length} invoice${invoicesList.length !== 1 ? "s" : ""}`,
@@ -242,19 +300,17 @@ export default function InvoicePage() {
           duration: 2000,
         },
       );
-    } catch (error) {
-      console.error("❌ Error loading invoices:", error);
-      console.error("Error details:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
 
+      invoicesList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setInvoices(invoicesList);
+    } catch (error) {
       toast.error("Failed to load invoices. Please check your connection.");
       setInvoices([]);
     } finally {
       setLoading(false);
     }
+
+
   };
 
   const handleCreateInvoice = () => {
@@ -263,102 +319,106 @@ export default function InvoicePage() {
       return;
     }
 
-    if (selectedHotelTemplate === "8") {
+    const selectedHotel = hotels.find(h => String(h.id) === String(selectedHotelTemplate));
+    const hotelName = selectedHotel?.name?.toLowerCase() || "";
+    const hotelCountry = selectedHotel?.country || "";
+
+    if (hotelCountry === "Egypt" || isEgyptInvoice(hotelName)) {
+      navigate(`/egypt-invoice/create/${selectedHotelTemplate}`);
+    } else if (selectedHotelTemplate === "8" || hotelName.includes("novotel") || hotelCountry === "Tunis") {
       navigate(`/invoice/create/novotel/${selectedHotelTemplate}`);
     } else {
       navigate(`/invoice/create/${selectedHotelTemplate}`);
     }
   };
 
+  // ✅ UPDATED VIEW HANDLER
   const handleViewInvoice = (invoiceId) => {
-    console.log("this is invoice id", invoiceId);
-
     const invoice = invoices.find((inv) => inv.id === invoiceId);
-    if (!invoice) {
-      toast.error("Invoice not found");
-      return;
-    }
+    if (!invoice) return toast.error("Invoice not found");
 
-    if (invoice.hotelName === "Novotel Tunis Lac") {
+    const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
+    const country = hotelConfig?.country || "";
+
+    if (country === "Egypt" || isEgyptInvoice(invoice.hotelName)) {
+      navigate(`/egypt-invoice/view/${invoiceId}`);
+    } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "Tunis") {
       navigate(`/invoice/nview/${invoice.id}`);
     } else {
       navigate(`/invoice/view/${invoiceId}`);
     }
   };
 
+  // ✅ UPDATED EDIT HANDLER
   const handleEditInvoice = (invoice) => {
-    if (invoice.hotelName === "Novotel Tunis Lac") {
+    const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
+    const country = hotelConfig?.country || "";
+
+    if (country === "Egypt" || isEgyptInvoice(invoice.hotelName)) {
+      navigate(`/egypt-invoice/edit/${invoice.id}`);
+    } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "Tunis") {
       navigate(`/invoice/edit/${invoice.id}`);
     } else {
       navigate(`/invoices/edit/${invoice.id}`);
     }
   };
 
-  const openDeleteModal = (invoice) => {
-    setInvoiceToDelete(invoice);
-    setShowDeleteModal(true);
-  };
-
- 
-const handleDeleteInvoice = async () => {
-  if (!invoiceToDelete) return;
-
-  setDeleteLoading(invoiceToDelete.id);
-  setShowDeleteModal(false);
-
-  try {
-    // Determine which API to use based on invoice type
-    if (invoiceToDelete.invoiceType === "turkey") {
-      await turkeyInvoiceApi.deleteInvoice(invoiceToDelete.id);
-    } else {
-      // Tunisia invoices
-      await invoiceApi.deleteInvoice(invoiceToDelete.id);
-      console.log("✅ Deleted Tunisia invoice:", invoiceToDelete.id);
-    }
-
-    // ✅ FIX: Move state update HERE (after both API calls)
-    // This ensures the invoice disappears from UI for BOTH types
-    setInvoices((prev) =>
-      prev.filter((inv) => inv.id !== invoiceToDelete.id),
-    );
-    
-    toast.success(
-      `Invoice ${invoiceToDelete.invoiceNumber} deleted successfully!`,
-      {
-        duration: 3000,
-        icon: "🗑️",
-      },
-    );
-    
-  } catch (error) {
-    console.error("❌ Delete error:", error);
-    toast.error("Failed to delete invoice");
-  } finally {
-    setDeleteLoading(null);
-    setInvoiceToDelete(null);
-  }
-};
-
+  // ✅ UPDATED PDF DOWNLOAD HANDLER
   const handleDownloadPDF = (invoice) => {
-    if (invoice.hotelName === "Novotel Tunis Lac") {
+    const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
+    const country = hotelConfig?.country || "";
+
+    if (country === "Egypt" || isEgyptInvoice(invoice.hotelName)) {
+      navigate(`/egypt-invoice/download-pdf/${invoice.id}`);
+    } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "Tunis") {
       navigate(`/invoices/nvdownload-pdf/${invoice.id}`);
     } else {
       navigate(`/invoices/download-pdf/${invoice.id}`);
     }
   };
 
-  const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      loadInvoices();
-      return;
+  // ✅ UPDATED DELETE HANDLER
+  const openDeleteModal = (invoice) => {
+    setInvoiceToDelete(invoice);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteInvoice = async () => {
+    if (!invoiceToDelete) return;
+    setDeleteLoading(invoiceToDelete.id);
+    setShowDeleteModal(false);
+
+    try {
+      const hotelConfig = hotels.find(h => h.name === invoiceToDelete.hotelName);
+      const country = hotelConfig?.country || "";
+
+      if (country === "Egypt" || isEgyptInvoice(invoiceToDelete.hotelName)) {
+        await cairoInvoiceApi.deleteInvoice(invoiceToDelete.id);
+      } else if (invoiceToDelete.invoiceType === "turkey") {
+        await turkeyInvoiceApi.deleteInvoice(invoiceToDelete.id);
+      } else {
+        await invoiceApi.deleteInvoice(invoiceToDelete.id);
+      }
+
+      setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceToDelete.id));
+      toast.success(`Invoice ${invoiceToDelete.invoiceNumber} deleted successfully!`);
+    } catch (error) {
+      toast.error("Failed to delete invoice");
+    } finally {
+      setDeleteLoading(null);
+      setInvoiceToDelete(null);
     }
+  };
+
+  // UI Handlers
+  const handleSearch = () => {
+    if (!searchTerm.trim()) return loadInvoices();
     setSearchLoading(true);
     setTimeout(() => setSearchLoading(false), 500);
   };
 
   const filteredInvoices = invoices.filter((inv) => {
-    const matchesSearch =
-      searchTerm === "" ||
+    const matchesSearch = searchTerm === "" ||
       inv.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inv.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inv.hotelName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -369,78 +429,43 @@ const handleDeleteInvoice = async () => {
 
     let matchesDateRange = true;
     if (selectedStartDate || selectedEndDate) {
-      const invoiceArrival = new Date(inv.arrivalDate);
-      const invoiceDeparture = new Date(inv.departureDate);
-      invoiceArrival.setHours(0, 0, 0, 0);
-      invoiceDeparture.setHours(0, 0, 0, 0);
-
+      const invoiceArrival = new Date(inv.arrivalDate).setHours(0, 0, 0, 0);
+      const invoiceDeparture = new Date(inv.departureDate).setHours(0, 0, 0, 0);
       if (selectedStartDate && selectedEndDate) {
-        const start = new Date(selectedStartDate);
-        const end = new Date(selectedEndDate);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
-        matchesDateRange = invoiceArrival <= end && invoiceDeparture >= start;
+        matchesDateRange = invoiceArrival <= selectedEndDate.getTime() && invoiceDeparture >= selectedStartDate.getTime();
       } else if (selectedStartDate) {
-        const start = new Date(selectedStartDate);
-        start.setHours(0, 0, 0, 0);
-        matchesDateRange = invoiceDeparture >= start;
+        matchesDateRange = invoiceDeparture >= selectedStartDate.getTime();
       } else if (selectedEndDate) {
-        const end = new Date(selectedEndDate);
-        end.setHours(0, 0, 0, 0);
-        matchesDateRange = invoiceArrival <= end;
+        matchesDateRange = invoiceArrival <= selectedEndDate.getTime();
       }
     }
-
     return matchesSearch && matchesStatus && matchesHotel && matchesDateRange;
   });
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-    } catch {
-      return dateString;
-    }
+      return new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch { return dateString; }
   };
 
   const getStatusStyle = (status) => {
     switch (status?.toLowerCase()) {
-      case "ready":
-        return "bg-green-100 text-green-700 border border-green-200";
-      case "pending":
-        return "bg-amber-100 text-amber-700 border border-amber-200";
-      default:
-        return "bg-slate-100 text-slate-600 border border-slate-200";
+      case "ready": return "bg-green-100 text-green-700 border border-green-200";
+      case "pending": return "bg-amber-100 text-amber-700 border border-amber-200";
+      default: return "bg-slate-100 text-slate-600 border border-slate-200";
     }
   };
 
-  const getStatusDisplay = (status) => {
-    const statusMap = {
-      ready: "Ready",
-      pending: "Pending",
-    };
-    return statusMap[status?.toLowerCase()] || status;
-  };
-
+  const getStatusDisplay = (status) => status?.toLowerCase() === "ready" ? "Ready" : "Pending";
+  
   const handleDateClick = (day) => {
-    const newDate = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      day,
-    );
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     newDate.setHours(0, 0, 0, 0);
-
     if (dateSelectionMode === "start") {
       setSelectedStartDate(newDate);
       setDateSelectionMode("end");
-      if (selectedEndDate && newDate > selectedEndDate) {
-        setSelectedEndDate(null);
-      }
+      if (selectedEndDate && newDate > selectedEndDate) setSelectedEndDate(null);
     } else {
       if (selectedStartDate && newDate < selectedStartDate) {
         setSelectedEndDate(selectedStartDate);
@@ -455,73 +480,21 @@ const handleDeleteInvoice = async () => {
   };
 
   const isDateInRange = (day) => {
-    const date = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      day,
-    );
-    date.setHours(0, 0, 0, 0);
-    if (selectedStartDate && selectedEndDate) {
-      const start = new Date(selectedStartDate);
-      const end = new Date(selectedEndDate);
-      start.setHours(0, 0, 0, 0);
-      end.setHours(0, 0, 0, 0);
-      return date >= start && date <= end;
-    }
-    return false;
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).setHours(0, 0, 0, 0);
+    return selectedStartDate && selectedEndDate && date >= selectedStartDate.getTime() && date <= selectedEndDate.getTime();
   };
-
-  const isStartDate = (day) => {
-    if (!selectedStartDate) return false;
-    const date = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      day,
-    );
-    return date.toDateString() === selectedStartDate.toDateString();
-  };
-
-  const isEndDate = (day) => {
-    if (!selectedEndDate) return false;
-    const date = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      day,
-    );
-    return date.toDateString() === selectedEndDate.toDateString();
-  };
-
-  const changeMonth = (offset) => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1),
-    );
-  };
-
+  const isStartDate = (day) => selectedStartDate && new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString() === selectedStartDate.toDateString();
+  const isEndDate = (day) => selectedEndDate && new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString() === selectedEndDate.toDateString();
+  const changeMonth = (offset) => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1));
   const getDateDisplayText = () => {
-    if (selectedStartDate && selectedEndDate) {
-      return `${formatDate(selectedStartDate)} - ${formatDate(selectedEndDate)}`;
-    } else if (selectedStartDate) {
-      return `From ${formatDate(selectedStartDate)}`;
-    }
+    if (selectedStartDate && selectedEndDate) return `${formatDate(selectedStartDate)} - ${formatDate(selectedEndDate)}`;
+    if (selectedStartDate) return `From ${formatDate(selectedStartDate)}`;
     return "Pick a date range";
   };
-
   const handleClear = () => {
-    setSearchTerm("");
-    setFilterStatus("");
-    setFilterHotel("");
-    setSelectedStartDate(null);
-    setSelectedEndDate(null);
-    setDateSelectionMode("start");
-    loadInvoices();
-    toast.success("Filters cleared");
+    setSearchTerm(""); setFilterStatus(""); setFilterHotel(""); setSelectedStartDate(null); setSelectedEndDate(null); setDateSelectionMode("start"); loadInvoices(); toast.success("Filters cleared");
   };
-
-  const clearDateFilter = () => {
-    setSelectedStartDate(null);
-    setSelectedEndDate(null);
-    setDateSelectionMode("start");
-  };
+  const clearDateFilter = () => { setSelectedStartDate(null); setSelectedEndDate(null); setDateSelectionMode("start"); };
 
   if (loading || loadingHotels) {
     return (
@@ -538,89 +511,150 @@ const handleDeleteInvoice = async () => {
     <div className="font-sans text-slate-800 p-3 sm:p-4 lg:p-6 bg-[#f8fafc] min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-            Invoices List
-          </h1>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1">
-            Manage and track hotel invoices • {filteredInvoices.length} total
-          </p>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Invoices List</h1>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1">Manage and track hotel invoices • {filteredInvoices.length} total</p>
         </div>
         {/* <div className="flex gap-2 sm:gap-3">
           <button className="btn btn-sm h-9 sm:h-10 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 gap-1 sm:gap-2 shadow-sm font-medium text-xs sm:text-sm px-3 sm:px-4">
-            <Download size={14} className="sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Bulk</span> PDF
+            <Download size={14} className="sm:w-4 sm:h-4" /><span className="hidden sm:inline">Bulk</span> PDF
           </button>
         </div> */}
       </div>
 
       <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 mb-4 sm:mb-6">
         <h2 className="text-sm sm:text-base font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
-          <Plus size={16} className="text-[#22c55e]" />
-          Create New Invoice
+          <Plus size={16} className="text-[#22c55e]" /> Create New Invoice
         </h2>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-          <div className="flex-1 sm:max-w-sm">
-            <label className="label pb-1 text-xs font-semibold text-slate-600">
-              Select Hotel
-            </label>
-            <select
+          {/* Country Dropdown */}
+          <div className="flex-1 sm:max-w-xs">
+            <label className="label pb-1 text-xs font-semibold text-slate-600">Select Country {availableCountries.length === 0 ? "(Empty)" : ""}</label>
+            <select 
               className="select select-bordered w-full h-10 text-sm bg-white border-slate-300 focus:border-[#003d7a] focus:outline-none rounded-lg"
-              value={selectedHotelTemplate}
-              onChange={(e) => setSelectedHotelTemplate(e.target.value)}
+              value={selectedCountry}
+              onChange={(e) => {
+                setSelectedCountry(e.target.value);
+                setSelectedHotelTemplate(""); // Reset hotel on country change
+                setHotelSearchTerm("");
+              }}
               disabled={loadingHotels}
             >
-              <option value="">
-                {loadingHotels ? "Loading..." : "Choose hotel..."}
-              </option>
-              {hotels.map((hotel) => (
-                <option key={hotel.id} value={hotel.id}>
-                  {hotel.name} ({hotel.currency})
-                </option>
+              <option value="">Select Country</option>
+              {availableCountries.map(country => (
+                <option key={country} value={country}>{country}</option>
               ))}
             </select>
           </div>
-          <button
-            onClick={handleCreateInvoice}
-            disabled={!selectedHotelTemplate || loadingHotels}
-            className="btn btn-sm h-10 bg-[#22c55e] hover:bg-green-600 text-white border-none font-semibold shadow-md rounded-lg gap-2 px-5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Plus size={16} />
-            Create Invoice
-          </button>
+
+          {/* Searchable Hotel Dropdown */}
+          <div className="flex-1 sm:max-w-md relative hotel-dropdown-container">
+            <label className="label pb-1 text-xs font-semibold text-slate-600">Select Hotel / Invoice</label>
+            <div 
+              className={`flex items-center justify-between w-full h-10 px-3 text-sm bg-white border border-slate-300 rounded-lg cursor-pointer hover:border-[#003d7a] transition-colors ${(!selectedCountry || loadingHotels) ? "opacity-60 cursor-not-allowed" : ""}`}
+              onClick={() => selectedCountry && !loadingHotels && setIsHotelDropdownOpen(!isHotelDropdownOpen)}
+            >
+              <span className="truncate text-slate-700">
+                {selectedHotelTemplate 
+                  ? hotels.find(h => String(h.id) === String(selectedHotelTemplate))?.name 
+                  : selectedCountry ? "Choose hotel..." : "Select country first..."}
+              </span>
+              <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isHotelDropdownOpen ? "rotate-180" : ""}`} />
+            </div>
+
+            {isHotelDropdownOpen && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="p-2 border-b border-slate-100 bg-slate-50/50">
+                  <div className="relative">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search hotel..."
+                      className="w-full h-9 pl-9 pr-3 text-sm bg-white border border-slate-200 focus:border-[#003d7a] focus:ring-1 focus:ring-[#003d7a] rounded-lg outline-none transition-all"
+                      onChange={(e) => {
+                        setHotelSearchTerm(e.target.value);
+                        setActiveHotelIndex(0);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowDown") {
+                          setActiveHotelIndex(prev => Math.min(prev + 1, filteredHotelsByCountry.length - 1));
+                          e.preventDefault();
+                        } else if (e.key === "ArrowUp") {
+                          setActiveHotelIndex(prev => Math.max(prev - 1, 0));
+                          e.preventDefault();
+                        } else if (e.key === "Enter") {
+                          if (filteredHotelsByCountry[activeHotelIndex]) {
+                            setSelectedHotelTemplate(filteredHotelsByCountry[activeHotelIndex].id);
+                            setIsHotelDropdownOpen(false);
+                            setHotelSearchTerm("");
+                          }
+                          e.preventDefault();
+                        } else if (e.key === "Escape") {
+                          setIsHotelDropdownOpen(false);
+                          e.preventDefault();
+                        }
+                      }}
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                </div>
+                <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                  {filteredHotelsByCountry.length > 0 ? (
+                    filteredHotelsByCountry.map((hotel, index) => (
+                      <div
+                        key={hotel.id}
+                        className={`px-4 py-2.5 text-sm cursor-pointer transition-colors flex items-center justify-between group 
+                          ${String(selectedHotelTemplate) === String(hotel.id) ? "bg-blue-50 text-[#003d7a] font-semibold" : index === activeHotelIndex ? "bg-slate-50 text-slate-900" : "text-slate-700 hover:bg-slate-50"}`}
+                        onMouseEnter={() => setActiveHotelIndex(index)}
+                        onClick={() => {
+                          setSelectedHotelTemplate(hotel.id);
+                          setIsHotelDropdownOpen(false);
+                          setHotelSearchTerm("");
+                        }}
+                      >
+                        <span className="truncate">{hotel.name}</span>
+                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 group-hover:bg-blue-100 group-hover:text-[#003d7a] px-2 py-0.5 rounded transition-colors uppercase tracking-wider">{hotel.currency}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-4 py-8 text-center bg-white">
+                      <Search size={24} className="mx-auto mb-2 text-slate-200" />
+                      <p className="text-slate-400 text-xs">No hotels found in {selectedCountry}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex-none">
+            <button 
+              onClick={handleCreateInvoice} 
+              disabled={!selectedHotelTemplate || loadingHotels} 
+              className="btn btn-sm h-10 bg-[#22c55e] hover:bg-green-600 text-white border-none font-bold shadow-md rounded-lg gap-2 px-6 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+            >
+              <Plus size={18} />
+              Create Invoice
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 mb-4 sm:mb-6">
        <div className="flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[150px] sm:min-w-[180px]">
-            <label className="label pb-1 text-xs font-semibold text-slate-600">
-              Hotel
-            </label>
-            <select
-              className="select select-bordered w-full h-10 text-sm bg-white border-slate-300 rounded-lg"
-              value={filterHotel}
-              onChange={(e) => setFilterHotel(e.target.value)}
-            >
+            <label className="label pb-1 text-xs font-semibold text-slate-600">Hotel</label>
+            <select className="select select-bordered w-full h-10 text-sm bg-white border-slate-300 rounded-lg" value={filterHotel} onChange={(e) => setFilterHotel(e.target.value)}>
               <option value="">All Hotels</option>
-              {[...new Set(invoices.map((inv) => inv.hotelName))].map(
-                (hotelName, idx) => (
-                  <option key={idx} value={hotelName}>
-                    {hotelName}
-                  </option>
-                ),
-              )}
+              {[...new Set(invoices.map((inv) => inv.hotelName))].map((hotelName, idx) => (
+                <option key={idx} value={hotelName}>{hotelName}</option>
+              ))}
             </select>
           </div>
 
           <div className="flex-1 min-w-[150px] sm:min-w-[180px]">
-            <label className="label pb-1 text-xs font-semibold text-slate-600">
-              Status
-            </label>
-            <select
-              className="select select-bordered w-full h-10 text-sm bg-white border-slate-300 rounded-lg"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
+            <label className="label pb-1 text-xs font-semibold text-slate-600">Status</label>
+            <select className="select select-bordered w-full h-10 text-sm bg-white border-slate-300 rounded-lg" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
               <option value="">All Status</option>
               <option value="pending">Pending</option>
               <option value="ready">Ready</option>
@@ -628,22 +662,14 @@ const handleDeleteInvoice = async () => {
           </div>
 
           <div className="sm:col-span-2 lg:col-span-3 calendar-container relative">
-            <label className="label pb-1 text-xs font-semibold text-slate-600">
-              Date Range
-            </label>
+            <label className="label pb-1 text-xs font-semibold text-slate-600">Date Range</label>
             <div className="flex gap-2">
-              <button
-                onClick={() => setShowCalendar(!showCalendar)}
-                className="input input-bordered w-full h-10 text-sm bg-white border-slate-300 focus:border-[#003d7a] rounded-lg text-left flex items-center gap-2 text-slate-600 px-3"
-              >
+              <button onClick={() => setShowCalendar(!showCalendar)} className="input input-bordered w-full h-10 text-sm bg-white border-slate-300 focus:border-[#003d7a] rounded-lg text-left flex items-center gap-2 text-slate-600 px-3">
                 <CalendarIcon size={14} className="text-slate-400 shrink-0" />
                 <span className="truncate text-xs">{getDateDisplayText()}</span>
               </button>
               {(selectedStartDate || selectedEndDate) && (
-                <button
-                  onClick={clearDateFilter}
-                  className="btn btn-ghost btn-sm h-10 w-10 min-h-0 p-0"
-                >
+                <button onClick={clearDateFilter} className="btn btn-ghost btn-sm h-10 w-10 min-h-0 p-0">
                   <X size={16} />
                 </button>
               )}
@@ -652,48 +678,19 @@ const handleDeleteInvoice = async () => {
             {showCalendar && (
               <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-200 p-4 z-50 w-[300px]">
                 <div className="flex items-center justify-between mb-4">
-                  <button
-                    onClick={() => changeMonth(-1)}
-                    className="p-1 hover:bg-slate-100 rounded-full"
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
-                  <span className="font-bold text-slate-700 text-sm">
-                    {currentDate.toLocaleDateString("en-US", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </span>
-                  <button
-                    onClick={() => changeMonth(1)}
-                    className="p-1 hover:bg-slate-100 rounded-full"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
+                  <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-slate-100 rounded-full"><ChevronLeft size={20} /></button>
+                  <span className="font-bold text-slate-700 text-sm">{currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
+                  <button onClick={() => changeMonth(1)} className="p-1 hover:bg-slate-100 rounded-full"><ChevronRight size={20} /></button>
                 </div>
-                <div className="text-xs text-center mb-2 text-slate-500">
-                  {dateSelectionMode === "start"
-                    ? "Select start date"
-                    : "Select end date"}
-                </div>
+                <div className="text-xs text-center mb-2 text-slate-500">{dateSelectionMode === "start" ? "Select start date" : "Select end date"}</div>
                 <div className="grid grid-cols-7 gap-1 text-center mb-2">
                   {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
-                    <span
-                      key={index}
-                      className="text-xs font-bold text-slate-400"
-                    >
-                      {day}
-                    </span>
+                    <span key={index} className="text-xs font-bold text-slate-400">{day}</span>
                   ))}
                 </div>
                 <div className="grid grid-cols-7 gap-1">
-                  {Array.from({ length: firstDayOfMonth(currentDate) }).map(
-                    (_, i) => (
-                      <div key={`empty-${i}`} />
-                    ),
-                  )}
-                  {Array.from({ length: daysInMonth(currentDate) }).map(
-                    (_, i) => {
+                  {Array.from({ length: firstDayOfMonth(currentDate) }).map((_, i) => (<div key={`empty-${i}`} />))}
+                  {Array.from({ length: daysInMonth(currentDate) }).map((_, i) => {
                       const day = i + 1;
                       const isStart = isStartDate(day);
                       const isEnd = isEndDate(day);
@@ -704,111 +701,37 @@ const handleDeleteInvoice = async () => {
                           key={day}
                           onClick={() => handleDateClick(day)}
                           className={`w-9 h-9 flex items-center justify-center text-sm rounded-full transition-colors ${
-                            isStart || isEnd
-                              ? "bg-[#003d7a] text-white font-bold"
-                              : inRange
-                                ? "bg-[#003d7a]/20 text-[#003d7a]"
-                                : "hover:bg-[#003d7a] hover:text-white"
+                            isStart || isEnd ? "bg-[#003d7a] text-white font-bold" : inRange ? "bg-[#003d7a]/20 text-[#003d7a]" : "hover:bg-[#003d7a] hover:text-white"
                           }`}
                         >
                           {day}
                         </button>
                       );
-                    },
+                    }
                   )}
                 </div>
                 <div className="flex gap-1 mt-3 pt-3 border-t border-slate-200">
-                  <button
-                    onClick={() => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      setSelectedStartDate(today);
-                      setSelectedEndDate(today);
-                      setShowCalendar(false);
-                      toast.success("Today selected");
-                    }}
-                    className="btn btn-ghost btn-xs flex-1 text-xs"
-                  >
-                    Today
-                  </button>
-                  <button
-                    onClick={() => {
-                      const today = new Date();
-                      const weekAgo = new Date(
-                        today.getTime() - 7 * 24 * 60 * 60 * 1000,
-                      );
-                      weekAgo.setHours(0, 0, 0, 0);
-                      today.setHours(0, 0, 0, 0);
-                      setSelectedStartDate(weekAgo);
-                      setSelectedEndDate(today);
-                      setShowCalendar(false);
-                      toast.success("Last 7 days selected");
-                    }}
-                    className="btn btn-ghost btn-xs flex-1 text-xs"
-                  >
-                    7 days
-                  </button>
-                  <button
-                    onClick={() => {
-                      const today = new Date();
-                      const monthAgo = new Date(
-                        today.getTime() - 30 * 24 * 60 * 60 * 1000,
-                      );
-                      monthAgo.setHours(0, 0, 0, 0);
-                      today.setHours(0, 0, 0, 0);
-                      setSelectedStartDate(monthAgo);
-                      setSelectedEndDate(today);
-                      setShowCalendar(false);
-                      toast.success("Last 30 days selected");
-                    }}
-                    className="btn btn-ghost btn-xs flex-1 text-xs"
-                  >
-                    30 days
-                  </button>
+                  <button onClick={() => { const today = new Date(); today.setHours(0, 0, 0, 0); setSelectedStartDate(today); setSelectedEndDate(today); setShowCalendar(false); toast.success("Today selected"); }} className="btn btn-ghost btn-xs flex-1 text-xs">Today</button>
+                  <button onClick={() => { const today = new Date(); const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000); weekAgo.setHours(0, 0, 0, 0); today.setHours(0, 0, 0, 0); setSelectedStartDate(weekAgo); setSelectedEndDate(today); setShowCalendar(false); toast.success("Last 7 days selected"); }} className="btn btn-ghost btn-xs flex-1 text-xs">7 days</button>
+                  <button onClick={() => { const today = new Date(); const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000); monthAgo.setHours(0, 0, 0, 0); today.setHours(0, 0, 0, 0); setSelectedStartDate(monthAgo); setSelectedEndDate(today); setShowCalendar(false); toast.success("Last 30 days selected"); }} className="btn btn-ghost btn-xs flex-1 text-xs">30 days</button>
                 </div>
               </div>
             )}
           </div>
 
           <div className="sm:col-span-2 lg:col-span-3">
-            <label className="label pb-1 text-xs font-semibold text-slate-600">
-              Search
-            </label>
+            <label className="label pb-1 text-xs font-semibold text-slate-600">Search</label>
             <div className="relative">
-              <Search
-                size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-              <input
-                type="text"
-                placeholder="Reference, guest, hotel..."
-                className="input input-bordered w-full pl-10 h-10 bg-slate-50 text-sm focus:outline-none focus:border-[#003d7a] rounded-lg"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-              />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="text" placeholder="Reference, guest, hotel..." className="input input-bordered w-full pl-10 h-10 bg-slate-50 text-sm focus:outline-none focus:border-[#003d7a] rounded-lg" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyPress={(e) => e.key === "Enter" && handleSearch()} />
             </div>
           </div>
 
          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={handleSearch}
-              disabled={searchLoading}
-              className="btn btn-sm h-10 bg-[#003d7a] hover:bg-[#002a5c] text-white flex-1 border-none font-medium rounded-lg shadow-sm disabled:opacity-50 text-sm"
-            >
-              {searchLoading ? (
-                <>
-                  <Loader2 size={14} className="animate-spin mr-1" />
-                  Searching...
-                </>
-              ) : (
-                "Search"
-              )}
+            <button onClick={handleSearch} disabled={searchLoading} className="btn btn-sm h-10 bg-[#003d7a] hover:bg-[#002a5c] text-white flex-1 border-none font-medium rounded-lg shadow-sm disabled:opacity-50 text-sm">
+              {searchLoading ? (<><Loader2 size={14} className="animate-spin mr-1" /> Searching...</>) : ("Search")}
             </button>
-            <button
-              onClick={handleClear}
-              className="btn btn-sm h-10 btn-ghost bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 font-medium rounded-lg px-4 text-sm"
-            >
+            <button onClick={handleClear} className="btn btn-sm h-10 btn-ghost bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 font-medium rounded-lg px-4 text-sm">
               Clear
             </button>
           </div>
@@ -818,14 +741,8 @@ const handleDeleteInvoice = async () => {
       {filteredInvoices.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
           <FileText size={64} className="mx-auto mb-4 text-slate-200" />
-          <h3 className="text-lg font-semibold text-slate-700 mb-2">
-            No invoices found
-          </h3>
-          <p className="text-sm text-slate-500">
-            {searchTerm || filterStatus || filterHotel || selectedStartDate
-              ? "Try adjusting your filters"
-              : "Create your first invoice to get started"}
-          </p>
+          <h3 className="text-lg font-semibold text-slate-700 mb-2">No invoices found</h3>
+          <p className="text-sm text-slate-500">{searchTerm || filterStatus || filterHotel || selectedStartDate ? "Try adjusting your filters" : "Create your first invoice to get started"}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -833,134 +750,73 @@ const handleDeleteInvoice = async () => {
             <table className="table w-full">
               <thead className="bg-[#f8fafc] border-b-2 border-slate-200">
                 <tr>
-                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-left whitespace-nowrap">
-                    Invoice Details
-                  </th>
-                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-left whitespace-nowrap">
-                    Hotel / Guest
-                  </th>
-                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-left whitespace-nowrap">
-                    Dates
-                  </th>
-                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right whitespace-nowrap">
-                    Amount
-                  </th>
-                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center whitespace-nowrap">
-                    Status
-                  </th>
-                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right whitespace-nowrap">
-                    Actions
-                  </th>
+                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-left whitespace-nowrap">Invoice Details</th>
+                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-left whitespace-nowrap">Hotel / Guest</th>
+                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-left whitespace-nowrap">Dates</th>
+                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right whitespace-nowrap">Amount</th>
+                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center whitespace-nowrap">Status</th>
+                  <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredInvoices.map((inv) => (
-                  <tr
-                    key={inv.id}
-                    className="hover:bg-blue-50/30 transition-colors group bg-white"
-                  >
+                  <tr key={inv.id} className="hover:bg-blue-50/30 transition-colors group bg-white">
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-0.5">
-                        <span className="font-bold text-[#003d7a] text-sm">
-                          {inv.invoiceNumber}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          {/* FIXED: Convert id to string before substring */}
-                          {String(inv.id).substring(0, 8)}...
-                        </span>
+                        <span className="font-bold text-[#003d7a] text-sm">{inv.invoiceNumber}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">{String(inv.id).substring(0, 8)}...</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-0.5 max-w-[200px]">
-                        <span className="font-bold text-slate-800 text-sm truncate">
-                          {inv.hotelName}
-                        </span>
-                        <span className="text-xs text-slate-500 truncate">
-                          {inv.guestName}
-                        </span>
-                        <span className="text-xs text-slate-400">
-                          Room: {inv.roomNumber}
-                        </span>
+                        <span className="font-bold text-slate-800 text-sm truncate">{inv.hotelName}</span>
+                        <span className="text-xs text-slate-500 truncate">{inv.guestName}</span>
+                        <span className="text-xs text-slate-400">Room: {inv.roomNumber}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-0.5 text-xs">
-                        <span className="text-slate-700">
-                          {formatDate(inv.arrivalDate)}
-                        </span>
-                        <span className="text-slate-700">
-                          {formatDate(inv.departureDate)}
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          {inv.nights} nights
-                        </span>
+                        <span className="text-slate-700">{formatDate(inv.arrivalDate)}</span>
+                        <span className="text-slate-700">{formatDate(inv.departureDate)}</span>
+                        <span className="text-[10px] text-slate-400">{inv.nights} nights</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex flex-col items-end">
-                        <span className="font-bold text-slate-800">
-                          {inv.grandTotal.toFixed(2)}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {inv.currency}
-                        </span>
+                        <span className="font-bold text-slate-800">{inv.grandTotal.toFixed(2)}</span>
+                        <span className="text-xs text-slate-500">{inv.currency}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold ${getStatusStyle(inv.status)}`}
-                      >
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold ${getStatusStyle(inv.status)}`}>
                         {getStatusDisplay(inv.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-0.5 opacity-70 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => handleDownloadPDF(inv)}
-                          className="p-1.5 text-slate-400 hover:text-[#003d7a] hover:bg-blue-50 rounded transition-colors"
-                          title="Download PDF"
-                        >
+                        <button onClick={() => handleDownloadPDF(inv)} className="p-1.5 text-slate-400 hover:text-[#003d7a] hover:bg-blue-50 rounded transition-colors" title="Download PDF">
                           <FileText size={16} />
                         </button>
-                        <button
-                          onClick={() => {
-                            // Check if it's Novotel or Standard hotel to use correct route
-                            const hotelPath =
-                              inv.hotelName === "Novotel Tunis Lac"
-                                ? "invoices/novotel"
-                                : "invoices";
-                            navigate(`/${hotelPath}/duplicate/${inv.id}`);
-                          }}
-                          className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                          title="Duplicate"
-                        >
+                        <button onClick={() => {
+                            // ✅ UPDATED: DUPLICATE LOGIC
+                            let dupPath = `/invoices/duplicate/${inv.id}`;
+                            if (isEgyptInvoice(inv.hotelName)) {
+                              dupPath = `/egypt-invoice/duplicate/${inv.id}`;
+                            } else if (inv.hotelName === "Novotel Tunis Lac") {
+                              dupPath = `/invoices/novotel/duplicate/${inv.id}`;
+                            }
+                            navigate(dupPath);
+                          }} className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" title="Duplicate">
                           <Copy size={16} />
                         </button>
-                        <button
-                          onClick={() => handleViewInvoice(inv.id)}
-                          className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                          title="View"
-                        >
+                        <button onClick={() => handleViewInvoice(inv.id)} className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" title="View">
                           <Eye size={16} />
                         </button>
-                        <button
-                          onClick={() => handleEditInvoice(inv)}
-                          className="p-1.5 text-slate-400 hover:text-[#f39c12] hover:bg-amber-50 rounded transition-colors"
-                          title="Edit"
-                        >
+                        <button onClick={() => handleEditInvoice(inv)} className="p-1.5 text-slate-400 hover:text-[#f39c12] hover:bg-amber-50 rounded transition-colors" title="Edit">
                           <Edit2 size={16} />
                         </button>
-                        <button
-                          onClick={() => openDeleteModal(inv)}
-                          disabled={deleteLoading === inv.id}
-                          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                          title="Delete"
-                        >
-                          {deleteLoading === inv.id ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <Trash2 size={16} />
-                          )}
+                        <button onClick={() => openDeleteModal(inv)} disabled={deleteLoading === inv.id} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50" title="Delete">
+                          {deleteLoading === inv.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={16} />}
                         </button>
                       </div>
                     </td>
@@ -973,43 +829,21 @@ const handleDeleteInvoice = async () => {
       )}
 
       <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-slate-500 px-2">
-        <div>
-          Showing {filteredInvoices.length} of {invoices.length} invoices
-        </div>
+        <div>Showing {filteredInvoices.length} of {invoices.length} invoices</div>
         <div className="flex gap-4">
-          <span>
-            Pending: {invoices.filter((i) => i.status === "pending").length}
-          </span>
-          <span>
-            Ready: {invoices.filter((i) => i.status === "ready").length}
-          </span>
+          <span>Pending: {invoices.filter((i) => i.status === "pending").length}</span>
+          <span>Ready: {invoices.filter((i) => i.status === "ready").length}</span>
         </div>
       </div>
 
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="font-bold text-lg text-slate-900 mb-2">
-              Delete Invoice
-            </h3>
-            <p className="text-sm text-slate-600 mb-6">
-              Are you sure you want to delete invoice{" "}
-              <strong>{invoiceToDelete?.invoiceNumber}</strong>? This action
-              cannot be undone.
-            </p>
+            <h3 className="font-bold text-lg text-slate-900 mb-2">Delete Invoice</h3>
+            <p className="text-sm text-slate-600 mb-6">Are you sure you want to delete invoice <strong>{invoiceToDelete?.invoiceNumber}</strong>? This action cannot be undone.</p>
             <div className="flex justify-end gap-3">
-              <button
-                className="btn btn-sm h-10 btn-ghost text-slate-600 font-medium"
-                onClick={() => setShowDeleteModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-sm h-10 bg-red-500 hover:bg-red-600 text-white border-none font-medium"
-                onClick={handleDeleteInvoice}
-              >
-                Delete
-              </button>
+              <button className="btn btn-sm h-10 btn-ghost text-slate-600 font-medium" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+              <button className="btn btn-sm h-10 bg-red-500 hover:bg-red-600 text-white border-none font-medium" onClick={handleDeleteInvoice}>Delete</button>
             </div>
           </div>
         </div>
@@ -1017,5 +851,3 @@ const handleDeleteInvoice = async () => {
     </div>
   );
 }
-
-

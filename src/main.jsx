@@ -1,3 +1,4 @@
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -7,6 +8,7 @@ import store from "./store/store";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import usePersistLogin from "./hooks/usePersistLogin";
 import { useSelector } from "react-redux";
+
 
 // Pages & Components
 import Login from "./components/Login";
@@ -21,8 +23,22 @@ import {
   TRYPInvoiceView,
   DynamicInvoiceFormPage, 
   DynamicInvoiceViewPage,
+  DynamicInvoiceFormPageEgypt,
+  RaddisonInvoiceView,
+  IntercontinentalInvoiceView,
+  HiltonInvoiceView,
   NotFoundPage
 } from "./pages";
+
+document.addEventListener(
+  "wheel",
+  (e) => {
+    if (document.activeElement?.type === "number") {
+      document.activeElement.blur(); 
+    }
+  },
+  { passive: false }
+);
 
 if (import.meta.env.VITE_ENV ==='production') {
   console.log = () => {};
@@ -235,6 +251,41 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
+      // ==========================================
+      // EGYPT INVOICES (STAYBRIDGE)
+      // ==========================================
+      {
+        path: "egypt-invoice/create/:hotelId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["super_admin", "employee"]}>
+            <DynamicInvoiceFormPageEgypt />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "egypt-invoice/edit/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPageEgypt />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "egypt-invoice/duplicate/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPageEgypt />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "egypt-invoice/download-pdf/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceViewPage />
+          </AuthLayout>
+        ),
+      },
     ],
   },
   
@@ -248,12 +299,28 @@ const router = createBrowserRouter([
     element: <InvoiceViewPage />,
   },
   {
+    path: "invoice/view/radison",
+    element: <RaddisonInvoiceView />,
+  },
+  {
     path: "invoice/view/:invoiceId",
     element: <DynamicInvoiceViewPage />,
   },
   {
     path: "invoice/trypview/:invoiceNumber",
     element: <TRYPInvoiceView />,
+  },
+  {
+    path: "egypt-invoice/view/:invoiceId",
+    element: <DynamicInvoiceViewPage />,
+  },
+ {
+    path: "invoice/view/intercontinental",
+    element: <IntercontinentalInvoiceView />,
+  },
+  {
+    path: "invoice/view/hilton",
+    element: <HiltonInvoiceView />,
   },
   
   // ERROR ROUTES
