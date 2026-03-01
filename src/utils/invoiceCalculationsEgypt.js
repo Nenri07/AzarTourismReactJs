@@ -447,6 +447,13 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       note:   formData.note || '',
       userId: formData.user_id || '',
 
+      //hilton extended fields
+      ratePlan : formData.rate_plan || '',
+      honorNo: formData.honors_no || '',
+      vatNo: formData.vat_no || '',
+      invoiceCopyNo: formData.invoice_copy_no || '',
+      aL: formData.a_l || '',
+
       // Radisson / extended fields
       membershipNo: formData.membership_no || '',
       groupCode:    formData.group_code || '',
@@ -474,6 +481,10 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       balanceUsd:            summary.balance_usd,
       totalExVat:            summary.totalExVat,
       totalInclVat:          summary.totalInclVat,
+
+
+      checkInTime:   formData.checkin_time || '',
+      checkOutTime:  formData.checkout_time || '',
 
       accommodationDetails: accommodationDetailsArray,
       otherServices:        otherServicesArray,

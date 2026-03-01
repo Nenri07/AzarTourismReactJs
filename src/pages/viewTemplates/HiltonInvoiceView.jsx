@@ -6,7 +6,7 @@ import { InvoiceTemplate } from "../../components";
 import cairoInvoiceApi from "../../Api/cairoInvoice.api";
 import logo from "../../../public/Hilton-logo.png";
 
-const HiltonInvoiceView = ({ invoiceData }) => {
+const HiltonInvoiceViewPage = ({ invoiceData }) => {
   const { invoiceId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -68,18 +68,30 @@ const HiltonInvoiceView = ({ invoiceData }) => {
   const transformInvoiceData = (data) => {
     if (!data) return null;
 
-    // Collect ALL rows with a sortable raw date, then sort by date
     const allRows = [];
 
+    // Generate a random 5-letter uppercase string for other services (once per invoice)
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let randomServiceId = '';
+    for (let i = 0; i < 5; i++) {
+      randomServiceId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    let randomId = '';
+    for (let i = 0; i < 5; i++) {
+      randomId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // 1. Gather Accommodation Rows
     if (data.accommodationDetails && Array.isArray(data.accommodationDetails)) {
       data.accommodationDetails.forEach((item, index) => {
-
-        // item.rate comes as "55.00 USD * 70.444" — split into two columns
-        const rateParts    = (item.rate || '').split(' * ');
-        const rateLabel    = rateParts[0] || '';           // "55.00 USD"
-        const exchLabel    = rateParts[1]
-                              ? `* ${rateParts[1]}`
-                              : (item.exchangeRateCol ? `* ${item.exchangeRateCol}` : '');
+        const rateString   = String(item.rateLabel || '');
+        const rateParts    = rateString.split(' * ');
+        
+        const rateVal      = rateParts[0] || (data.usdAmount ? `${formatCurrency(data.usdAmount)} USD` : '');
+        const exchVal      = rateParts[1] 
+                              ? `* ${rateParts[1]}` 
+                              : (item.exchangeRateCol ? `* ${item.exchangeRateCol}` : (data.exchangeRate ? `* ${data.exchangeRate}` : ''));
 
         allRows.push({
           _rawDate:    new Date(item.date).getTime(),
@@ -87,11 +99,9 @@ const HiltonInvoiceView = ({ invoiceData }) => {
           id:          `acc_${index}`,
           date:        formatDate(item.date),
           description: item.description || 'ACCOMMODATION',
-          rate:        rateLabel,
-          exchangeRate: exchLabel,
-          refId:       item.refId  || 'LINTR',
-          refNo:       item.refNo  || '',
-          // API field is guestCharge (EGP amount), not chargesEgp
+          rate:        rateVal,
+          exchangeRate: exchVal,
+          refId:       randomId,
           guestCharge: formatCurrency(item.guestCharge || item.chargesEgp || 0),
           credit:      '',
           amount:      '',
@@ -99,6 +109,7 @@ const HiltonInvoiceView = ({ invoiceData }) => {
       });
     }
 
+    // 2. Gather Services Rows
     if (data.otherServices && Array.isArray(data.otherServices)) {
       data.otherServices.forEach((service, index) => {
         allRows.push({
@@ -109,8 +120,7 @@ const HiltonInvoiceView = ({ invoiceData }) => {
           description: service.name || 'Service',
           rate:        '',
           exchangeRate: '',
-          refId:       '',
-          refNo:       '',
+          refId:       randomServiceId, // <-- Uses the random 5-letter ID generated above
           guestCharge: formatCurrency(service.amount || 0),
           credit:      '',
           amount:      '',
@@ -118,14 +128,24 @@ const HiltonInvoiceView = ({ invoiceData }) => {
       });
     }
 
-    // Sort by date, then accommodation before services on same day
+    // 3. Sort chronologically
     allRows.sort((a, b) => {
       if (a._rawDate !== b._rawDate) return a._rawDate - b._rawDate;
       return a._sortOrder - b._sortOrder;
     });
 
-    // Strip internal sort keys before passing to template
-    const charges = allRows.map(({ _rawDate, _sortOrder, ...row }) => row);
+    // 4. Assign sequential Ref Numbers to the perfectly sorted array
+    let currentRefNo = Math.floor(1000000 + Math.random() * 9000000);
+    const charges = allRows.map(({ _rawDate, _sortOrder, ...row }) => {
+      // Force an unbroken ascending sequence for every single row
+      row.refNo = (currentRefNo++).toString();
+      return row;
+    });
+
+    // Extract dynamic address to replace hardcoded strings
+    const addressParts = data.address ? data.address.split(',') : [];
+    const addressLine1 = addressParts[0] ? addressParts[0].trim() : 'Algeria Square Building Number 12 First Floor,';
+    const addressLine2 = addressParts.slice(1).join(',').trim() || 'Tripoli ,Libya';
 
     return {
       // Hotel header block
@@ -134,35 +154,36 @@ const HiltonInvoiceView = ({ invoiceData }) => {
         address: '24 Mohamed Mazhar St., Zamalek',
         city:    'Cairo, 11241, Egypt',
         phone:   'TELEPHONE +20227371202 • FAX +20227371202',
-        vat:     data.vatNumber   || '',
+        vat:     data.vatNo       || data.taxCardNo || data.vatNumber || '',
       },
 
       // Left guest block
       guestInfo: {
-        company:            data.companyName        || 'AZAR TOURISM',
-        addressLine1:       'ALGERIA SQUARE BUILDING NUMBER',
-        addressLine2:       '12 FIRST FLOOR,',
-        city:               'TRIPOLI',
-        country:            'LIBYA',
-        invoiceCopy:        data.invoiceNo          || '',
+        referenceNo:        data.referenceNo,
+        company:            data.companyName        || 'Azar Tourism Services',
+        addressLine1:       addressLine1, // Dynamic Address Part 1
+        addressLine2:       addressLine2, // Dynamic Address Part 2
+        city:               '',
+        country:            '',
+        invoiceCopy:        data.invoiceCopyNo      || data.invoiceNo || '', // Mapped from new JSON
         confirmationNumber: data.confNo             || '',
         guestName:          (data.guestName         || '').toUpperCase(),
-        hotelDetails:       `HILTON ZAMALEK RESIDENCE CAIRO ${formatDate(data.invoiceDate)} ${data.invoiceTime || ''}`,
+        hotelDetails:       `${data.hotel || 'HILTON ZAMALEK RESIDENCE CAIRO'} ${formatDate(data.invoiceDate)} ${data.invoiceTime || ''}`,
       },
 
       // Right room block
       roomDetails: {
         roomNumber:    data.roomNo          || '',
-        arrivalDate:   formatDateLong(data.arrivalDate),
-        departureDate: formatDateLong(data.departureDate),
+        arrivalDate:   formatDateLong(data.arrivalDate, data.checkInTime),
+        departureDate: formatDateLong(data.departureDate, data.checkOutTime),
         adultChild:    `${data.paxAdult || 1}/${data.paxChild || 0}`,
         cashier:       data.cashierId       || '',
-        roomRate:      '',
-        ratePlan:      data.customRef       || '',
-        al:            '',
-        hhonors:       data.ihgRewardsNumber || '',
-        vat:           data.taxCardNo        || '',
-        folio:         data.folioNo          || '',
+        roomRate:      data.roomAmountEgp   ? formatCurrency(data.roomAmountEgp) : '', // Mapped
+        ratePlan:      data.ratePlan        || data.customRef || '', // Mapped
+        al:            data.aL              || data.al || '', // Mapped
+        hhonors:       data.honorNo         || data.ihgRewardsNumber || '', // Mapped
+        vat:           data.vatNo           || data.taxCardNo || '', // Mapped
+        folio:         data.folioNo         || '',
       },
 
       // Totals
@@ -177,7 +198,6 @@ const HiltonInvoiceView = ({ invoiceData }) => {
   };
 
   // ── DATE FORMATTERS ───────────────────────────────────────────────────────
-  // dd/mm/yyyy  (used inside rows — matches original dummy format)
   const formatDate = (dateString) => {
     if (!dateString) return '';
     try {
@@ -190,10 +210,9 @@ const HiltonInvoiceView = ({ invoiceData }) => {
     } catch { return dateString; }
   };
 
-  // dd/mm/yyyy 00:00  (used inside roomDetails block — matches original dummy)
-  const formatDateLong = (dateString) => {
+  const formatDateLong = (dateString, timeString) => {
     if (!dateString) return '';
-    return `${formatDate(dateString)} 00:00`;
+    return `${formatDate(dateString)} ${timeString || '00:00'}`;
   };
 
   const formatCurrency = (val) => {
@@ -231,7 +250,7 @@ const HiltonInvoiceView = ({ invoiceData }) => {
     if (!invoiceRef.current) return;
     setPdfLoading(true);
 
-    const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
+    const headStyles = Array.from(document.head.querySelectorAll('link[relstylesheet], style'));
     headStyles.forEach(style => { style.parentNode.removeChild(style); });
 
     try {
@@ -245,7 +264,7 @@ const HiltonInvoiceView = ({ invoiceData }) => {
 
       const opt = {
         margin: 0,
-        filename: `Hilton_Invoice_${invoice.guestInfo.invoiceCopy}.pdf`,
+        filename: `${invoice.guestInfo.referenceNo }.pdf`,
         image: { type: 'jpeg', quality: 3 },
         html2canvas: {
           scale: 4,
@@ -335,7 +354,7 @@ const HiltonInvoiceView = ({ invoiceData }) => {
             justify-content: flex-start; 
           }
 
-          .spacing-top { margin-top: 30px !important; }
+          .spacing-top { margin-top: 70px !important; }
           .spacing-top-small { margin-top: 15px !important; }
 
           /* Right Information Table */
@@ -508,4 +527,4 @@ const HiltonInvoiceView = ({ invoiceData }) => {
   );
 };
 
-export default HiltonInvoiceView;
+export default HiltonInvoiceViewPage;

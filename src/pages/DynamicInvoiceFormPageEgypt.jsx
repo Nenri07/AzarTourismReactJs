@@ -184,6 +184,14 @@ export default function DynamicInvoiceFormPageEgypt() {
       custom_ref: data.customRef || '',
       adults: String(data.paxAdult || 1),
       children: String(data.paxChild || 0),
+ //new fields
+        rate_plan: data.ratePlan || '',
+      honors_no: data.honorNo || '',
+      vat_no: data.vatNo || '',
+      invoice_copy_no: data.invoiceCopyNo || '',
+      a_l: data.aL || '',
+      checkin_time: data.checkInTime || '',
+      checkout_time: data.checkOutTime || '',
 
       // Fixed: Mapped all Fairmont Root Fields
       user_id: data.userId || '',
