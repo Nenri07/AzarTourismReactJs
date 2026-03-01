@@ -357,7 +357,7 @@ const IntercontinentalInvoiceView = ({ invoiceData }) => {
                 margin-bottom: 0 !important;
                 width: 210mm !important;
                 height: 297mm !important;
-                padding: 8mm 12mm 6mm 12mm !important;
+                // padding: 8mm 12mm 6mm 12mm !important;
                 page-break-after: always;
                 overflow: hidden !important;
             }
@@ -486,13 +486,13 @@ const IntercontinentalInvoiceView = ({ invoiceData }) => {
               {/* 2. Approved by / Company / Account Receivable */}
               <table>
                 <colgroup>
-                  <col style={{ width: '14%' }} />
-                  <col style={{ width: '42%' }} />
+                  <col style={{ width: '20%' }} />
+                  <col style={{ width: '83%' }} />
                   <col style={{ width: '44%' }} />
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td rowSpan="2" className="ic-bt ic-br ic-bb" style={{ verticalAlign: 'top', paddingTop: '8px' }}>Approved by</td>
+                    <td rowSpan="2" className="ic-bt ic-br ic-bb" style={{ verticalAlign: 'top', padding: '5px 5px 5px 5px' }}>Approved by</td>
                     <td className="ic-bt" style={{ height: '28px' }}></td>
                     <td className="ic-bt"></td>
                   </tr>
@@ -506,18 +506,18 @@ const IntercontinentalInvoiceView = ({ invoiceData }) => {
               {/* 3. VAT Rate / Exchange Rate / Signature / Address */}
               <table>
                 <colgroup>
-                  <col style={{ width: '30%' }} />
-                  <col style={{ width: '35%' }} />
+                  <col style={{ width: '56%' }} />
+                  <col style={{ width: '25%' }} />
                   <col style={{ width: '35%' }} />
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td className="ic-bb" style={{ padding: '5px', lineHeight: 1.6 }}>
+                    <td className="ic-bb" style={{ padding: '0px 5px 0 5px', lineHeight: 1.4, borderRight:'1px solid #000' }}>
                       Vat Rate = {page.isLast ? invoice.footer.vatRate : ''}<br />
                       Exchange Rate {page.isLast ? invoice.footer.exchangeRate : ''}
                     </td>
-                    <td className="ic-bb" style={{ textAlign: 'center', padding: '5px' }}>Signature</td>
-                    <td className="ic-bb" style={{ padding: '5px' }}>Address</td>
+                    <td className="ic-bb" style={{ textAlign: 'left', padding: '5px 5px 5px 20px' }}>Signature</td>
+                    <td className="ic-bb" style={{ padding: '5px 5px 5px 8px' }}>Address</td>
                   </tr>
                 </tbody>
               </table>

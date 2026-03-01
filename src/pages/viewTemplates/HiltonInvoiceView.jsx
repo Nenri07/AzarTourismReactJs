@@ -169,7 +169,7 @@ const HiltonInvoiceViewPage = ({ invoiceData }) => {
         departureDate: formatDateLong(data.departureDate, data.checkOutTime),
         adultChild:    `${data.paxAdult || 1}/${data.paxChild || 0}`,
         cashier:       data.cashierId       || '',
-        roomRate:      data.roomAmountEgp   ? formatCurrency(data.roomAmountEgp) : '', // Mapped
+        roomRate:      data.usdAmount   ? formatCurrency(data.usdAmount) : '', // Mapped
         ratePlan:      data.ratePlan        || data.customRef || '', // Mapped
         al:            data.aL              || data.al || '', // Mapped
         hhonors:       data.honorNo         || data.ihgRewardsNumber || '', // Mapped
