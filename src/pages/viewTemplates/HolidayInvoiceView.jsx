@@ -377,7 +377,7 @@ const HolidayInvoiceView = ({ invoiceData }) => {
             border-top: 1px solid #000;
             padding-top: 10px;
           }
-          .hi-page-info { text-align: center; font-size: 8pt; margin-top: 10px; }
+          .hi-page-info { text-align: center; font-size: 8pt; margin-top: auto; }
         `}</style>
 
       <div ref={invoiceRef} className="holiday-invoice-wrapper">
