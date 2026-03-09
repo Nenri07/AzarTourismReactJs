@@ -192,6 +192,9 @@ export default function DynamicInvoiceFormPageEgypt() {
       a_l: data.aL || '',
       checkin_time: data.checkInTime || '',
       checkout_time: data.checkOutTime || '',
+       accommodation_ref_id: data.accommodationRefId || '',
+      services_ref_id: data.servicesRefId || '',
+      starting_ref_no: data.startingRefNo || '',
 
       // Fixed: Mapped all Fairmont Root Fields
       user_id: data.userId || '',
