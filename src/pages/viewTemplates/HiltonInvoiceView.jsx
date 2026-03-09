@@ -90,7 +90,7 @@ const HiltonInvoiceViewPage = ({ invoiceData }) => {
         
         // Check if it's a valid number, then fix to 6 decimal places
         if (!isNaN(numericExch)) {
-          exchVal = `* ${numericExch.toFixed(6)}`;
+          exchVal = `* ${numericExch.toFixed(2)}`;
         } else {
           exchVal = `* ${rawExch}`; // Fallback if parsing fails
         }
