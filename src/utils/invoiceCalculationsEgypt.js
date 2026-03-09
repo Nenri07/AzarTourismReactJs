@@ -435,6 +435,9 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       referenceNo: formData.reference_no || '',
       arNumber:    formData.ar_number || '',
       roomNo:      formData.room_number || '',
+      accommodationRefId: formData.accommodation_ref_id || [...Array(5)].map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''),
+servicesRefId: formData.services_ref_id || [...Array(5)].map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''),
+startingRefNo: formData.starting_ref_no || Math.floor(1000000 + Math.random() * 9000000),
 
       arrivalDate:      formatDate(formData.arrival_date),
       departureDate:    formatDate(formData.departure_date),
