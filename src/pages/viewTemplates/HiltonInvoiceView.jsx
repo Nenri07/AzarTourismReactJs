@@ -80,9 +80,25 @@ const HiltonInvoiceViewPage = ({ invoiceData }) => {
         const rateParts    = rateString.split(' * ');
         
         const rateVal      = rateParts[0] || (data.usdAmount ? `${formatCurrency(data.usdAmount)} USD` : '');
-        const exchVal      = rateParts[1] 
-                              ? `* ${rateParts[1]}` 
-                              : (item.exchangeRateCol ? `* ${item.exchangeRateCol}` : (data.exchangeRate ? `* ${data.exchangeRate}` : ''));
+          // --- UPDATED LOGIC HERE ---
+      let rawExch = rateParts[1] || item.exchangeRateCol || data.exchangeRate || '';
+      let exchVal = '';
+
+      if (rawExch) {
+        // Remove any existing "*" or spaces to get the pure number
+        const numericExch = parseFloat(String(rawExch).replace(/[^\d.]/g, ''));
+        
+        // Check if it's a valid number, then fix to 6 decimal places
+        if (!isNaN(numericExch)) {
+          exchVal = `* ${numericExch.toFixed(6)}`;
+        } else {
+          exchVal = `* ${rawExch}`; // Fallback if parsing fails
+        }
+      }
+
+        // const exchVal      = rateParts[1] 
+        //                       ? `* ${rateParts[1]}` 
+        //                       : (item.exchangeRateCol ? `* ${item.exchangeRateCol}` : (data.exchangeRate ? `* ${data.exchangeRate}` : ''));
 
         allRows.push({
           _rawDate:    new Date(item.date).getTime(),
