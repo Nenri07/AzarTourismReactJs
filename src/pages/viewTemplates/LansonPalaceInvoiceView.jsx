@@ -2183,6 +2183,10 @@
 // };
 
 // export default LansonPalaceInvoiceView;
+
+
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -2270,7 +2274,7 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
   const [paginatedData, setPaginatedData] = useState([]);
 
   const invoiceRef = useRef(null);
-  const ROWS_PER_PAGE = 25; 
+  const ROWS_PER_PAGE = 25;
   const isPdfDownload = location.pathname.includes("/download-pdf");
 
   const dummyData = {
@@ -2360,7 +2364,7 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
       for (let i = 0; i < tx.length; i += ROWS_PER_PAGE) {
         const chunk = tx.slice(i, i + ROWS_PER_PAGE);
         const isLastChunk = i + ROWS_PER_PAGE >= tx.length;
-        
+
         if (isLastChunk) {
           if (chunk.length > MAX_ROWS_WITH_FOOTER) {
             pages.push({ items: chunk.slice(0, chunk.length - 2), showTotals: false });
@@ -2379,79 +2383,56 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
     setPaginatedData(pages);
   }, [invoice]);
 
-  // ── ABSOLUTE TOP FIX (Stops blank pages on top) ──────────────
- const handleDownloadPDF = async () => {
+  // ── PDF DOWNLOAD ─────────────────────────────────────────────────────────
+  const handleDownloadPDF = async () => {
     if (!invoiceRef.current) return;
     setPdfLoading(true);
 
     const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
     headStyles.forEach(style => {
-        if (style.parentNode) {
-            style.parentNode.removeChild(style);
-        }
+      if (style.parentNode) style.parentNode.removeChild(style);
     });
 
     try {
       const images = invoiceRef.current.querySelectorAll('img');
       await Promise.all(Array.from(images).map(img => {
-          if (img.complete) return Promise.resolve();
-          return new Promise(resolve => {
-              img.onload = resolve;
-              img.onerror = resolve;
-          });
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
       }));
-
-      // ── SCROLL TO TOP before capture ──
-      window.scrollTo(0, 0);
-      await new Promise(resolve => setTimeout(resolve, 300));
 
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      const element = invoiceRef.current;
       const opt = {
         margin: 0,
         filename: `${invoice.referenceNo || 'Invoice'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 4, 
-            useCORS: true, 
-            letterRendering: true,
-            windowWidth: 794,
-            scrollY: -window.scrollY, // ← KEY FIX: cancel out scroll offset
-            scrollX: 0,
-          onclone: (clonedDoc, clonedElement) => {
-    clonedElement.classList.add('pdf-mode');
-    clonedDoc.documentElement.scrollTop = 0;
-    clonedDoc.body.scrollTop = 0;
-
-    // ── REMOVE inter-page gaps that cause blank pages ──
-    clonedDoc.querySelectorAll('.page').forEach(page => {
-        page.style.margin = '0';
-        page.style.marginBottom = '0';
-        page.style.display = 'block';
-    });
-
-    // ── Lock wrapper to exact content height ──
-    clonedElement.style.position = 'absolute';
-    clonedElement.style.top = '0';
-    clonedElement.style.left = '0';
-    clonedElement.style.margin = '0';
-    clonedElement.style.padding = '0';
-}
+        image: { type: 'jpeg', quality: 3 },
+        html2canvas: {
+          scale: 4,
+          useCORS: true,
+          letterRendering: true,
+          scrollY: 0,
+          windowWidth: 794,
+          onclone: (clonedDoc) => {
+            clonedDoc.querySelectorAll('.page').forEach(p => {
+              p.style.margin = '0';
+              p.style.height = '1122px';
+              p.style.minHeight = '1122px';
+              p.style.maxHeight = '1122px';
+              p.style.boxShadow = 'none';
+            });
+          }
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all'] } 
+        pagebreak: { mode: ['css', 'legacy'] },
       };
-      
-      await html2pdf().set(opt).from(element).save();
+
+      await html2pdf().set(opt).from(invoiceRef.current).save();
       toast.success("PDF Downloaded Successfully");
     } catch (err) {
       console.error("PDF Error:", err);
       toast.error("Failed to generate PDF");
     } finally {
-      headStyles.forEach(style => {
-          document.head.appendChild(style);
-      });
+      headStyles.forEach(style => { document.head.appendChild(style); });
       setPdfLoading(false);
     }
   };
@@ -2505,24 +2486,13 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
               position: relative;
               overflow: hidden;
               line-height: 1.4;
+              page-break-after: always;
+              break-after: page;
           }
-
-          /* --- PDF CAPTURE FIXES --- */
-          /* These classes force the clone to the absolute top of the page */
-          .lanson-invoice-wrapper.pdf-mode {
-              margin: 0 !important;
-              padding: 0 !important;
-              position: absolute !important;
-              top: 0 !important;
-              left: 0 !important;
+          .page:last-child {
+              page-break-after: auto;
+              break-after: auto;
           }
-          .pdf-mode .page {
-              margin: 0 !important; 
-              box-shadow: none !important;
-              border: none !important;
-          }
-          /* ------------------------- */
-          
           .lp-logo-container {
               display: flex;
               justify-content: center;
@@ -2554,7 +2524,6 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
           .lp-meta-table td { padding: 3px 0; vertical-align: middle; }
           .lp-meta-table td:nth-child(1) { width: 130px; }
           .lp-meta-table td:nth-child(2) { width: 15px; }
-          
           .lp-items-table {
               width: 100%;
               border-collapse: collapse;
@@ -2577,9 +2546,9 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
               text-align: right;
               width: 100px;
           }
-          .lp-items-table td { 
-              padding: 6px 8px !important; 
-              vertical-align: middle !important; 
+          .lp-items-table td {
+              padding: 6px 8px !important;
+              vertical-align: middle !important;
           }
           .lp-items-table tbody tr:nth-child(even):not(.tbl-total-row) {
               background-color: #f4f4f4;
@@ -2589,16 +2558,13 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
           .tbl-total-row td  { padding-top: 15px !important; }
           .tbl-total-label   { font-weight: bold; padding-right: 20px; }
           .amount-total-cell { border-top: 1px solid #000; padding-top: 8px !important; }
-          
           .lp-bottom-right   { width: 400px; margin-left: auto; padding-right: 4px; }
           .lp-summary-table  { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
           .lp-summary-table td { text-align: right; padding: 3px 0; }
           .lp-summary-table td:first-child { font-weight: bold; padding-right: 20px; }
           .lp-summary-table td:last-child  { width: 100px; }
-          
           .lp-sig-text { text-align: left; margin-bottom: 60px; line-height: 1.5; }
           .lp-sig-line { border-top: 1px solid #000; text-align: center; padding-top: 5px; }
-
           .lp-footer {
               position: absolute;
               bottom: 50px;
@@ -2612,20 +2578,18 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
               display: block;
               margin-bottom: 2px;
           }
-
-          /* Browser Print Rules */
           @page { size: A4 portrait; margin: 0; }
           @media print {
-              body, html { 
-                  margin: 0 !important; 
-                  padding: 0 !important; 
-                  background-color: #fff !important; 
+              body, html {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  background-color: #fff !important;
               }
-              button, nav, header, footer, .no-print { 
-                  display: none !important; 
+              button, nav, header, footer, .no-print {
+                  display: none !important;
               }
               .lanson-invoice-wrapper {
-                  padding: 0 !important; 
+                  padding: 0 !important;
                   margin: 0 !important;
                   background: none !important;
                   max-width: none !important;
@@ -2760,7 +2724,6 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
               fax | +60 3 2725 8899<br />
               web | https://www.lansonplace.com/bukitceylon
             </div>
-
           </div>
         ))}
       </div>
