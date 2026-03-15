@@ -22,6 +22,7 @@ import DynamicInvoiceformPageMalaysia from "./DynamicInvoiceFormPageMalaysia";
 import LansonPalaceInvoiceView from "./viewTemplates/LansonPalaceInvoiceView";
 import GrandHayattInvoiceView from "./viewTemplates/GrandHayattInvoiceView";
 import OasiaInvoiceView from "./viewTemplates/OasiaInvoiceView";
+import IntercontinentalInvoiceViewMalaysia from "./viewTemplates/IntercontinentalInvoiceViewMalaysia";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
@@ -37,5 +38,6 @@ export {
     LansonPalaceInvoiceView,
     GrandHayattInvoiceView,
     OasiaInvoiceView,
+    IntercontinentalInvoiceViewMalaysia,
 
 };

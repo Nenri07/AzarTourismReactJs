@@ -227,7 +227,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
       <div className="oasia-invoice-wrapper" ref={invoiceRef}>
         <style dangerouslySetInnerHTML={{__html: `
           .oasia-invoice-wrapper { width: 100%; background-color: transparent; }
-          .oasia-invoice-wrapper * { font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 10px; line-height: 1.3; }
+          .oasia-invoice-wrapper * { font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 12px; line-height: 1.3; }
           .page {
               width: 100%; max-width: 794px; padding: 15mm 15mm; margin: 0 auto 20px auto;
               background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box;
@@ -255,10 +255,11 @@ const OasiaInvoiceView = ({ invoiceData }) => {
           .oasia-items-table tbody td { padding: 3px 0; }
           
           .text-right { text-align: right !important; }
-          
+          .text-left { text-align: left !important; padding }
+           .text-right1 { text-align: center !important; }
           .oasia-bottom-section { margin-top: 10px; width: 100%; display: flex; justify-content: space-between; }
-          .oasia-left-col { width: 45%; padding-right: 20px; display: flex; flex-direction: column; justify-content: space-between; }
-          .oasia-right-col { width: 50%; border-bottom: 1px solid; padding-bottom: 20px;}
+          .oasia-left-col { width: 45%; padding-right: 30px; display: flex; flex-direction: column; justify-content: space-between; }
+          .oasia-right-col { width: 55%; border-bottom: 1px solid; padding-bottom: 20px;}
           
           .oasia-balance-row {
               display: flex; justify-content: space-between; align-items: center; 
@@ -318,7 +319,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                     </table>
                   </td>
 
-                  <td style={{ width: '50%', verticalAlign: 'top' }}>
+                  <td style={{ width: '23%', verticalAlign: 'top' }}>
                     <table className="oasia-info-table">
                       <tbody>
                         <tr><td className="oasia-label">FOLIO</td><td></td><td></td></tr>
@@ -347,10 +348,10 @@ const OasiaInvoiceView = ({ invoiceData }) => {
               <table className="oasia-items-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '18%' }}>Date</th>
-                    <th style={{ width: '52%' }}>Description</th>
-                    <th className="text-right" style={{ width: '15%' }}>Charges<br/>MYR</th>
-                    <th className="text-right" style={{ width: '15%' }}>Credits<br/>MYR</th>
+                    <th style={{ width: '14%' }}>Date</th>
+                    <th style={{ width: '47%' }}>Description</th>
+                    <th className="text-right1" style={{ width: '15%' }}>Charges<br/>MYR</th>
+                    <th className="text-right1" style={{ width: '15%' }}>Credits<br/>MYR</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -371,7 +372,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                 <>
                   <div className="oasia-bottom-section">
                     <div className="oasia-left-col">
-                      <div style={{ textAlign: 'justify', marginTop: '10px' }}>
+                      <div style={{ textAlign: 'justify', marginTop: '10px',fontSize: '10px' }}>
                         I hereby agree to be jointly and severally liable with the
                         person, company or association as may be indicated on this
                         folio for all charges incurred on all accounts which I may
@@ -384,7 +385,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
 
                     <div className="oasia-right-col">
                       <div className="oasia-balance-row">
-                        <div style={{ flex: 1, textAlign: 'center', fontWeight: 'bold' }}>Balance &nbsp;&nbsp; RM</div>
+                        <div style={{ flex: 1, textAlign: 'left', fontWeight: 'bold' }}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Balance &nbsp;&nbsp; RM</div>
                         <div style={{ width: '80px', textAlign: 'right' }}>{formatCurrency(invoice.summary.balance)} MYR</div>
                       </div>
 
@@ -394,31 +395,31 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                       <table className="oasia-summary-details">
                         <tbody>
                           <tr>
-                            <td className="text-right">Total Amount Before Taxes</td>
+                            <td className="text-left">Total Amount Before Taxes</td>
                             <td className="text-right" style={{ width: '80px', fontWeight: 'bold' }}>{formatCurrency(invoice.summary.beforeTax)}</td>
                           </tr>
                           <tr>
-                            <td className="text-right">Total Amount Non Taxable</td>
+                            <td className="text-left">Total Amount Non Taxable</td>
                             <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.nonTaxable)}</td>
                           </tr>
                           <tr>
-                            <td className="text-right">Total Service Tax At 6%</td>
+                            <td className="text-left">Total Service Tax At 6%</td>
                             <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.sst6)}</td>
                           </tr>
                           <tr>
-                            <td className="text-right">Total Service Tax At 8%</td>
+                            <td className="text-left">Total Service Tax At 8%</td>
                             <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.sst8)}</td>
                           </tr>
                           <tr>
-                            <td className="text-right">Total SST</td>
+                            <td className="text-left">Total SST</td>
                             <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.totalSst)}</td>
                           </tr>
                           <tr>
-                            <td className="text-right">Tourism Tax (RM10/ Night)</td>
+                            <td className="text-left">Tourism Tax (RM10/ Night)</td>
                             <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.tourismTax)}</td>
                           </tr>
                           <tr>
-                            <td className="text-right">Total Amount With Taxes &nbsp;&nbsp; RM</td>
+                            <td className="text-left">Total Amount With Taxes &nbsp;&nbsp; RM</td>
                             <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.grandTotal)}</td>
                           </tr>
                         </tbody>
@@ -431,20 +432,15 @@ const OasiaInvoiceView = ({ invoiceData }) => {
               )}
             </div>
             
-            <div className="oasia-footer">
-              Please pay promptly and indicate invoice number when making your payment to Pinehigh Development Sdn Bhd.<br/>
-              Late payment penalty of 18.00% per annum will be levied on the outstanding balance from the due date to the date of receipt.<br/>
-              Oasia Suites Kuala Lumpur by Far East Hospitality<br/>
-              No 10, Lorong P Ramlee, Kuala Lumpur Malaysia 50250 Tel: +60 032726 6788 Fax: +60 032726 6733<br/>
-              info.oskl@fareast.com.sg<br/>
-              Company Reg. No.: 198901005729
-            </div>
+         
           </div>
         ))}
       </div>
     </InvoiceTemplate>
   );
 };
+
+
 
 
 export default OasiaInvoiceView;
