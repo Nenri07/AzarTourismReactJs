@@ -491,6 +491,7 @@ export const calculateFinalSummary = (formData, hotelType) => {
   let balanceUsd        = 0;
   let basePlusScPlusCt  = 0;
   let totalInclVatHoliday = 0;
+  let munichTax= 0;
 
   if (grandTotalEgp > 0) {
     // 2. Extract base using exact divisor 1.289568
@@ -503,6 +504,7 @@ export const calculateFinalSummary = (formData, hotelType) => {
     basePlusScPlusCt       = basePlusSc + cityTax;
     vat14Percent           = basePlusScPlusCt * 0.14;
     totalInclVatHoliday    = basePlusScPlusCt + vat14Percent;
+    munichTax              = basePlusSc;
 
     // 4. USD balance — direction depends on whether rate is direct or inverse
     if (accCalc.exchangeRate > 0) {
@@ -512,6 +514,10 @@ export const calculateFinalSummary = (formData, hotelType) => {
         : grandTotalEgp / accCalc.exchangeRate;
     }
   }
+  const roundToFour = Math.round(munichTax * 10000) / 10000; 
+  
+  // Step 2: Force accurate rounding to 2 decimals
+  const finalMunichTax = Math.round(roundToFour * 100) / 100;
 
   // 5. Apply formatting ONLY at final output step
   return {
@@ -524,6 +530,7 @@ export const calculateFinalSummary = (formData, hotelType) => {
     grand_total:          parseNum(grandTotalEgp),
     totalExVat:           parseNum(basePlusScPlusCt),
     totalInclVat:         parseNum(totalInclVatHoliday),
+    munichTax:            finalMunichTax,
   };
 };
 
@@ -641,6 +648,7 @@ startingRefNo: formData.starting_ref_no || Math.floor(1000000 + Math.random() * 
       balanceUsd:            summary.balance_usd,
       totalExVat:            summary.totalExVat,
       totalInclVat:          summary.totalInclVat,
+      munichTax1percent:     summary.munichTax,
 
 
       checkInTime:   formData.checkin_time || '',
