@@ -22,7 +22,6 @@ export default function App() {
   const dispatch = useDispatch();
   const { authStatus, accessToken } = useSelector((state) => state.auth);
   
-  // Only initialize mobile check
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768;
@@ -35,17 +34,14 @@ export default function App() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Token refresh helper
   const handleTokenRefresh = async () => {
     try {
       console.log('🔄 Refreshing token on activity...');
-      // Implement your refresh token logic here
     } catch (error) {
       console.error('❌ Token refresh failed:', error);
     }
   };
 
-  // Initialize SessionManager ONLY when fully authenticated
   useEffect(() => {
     if (!authStatus || !accessToken || isMounted.current) return;
     
@@ -67,7 +63,6 @@ export default function App() {
         console.log('🔒 SessionManager logout:', reason);
         setShowWarning(false);
         
-        // Dispatch Redux logout (clears localStorage)
         dispatch(logout());
         
         const messages = {
@@ -110,7 +105,6 @@ export default function App() {
     sessionManagerRef.current?.logout('manual');
   };
 
-  // Re-initialize SessionManager if user logs in after logout
   useEffect(() => {
     if (authStatus && accessToken && !isMounted.current) {
       console.log('🔄 Re-authenticated, re-initializing SessionManager');

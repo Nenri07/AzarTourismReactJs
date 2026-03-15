@@ -24,9 +24,13 @@ import {
   DynamicInvoiceFormPage, 
   DynamicInvoiceViewPage,
   DynamicInvoiceFormPageEgypt,
+  DynamicInvoiceformPageMalaysia,
   RaddisonInvoiceView,
   IntercontinentalInvoiceView,
-  HiltonInvoiceView,
+  HiltonInvoiceView,DusitThaniInvoiceView,
+  TulipAlexendriaView,
+  LansonPalaceInvoiceView,
+  GrandHayattInvoiceView,
   NotFoundPage
 } from "./pages";
 
@@ -252,6 +256,42 @@ const router = createBrowserRouter([
         ),
       },
       // ==========================================
+      // Malaysia INVOICES
+      // ==========================================
+      {
+        path: "malaysia-invoice/create/:hotelId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["super_admin", "employee"]}>
+            <DynamicInvoiceformPageMalaysia />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "malaysia-invoice/edit/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceformPageMalaysia />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "malaysia-invoice/duplicate/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceformPageMalaysia />
+          </AuthLayout>
+        ),
+      },
+      
+      {
+        path: "malaysia-invoice/download-pdf/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceViewPage />
+          </AuthLayout>
+        ),
+      },
+      // ==========================================
       // EGYPT INVOICES (STAYBRIDGE)
       // ==========================================
       {
@@ -303,6 +343,10 @@ const router = createBrowserRouter([
     element: <RaddisonInvoiceView />,
   },
   {
+    path: "invoice/view/dusitthani",
+    element: <DusitThaniInvoiceView />,
+  },
+  {
     path: "invoice/view/:invoiceId",
     element: <DynamicInvoiceViewPage />,
   },
@@ -314,13 +358,29 @@ const router = createBrowserRouter([
     path: "egypt-invoice/view/:invoiceId",
     element: <DynamicInvoiceViewPage />,
   },
+  {
+    path: "malaysia-invoice/view/:invoiceId",
+    element: <DynamicInvoiceViewPage />,
+  },
  {
     path: "invoice/view/intercontinental",
     element: <IntercontinentalInvoiceView />,
   },
   {
+    path: "invoice/view/tulipalexendria",
+    element: <TulipAlexendriaView />,
+  },
+  {
+    path: "invoice/view/grandhayatt",
+    element: <GrandHayattInvoiceView />,
+  },
+  {
     path: "invoice/view/hilton",
     element: <HiltonInvoiceView />,
+  },
+  {
+    path: "invoice/view/lansonpalace",
+    element: <LansonPalaceInvoiceView />,
   },
   
   // ERROR ROUTES

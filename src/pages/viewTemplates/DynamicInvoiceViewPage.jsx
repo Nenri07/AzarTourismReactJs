@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 // APIs
 import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import cairoInvoiceApi from "../../Api/cairoInvoice.api"; 
+import malaysiaInvoiceApi from "../../Api/malaysiaInvoice.api";
 
 // Views
 import CVKInvoiceView from "./CVKInvoiceView";
@@ -18,6 +19,12 @@ import IntercontinentalInvoiceView from "./intercontinentalInvoiceView";
 import FairmontInvoiceView from "./FairmontInvoiceView";
 import HolidayInvoiceView from "./HolidayInvoiceView";
 import HiltonInvoiceView from "./HiltonInvoiceView";
+import DusitThanniInvoiceView from "./DusitThanniInvoiceView"
+import TulipAlexendriaView from "./TulipAlexendriaView";
+import RaddisonBluInvoiceView from "./RaddisonBluInvoiceView";
+import LansonPalaceInvoiceView from "./LansonPalaceInvoiceView";
+import GrandHayattInvoiceView from "./GrandHayattInvoiceView";
+import OasiaInvoiceView from "./OasiaInvoiceView";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -30,6 +37,8 @@ export default function DynamicInvoiceViewPage() {
 
   // Check if we are on the Egypt route
   const isEgyptRoute = location.pathname.includes('egypt-invoice');
+    const isMalaysiaRoute = location.pathname.includes('malaysia-invoice');
+
 
   useEffect(() => {
     if (invoiceId) {
@@ -48,6 +57,9 @@ export default function DynamicInvoiceViewPage() {
       if (isEgyptRoute) {
         console.log("Fetching from Cairo API...");
         response = await cairoInvoiceApi.getInvoiceById(invoiceId);
+      } else if (isMalaysiaRoute) {
+        console.log("Fetching from Malaysia API...");
+        response = await malaysiaInvoiceApi.getInvoiceById(invoiceId);
       } else {
         console.log("Fetching from Turkey API...");
         response = await turkeyInvoiceApi.getInvoiceById(invoiceId);
@@ -80,7 +92,7 @@ export default function DynamicInvoiceViewPage() {
         detectedType = "Novotel";
       } else if (hotelName.includes("staybridge") ) {
         detectedType = "Staybridge"; // ✅ Detect Staybridge
-      } else if (hotelName.includes(" radisson residences") || hotelName.includes("radisson")) {
+      } else if (hotelName.includes(" radisson residences") || hotelName.includes(" radisson residence") || hotelName.includes(" radisson residance") || hotelName.includes(" radisson residencies")) {
         detectedType = "Raddison1";
       }
       else if (hotelName.includes("intercontinental")) {
@@ -90,7 +102,7 @@ export default function DynamicInvoiceViewPage() {
       else if(hotelName.includes("hilton")){
         detectedType = "Hilton";
       }
-      else if (hotelName.includes("grand") || hotelName.includes("aras")) {
+      else if (hotelName.includes("grand aras") || hotelName.includes("aras")) {
         detectedType = "GrandAras";
       }
       else if (hotelName.includes("holiday")) {
@@ -98,6 +110,24 @@ export default function DynamicInvoiceViewPage() {
       }
       else if (hotelName.includes("fairmont") || hotelName.includes("fairmount")) {
         detectedType = "Fairmont";
+      }
+      else if (hotelName.includes("dusit") || hotelName.includes("dusit thani")) {
+        detectedType = "DusitThanni";
+      }
+      else if (hotelName.includes("tolip") || hotelName.includes("alexendria")) {
+        detectedType = "TulipAlexendria";
+      }
+      else if (hotelName.includes("radisson blu") || hotelName.includes("radissonblu")) {
+        detectedType = "RaddisonBlu";
+      }
+      else if(hotelName.includes("lanson place") || hotelName.includes("lansonpalace")) {
+        detectedType = "LansonPalace";
+      }
+      else if (hotelName.includes("hyatt") || hotelName.includes("grand hyatt") || hotelName.includes("grandhyatt")) {
+        detectedType = "GrandHayatt";
+      }
+      else if (hotelName.includes("oasia")) {
+        detectedType = "Oasia";
       }
 
       
@@ -171,6 +201,23 @@ export default function DynamicInvoiceViewPage() {
     return <FairmontInvoiceView invoiceData={invoice} />;
   }else if(hotelType === "Hilton") {
     return <HiltonInvoiceView invoiceData={invoice} />;
+  }else if(hotelType === "DusitThanni") {
+    return <DusitThanniInvoiceView invoiceData={invoice} />;
+  }
+  else if(hotelType === "TulipAlexendria") {
+    return <TulipAlexendriaView invoiceData={invoice} />;
+  }
+  else if(hotelType === "RaddisonBlu") {
+    return <RaddisonBluInvoiceView invoiceData={invoice} />;
+  }
+  else if(hotelType === "LansonPalace") {
+    return <LansonPalaceInvoiceView invoiceData={invoice} />;
+  }
+  else if(hotelType === "GrandHayatt") {
+    return <GrandHayattInvoiceView invoiceData={invoice} />;
+  }
+  else if(hotelType === "Oasia") {
+    return <OasiaInvoiceView invoiceData={invoice} />;
   }
 
   else {

@@ -7,15 +7,15 @@ import toast from "react-hot-toast";
 
 // APIs
 import { getHotelConfigById, getHotelConfigs } from "../Api/hotelConfig.api";
-import cairoInvoiceApi from "../Api/cairoInvoice.api";
+import MalaysiaInvoiceApi from "../Api/malaysiaInvoice.api";
 
 // Shared UI components
-import { DynamicFormSection, SuccessModal, EgyptConditionalSection, EgyptSummarySection } from '../components';
+import { DynamicFormSection, SuccessModal, MalaysiaConditionalSection, MalaysiaSummarySection } from '../components';
 
-// Dedicated Egypt Math
-import { calculateFinalSummary, mapToBackendSchema } from "../utils/invoiceCalculationsEgypt";
+// Dedicated Math
+import { calculateFinalSummary, mapToBackendSchema } from "../utils/invoiceCalculationsMalaysia";
 
-export default function DynamicInvoiceFormPageEgypt() {
+export default function DynamicInvoiceFormPageMalaysia() {
   const navigate = useNavigate();
   const params = useParams();
 
@@ -78,12 +78,13 @@ export default function DynamicInvoiceFormPageEgypt() {
   const loadInvoiceAndConfig = async () => {
     setLoading(true); setError(null);
     try {
-      const invoiceResponse = await cairoInvoiceApi.getInvoiceById(invoiceId);
+      // FIXED: Using MalaysiaInvoiceApi instead of cairoInvoiceApi
+      const invoiceResponse = await MalaysiaInvoiceApi.getInvoiceById(invoiceId);
       let invoiceData = invoiceResponse.data || invoiceResponse;
       if (invoiceData.data?.data) invoiceData.data = invoiceData.data.data;
 
       const data = invoiceData.data || invoiceData;
-      const hotelName = data.hotel || "Staybridge Suites Cairo-Citystars";
+      const hotelName = data.hotel_name || data.hotel || "";
 
       const allConfigsResponse = await getHotelConfigs();
       const allConfigs = allConfigsResponse.data || allConfigsResponse || [];
@@ -132,12 +133,12 @@ export default function DynamicInvoiceFormPageEgypt() {
         if (fieldId === 'usd_amount') accommodationDetails[fieldId] = data.usdAmount || data.usd_amount || '';
         else if (fieldId === 'exchange_rate') accommodationDetails[fieldId] = data.exchangeRate || data.exchange_rate || '';
         else if (fieldId === 'total_nights') accommodationDetails[fieldId] = data.nights || data.total_nights || '';
-        else if (fieldId === 'nightly_base_egp') accommodationDetails[fieldId] = nightData.baseRate || '';
-        else if (fieldId === 'nightly_sc_egp') accommodationDetails[fieldId] = nightData.serviceCharge || '';
-        else if (fieldId === 'nightly_city_tax_egp') accommodationDetails[fieldId] = nightData.cityTax || '';
-        else if (fieldId === 'nightly_vat_egp') accommodationDetails[fieldId] = nightData.vat || '';
-        else if (fieldId === 'room_amount_egp') accommodationDetails[fieldId] = nightData.rate || '';
-        else if (fieldId === 'total_room_all_nights') accommodationDetails[fieldId] = data.totalRoomGrossEgp || '';
+        // FIXED - reads from the actual API response keys
+else if (fieldId === 'nightly_base_myr') accommodationDetails[fieldId] = data.roombaseAmount || '';
+else if (fieldId === 'nightly_sst_myr') accommodationDetails[fieldId] = data.roomSST || '';
+else if (fieldId === 'nightly_tourism_tax_myr') accommodationDetails[fieldId] = data.tourismTax || '';
+else if (fieldId === 'room_amount_myr') accommodationDetails[fieldId] = data.totalNightGrossMyr || '';
+else if (fieldId === 'total_room_all_nights') accommodationDetails[fieldId] = data.totalRoomGrossMyr || '';
         else accommodationDetails[fieldId] = data[fieldId] !== undefined ? data[fieldId] : '';
       });
     }
@@ -158,57 +159,75 @@ export default function DynamicInvoiceFormPageEgypt() {
     }
 
     return {
-      hotel_name: data.hotel || hotelConfig?.hotel_name || '',
-      currency: hotelConfig?.currency || 'EGP',
-      company_name: data.companyName || data.referenceNo || '',
-      guest_name: data.guestName || '',
-      invoice_no: data.invoiceNo || '',
-      ar_number: data.arNumber || '',
+      // -----------------------------------------------------
+      // REPLACED: ALL MALAYSIAN HOTEL FIELDS MAPPED HERE
+      // -----------------------------------------------------
+      
+      // Hotel / Property Information
+      reference_no: data.referenceNo,
+      hotel_name: data.hotel_name || data.hotel || hotelConfig?.hotel_name || '',
+      company_reg_no: data.company_reg_no || '',
+      sst_reg_no: data.sst_reg_no || data.sstRegNo || '',
+      ttx_reg_no: data.ttx_reg_no || data.ttxRegNo || '',
+      tin_no: data.tin_no || '',
+      hotel_address: data.hotel_address || '',
+      hotel_phone: data.hotel_phone || '',
+      hotel_fax: data.hotel_fax || '',
+      hotel_email: data.hotel_email || '',
+
+      // Guest & Client Information
+      guest_name: data.guest_name || data.guestName || data.attention || '',
+      company_name: data.company_name || data.companyName || data.agent || '',
       address: data.address || '',
-      arrival_date: data.arrivalDate || '',
-      departure_date: data.departureDate || '',
-      invoice_date: data.invoiceDate || '',
-      departure_time: data.invoiceTime || data.departureTime || '',
-      invoice_time: data.invoiceTime || '',
-      room_number: data.roomNo || '',
-      cashier_id: data.cashierId || data.userId || '',
-      ihg_rewards_number: data.ihgRewardsNumber || '',
+      nationality: data.nationality || '',
+      guest_phone: data.guest_phone || data.phone || '',
+      guest_email: data.guest_email || data.email || '',
+      membership_no: data.membership_no || data.membershipNo || '',
+      adults: String(data.adults || data.paxAdult || 1),
+      children: String(data.children || data.paxChild || 0),
+      account_contact: data.account_contact || '',
+
+      // Stay & Reservation Details
+      room_number: data.room_number || data.roomNo || '',
+      room_type: data.room_type || '',
+      arrival_date: data.arrival_date || data.arrivalDate || '',
+      departure_date: data.departure_date || data.departureDate || '',
+      conf_no: data.conf_no || data.confNo || data.booking_no || data.reservation_no || '',
+      group_code: data.group_code || data.ta_code || '',
+      crs_no: data.crsNo || data.ota_no || '',
+     
+      
 
 
-      // Fixed: Mapped all Radisson Root Fields
-      reference_no: data.referenceNo || '',
-      membership_no: data.membershipNo || '',
-      group_code: data.groupCode || '',
-      folio_no: data.folioNo || '',
-      conf_no: data.confNo || '',
-      tax_card_no: data.taxCardNo || '',
-      custom_ref: data.customRef || '',
-      adults: String(data.paxAdult || 1),
-      children: String(data.paxChild || 0),
-      //new fields
-      rate_plan: data.ratePlan || '',
-      honors_no: data.honorNo || '',
-      vat_no: data.vatNo || '',
-      invoice_copy_no: data.invoiceCopyNo || '',
-      a_l: data.aL || '',
-      checkin_time: data.checkInTime || '',
-      checkout_time: data.checkOutTime || '',
-      accommodation_ref_id: data.accommodationRefId || '',
-      services_ref_id: data.servicesRefId || '',
-      starting_ref_no: data.startingRefNo || '',
-      booking_no: data.bookingNo || '',
+      // Invoice Metadata
+      invoice_no: data.invoice_no || data.invoiceNo || '',
+      folio_no: data.folio_no || data.e_invoice_no || '',
+      ar_number: data.ar_number || data.arNumber || '',
+      po_no: data.poNo || data.job_no || data.reference_no || '',
+      third_party_no: data.third_party_no || '',
+      vessel_name: data.vesselName || '',
+      booker_name: data.bookerName || '',
+      invoice_date: data.invoice_date || data.invoiceDate || '',
+      invoice_time: data.invoice_time || data.invoiceTime || '',
+      cashier_id: data.cashier_id || data.cashier || data.userId || '',
+      cashier_name:data.cashierName||'',
+      uuid: data.uuid || '',
 
-      //dusit thani fields
-      printed_by: data.printedBy,
-      crs_no: data.crsNo,
+      // Bank & Payment Details
+      bank_name: data.bank_name || '',
+      account_number: data.account_number || '',
+      bank_code: data.bank_code || '',
+      branch_code: data.branch_code || '',
+      swift_code: data.swift_code || '',
+      account_holder: data.account_holder || '',
+      bank_address: data.bank_address || '',
 
-      // Fixed: Mapped all Fairmont Root Fields
-      user_id: data.userId || '',
-
-      accommodation_details: accommodationDetails,
-      other_services: otherServices,
+      // Base Configs & Defaults
+      currency: hotelConfig?.currency || 'MYR',
       status: data.status || 'pending',
-      note: data.note || ''
+      note: data.note || '',
+      accommodation_details: accommodationDetails,
+      other_services: otherServices
     };
   };
 
@@ -219,7 +238,7 @@ export default function DynamicInvoiceFormPageEgypt() {
 
     const initialData = {
       hotel_name: config.hotel_name,
-      currency: config.currency,
+      currency: config.currency || 'MYR',
       status: "pending",
       note: "",
       invoice_time: `${hh}:${mm}`
@@ -259,15 +278,16 @@ export default function DynamicInvoiceFormPageEgypt() {
     }
 
     setIsSaving(true);
-    const loadingToast = toast.loading("Saving Egypt invoice...", { position: "top-center" });
+    const loadingToast = toast.loading("Saving invoice...", { position: "top-center" });
 
     try {
       const invoicePayload = mapToBackendSchema(formData, hotelConfig);
 
+      // FIXED: Using MalaysiaInvoiceApi instead of cairoInvoiceApi
       if (isEditMode) {
-        await cairoInvoiceApi.updateInvoice(invoiceId, invoicePayload);
+        await MalaysiaInvoiceApi.updateInvoice(invoiceId, invoicePayload);
       } else {
-        await cairoInvoiceApi.createInvoice(invoicePayload);
+        await MalaysiaInvoiceApi.createInvoice(invoicePayload);
       }
 
       toast.dismiss(loadingToast);
@@ -277,7 +297,7 @@ export default function DynamicInvoiceFormPageEgypt() {
         invoiceNumber: formData.company_name || 'NEW',
         status: formData.status,
         grandTotal: summary?.grand_total || 0,
-        currency: hotelConfig.currency
+        currency: hotelConfig.currency || 'MYR'
       });
 
       setTimeout(() => {
@@ -334,10 +354,10 @@ export default function DynamicInvoiceFormPageEgypt() {
 
           {Object.entries(hotelConfig.conditional_sections || {}).map(([sectionKey, section]) => {
             if (!section.enabled) return null;
-            return <EgyptConditionalSection key={sectionKey} sectionKey={sectionKey} section={section} formData={formData} onFieldChange={handleFieldChange} setFormData={setFormData} hotelConfig={hotelConfig} />;
+            return <MalaysiaConditionalSection key={sectionKey} sectionKey={sectionKey} section={section} formData={formData} onFieldChange={handleFieldChange} setFormData={setFormData} hotelConfig={hotelConfig} />;
           })}
 
-          <EgyptSummarySection config={hotelConfig} formData={formData} summary={summary} onStatusChange={(val) => handleFieldChange('status', val)} onNoteChange={(val) => handleFieldChange('note', val)} />
+          <MalaysiaSummarySection config={hotelConfig} formData={formData} summary={summary} onStatusChange={(val) => handleFieldChange('status', val)} onNoteChange={(val) => handleFieldChange('note', val)} />
         </div>
 
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-20">

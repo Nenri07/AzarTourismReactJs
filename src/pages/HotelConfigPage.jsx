@@ -70,7 +70,7 @@ const SAMPLE_HOTEL_CONFIG = {
   }
 }
 
-const CURRENCIES = ['EUR', 'TRY', 'EGP', 'USD', 'AED', 'GBP', 'SAR', 'QAR', 'OMR', 'KWD', 'BHD'];
+const CURRENCIES = ['EUR', 'TRY', 'EGP', 'USD', 'AED', 'GBP', 'SAR', 'QAR', 'OMR', 'KWD', 'BHD', 'MYR'];
 const COUNTRIES = ['Turkey', 'Egypt', 'Tunis', 'Malaysia', 'London', 'Germany', 'Qatar', 'Bahrain', 'Oman', 'Kuwait'];
 
 const HotelConfigPage = () => {

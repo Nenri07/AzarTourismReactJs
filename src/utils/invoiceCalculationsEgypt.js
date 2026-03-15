@@ -49,7 +49,7 @@ export const HOTEL_CONFIGS = {
   // One object per night — PDF template renders the 4 visual sub-rows
   // Verified: Net 134,032.11, SC 16,082.02, VAT 18,762.94, City Tax 1,340.46 ✓
   RADISSON: {
-    detect: (name) => name.includes('radisson'),
+    detect: (name) => name.includes('radisson residences'),
     columns: ['date', 'description', 'baseRate', 'serviceCharge', 'cityTax', 'vat', 'rate'],
     calculateNightlyRate: ({ usdAmount, exchangeRate }) => {
       const realCal= usdAmount * exchangeRate;
@@ -71,6 +71,49 @@ export const HOTEL_CONFIGS = {
     buildRow: ({ date, breakdown }) => ({
       date,
       description:   'Accommodation',
+      baseRate:      parseNum(breakdown.a),
+      serviceCharge: parseNum(breakdown.b),
+      cityTax:       parseNum(breakdown.c),
+      vat:           parseNum(breakdown.d),
+      rate:          parseNum(breakdown.e),
+      chargesEgp:    parseNum(breakdown.e),
+      creditsEgp:    0,
+    }),
+    balanceDirection: 'divide',
+  },
+
+  // ── 2. RADISSON ────────────────────────────────────────────────────────────
+  // Exact flat-tax calculation — DO NOT CHANGE
+  // a = USD × rate  (base EGP)
+  // b = a × 0.12    (12% SC)
+  // c = (a+b) × 0.01  (1% City Tax)
+  // d = (a+b+c) × 0.14  (14% VAT)
+  // e = a+b+c+d  (nightly gross)
+  // One object per night — PDF template renders the 4 visual sub-rows
+  // Verified: Net 134,032.11, SC 16,082.02, VAT 18,762.94, City Tax 1,340.46 ✓
+  RADISSONBLU: {
+    detect: (name) => name.includes('radisson blu'),
+    columns: ['date', 'description', 'baseRate', 'serviceCharge', 'cityTax', 'vat', 'rate'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => {
+      const realCal= usdAmount * exchangeRate;
+      const withDiv= realCal/1.289568;
+      const a =   withDiv         // Base EGP
+      const b = a * 0.12;                           // 12% SC
+
+      const includingprev = a + b;
+      const c = includingprev * 0.01;               // 1% City Tax
+      const includingprev2 = c + includingprev;
+      const d = includingprev2 * 0.14;              // 14% VAT
+      const e = a + b + c + d;                      // Nightly Gross
+
+      return {
+        roomAmountEgp: e,
+        breakdown: { a, b, c, d, e },
+      };
+    },
+    buildRow: ({ date, breakdown }) => ({
+      date,
+      description:   'Bed and Breakfast',
       baseRate:      parseNum(breakdown.a),
       serviceCharge: parseNum(breakdown.b),
       cityTax:       parseNum(breakdown.c),
@@ -220,7 +263,30 @@ export const HOTEL_CONFIGS = {
     }),
     balanceDirection: 'multiply', // grandTotal × exchangeRate
   },
-
+// ── 7. Dusit Thani ────────────────────────────────────────────────────
+  // Row formula : roomEGP = USD × exchangeRate
+  // Balance USD : grandTotal / exchangeRate
+  // Table cols  : Date, Description, Charges EGP, Credits EGP
+  INTERCONTINENTAL: {
+    detect: (name) => name.includes('dusit thani'),
+    columns: ['date', 'description', 'chargesEgp', 'creditsEgp'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => ({
+      roomAmountEgp: usdAmount * exchangeRate,
+      breakdown: null,
+    }),
+    buildRow: ({ date, roomAmountEgp }) => ({
+      date,
+      description:   'Accommodation Charge Bed only',
+      rate:          parseNum(roomAmountEgp),
+      baseRate:      0,
+      serviceCharge: 0,
+      cityTax:       0,
+      vat:           0,
+      chargesEgp:    parseNum(roomAmountEgp),
+      creditsEgp:    0,
+    }),
+    balanceDirection: 'divide',
+  },
   // ── FALLBACK ───────────────────────────────────────────────────────────────
   OTHER_EGYPT: {
     detect: () => true,
@@ -425,8 +491,8 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
   return {
     data: {
       hotel:        formData.hotel_name || '',
-      hotelType,                             // useful for PDF template switching
-      tableColumns: hotelCfg.columns,        // pass to renderer — no if/else needed there
+      hotelType,                             
+      tableColumns: hotelCfg.columns,        
 
       invoiceNo:  formData.invoice_no || '',
       guestName:  capitalizeWords(formData.guest_name) || 'Guest',
@@ -454,7 +520,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       invoiceCopyNo: formData.invoice_copy_no || '',
       aL: formData.a_l || '',
 
-      // Radisson / extended fields
+      // Radisson and blu raddsion / extended fields
       membershipNo: formData.membership_no || '',
       groupCode:    formData.group_code || '',
       folioNo:      formData.folio_no || '',
@@ -463,6 +529,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       paxChild:     formData.children || 0,
       taxCardNo:    formData.tax_card_no || '',
       customRef:    formData.custom_ref || '',
+      bookingNo:     formData.booking_no || '',
 
       // Accommodation numbers
       nights:        accCalc.totalNights,
@@ -488,6 +555,10 @@ startingRefNo: formData.starting_ref_no || Math.floor(1000000 + Math.random() * 
 
       checkInTime:   formData.checkin_time || '',
       checkOutTime:  formData.checkout_time || '',
+
+      //dusit Thani new fields
+      crsNo: formData.crs_no,
+      printedBy: formData.printed_by,
 
       accommodationDetails: accommodationDetailsArray,
       otherServices:        otherServicesArray,

@@ -22,6 +22,7 @@ import toast from "react-hot-toast";
 import turkeyInvoiceApi from "../Api/turkeyInvoice.api";
 import invoiceApi from "../Api/invoice.api";
 import cairoInvoiceApi from "../Api/cairoInvoice.api";
+import malaysiaInvoiceApi from "../Api/malaysiaInvoice.api"
 import { getHotelConfigs, getallInvoices } from "../Api/hotelConfig.api";
 
 export default function InvoicePage() {
@@ -65,6 +66,19 @@ export default function InvoicePage() {
            name.includes("radisson") || 
            name.includes("raddison") ||
            name.includes("intercontinental");
+  };
+
+  const isMalaysiaInvoice = (hotelName) => {
+    const name = (hotelName || "").toLowerCase();
+    return name.includes("grand hyatt") || 
+           name.includes("trillion suites") || 
+           name.includes("oasia") || 
+           name.includes("intercontinental kuala lampur") || 
+           name.includes("lanson place")||
+           name.includes("perdana")||
+           name.includes("pullman")||
+           name.includes("somerset");
+         
   };
 
   useEffect(() => {
@@ -142,7 +156,7 @@ export default function InvoicePage() {
     }
   };
 
-  const loadInvoices = async () => {
+ const loadInvoices = async () => {
     setLoading(true);
     try {
       const response = await getallInvoices();
@@ -184,106 +198,94 @@ export default function InvoicePage() {
         // 2. Turkey invoices
         if (response.data.turkey_hotels && response.data.turkey_hotels.records) {
           const turkeyInvoices = response.data.turkey_hotels.records;
-          console.log(`📊 Found ${turkeyInvoices.length} Turkey invoices`);
-
           turkeyInvoices.forEach((invoice, index) => {
             let invoiceData = invoice.data || {};
-
-            if (invoiceData.data && typeof invoiceData.data === "object") {
-              invoiceData = invoiceData.data;
-            }
-
+            if (invoiceData.data && typeof invoiceData.data === "object") invoiceData = invoiceData.data;
             const data = invoiceData;
-
-            const transformed = {
+            invoicesList.push({
               id: invoice.id || invoice._id || `turkey-${index}`,
-              invoiceNumber:
-                data.referenceNo ||
-                data.voucherNo ||
-                data.reference_no ||
-                `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
-              reference:
-                data.referenceNo ||
-                data.voucherNo ||
-                data.reference_no ||
-                `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              invoiceNumber: data.referenceNo || data.voucherNo || data.reference_no || `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              reference: data.referenceNo || data.voucherNo || data.reference_no || `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
               hotelName: data.hotel || data.hotelName || "Unknown Hotel",
               guestName: data.guestName || "Guest",
               roomNumber: data.roomNo || data.room_number || "N/A",
-              arrivalDate:
-                data.arrivalDate ||
-                data.arrival_date ||
-                new Date().toISOString(),
-              departureDate:
-                data.departureDate ||
-                data.departure_date ||
-                new Date().toISOString(),
+              arrivalDate: data.arrivalDate || data.arrival_date || new Date().toISOString(),
+              departureDate: data.departureDate || data.departure_date || new Date().toISOString(),
               nights: data.nights || 0,
               grandTotal: parseFloat(data.grandTotal || data.total || 0),
               currency: data.currency || "TRY",
               status: data.status || "ready",
               pdfPath: data.pdfPath || null,
-              createdAt:
-                invoice.created_at ||
-                invoice.createdAt ||
-                new Date().toISOString(),
+              createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
               rawData: invoice,
               invoiceType: "turkey",
-            };
-            invoicesList.push(transformed);
+            });
           });
         }
 
         // 3. Egypt invoices
         if (response.data.egypt_hotels && response.data.egypt_hotels.records) {
           const egyptInvoices = response.data.egypt_hotels.records;
-          console.log(`📊 Found ${egyptInvoices.length} Egypt invoices`);
-
           egyptInvoices.forEach((invoice, index) => {
             let invoiceData = invoice.data || {};
-
-            if (invoiceData.data && typeof invoiceData.data === "object") {
-              invoiceData = invoiceData.data;
-            }
-
+            if (invoiceData.data && typeof invoiceData.data === "object") invoiceData = invoiceData.data;
             const data = invoiceData;
-
-            const transformed = {
+            invoicesList.push({
               id: invoice.id || invoice._id || `egypt-${index}`,
-              invoiceNumber:
-                data.referenceNo ||
-                data.voucherNo ||
-                data.reference_no ||
-                `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
-              reference:
-                data.referenceNo ||
-                data.voucherNo ||
-                data.reference_no ||
-                `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              invoiceNumber: data.referenceNo || data.voucherNo || data.reference_no || `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              reference: data.referenceNo || data.voucherNo || data.reference_no || `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
               hotelName: data.hotel || data.hotelName || "Unknown Hotel",
               guestName: data.guestName || "Guest",
               roomNumber: data.roomNo || data.room_number || "N/A",
-              arrivalDate:
-                data.arrivalDate ||
-                data.arrival_date ||
-                new Date().toISOString(),
-              departureDate:
-                data.departureDate ||
-                data.departure_date ||
-                new Date().toISOString(),
+              arrivalDate: data.arrivalDate || data.arrival_date || new Date().toISOString(),
+              departureDate: data.departureDate || data.departure_date || new Date().toISOString(),
               nights: data.nights || 0,
               grandTotal: parseFloat(data.grandTotalEgp || data.total || 0),
               currency: data.currency || "EGP",
               status: data.status || "ready",
               pdfPath: data.pdfPath || null,
-              createdAt:
-                invoice.created_at ||
-                invoice.createdAt ||
-                new Date().toISOString(),
+              createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
               rawData: invoice,
               invoiceType: "egypt",
-            };
-            invoicesList.push(transformed);
+            });
+          });
+        }
+
+        // 4. ✅ NEW: MALAYSIA INVOICES
+        if (response.data.malaysia_hotels && response.data.malaysia_hotels.records) {
+          const malaysiaInvoices = response.data.malaysia_hotels.records;
+          console.log(`📊 Found ${malaysiaInvoices.length} Malaysia invoices`);
+
+          malaysiaInvoices.forEach((invoice, index) => {
+            let invoiceData = invoice.data || {};
+            
+            // Handle double nested data object if present
+            if (invoiceData.data && typeof invoiceData.data === "object") {
+              invoiceData = invoiceData.data;
+            }
+            
+            const data = invoiceData;
+
+            invoicesList.push({
+              id: invoice.id || invoice._id || `malaysia-${index}`,
+              // Map to invoiceNo or referenceNo based on your JSON structure
+              invoiceNumber: data.referenceNo || data.reference_no || `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              referenceNo: data.referenceNo || data.reference_no || `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              hotelName: data.hotel || data.hotelName || "Unknown Hotel",
+              guestName: data.guestName || data.attention || "Guest",
+              roomNumber: data.roomNo || data.room_number || "N/A",
+              arrivalDate: data.arrivalDate || data.arrival_date || new Date().toISOString(),
+              departureDate: data.departureDate || data.departure_date || new Date().toISOString(),
+              nights: data.nights || 0,
+              // Map to grandTotalMyr that we see in your backend response
+              grandTotal: parseFloat(data.grandTotalMyr || data.total || 0),
+              currency: data.currency || "MYR",
+              status: data.status || "ready",
+              pdfPath: data.pdfPath || null,
+              createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
+              rawData: invoice,
+              invoiceType: "malaysia",
+            });
           });
         }
       }
@@ -294,12 +296,7 @@ export default function InvoicePage() {
         return;
       }
 
-      toast.success(
-        `Loaded ${invoicesList.length} invoice${invoicesList.length !== 1 ? "s" : ""}`,
-        {
-          duration: 2000,
-        },
-      );
+      toast.success(`Loaded ${invoicesList.length} invoice${invoicesList.length !== 1 ? "s" : ""}`, { duration: 2000 });
 
       invoicesList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setInvoices(invoicesList);
@@ -309,23 +306,25 @@ export default function InvoicePage() {
     } finally {
       setLoading(false);
     }
-
-
   };
 
-  const handleCreateInvoice = () => {
+ const handleCreateInvoice = () => {
     if (!selectedHotelTemplate) {
       toast.error("Please select a hotel", { duration: 2000 });
       return;
     }
 
     const selectedHotel = hotels.find(h => String(h.id) === String(selectedHotelTemplate));
-    const hotelName = selectedHotel?.name?.toLowerCase() || "";
-    const hotelCountry = selectedHotel?.country || "";
+    const hotelName = (selectedHotel?.name || "").toLowerCase();
+    const hotelCountry = (selectedHotel?.country || "").toLowerCase();
+    const hotelCurrency = (selectedHotel?.currency || "").toUpperCase();
 
-    if (hotelCountry === "Egypt" || isEgyptInvoice(hotelName)) {
+    // BULLETPROOF CHECK: Checks Country, Name, OR Currency (MYR)
+    if (hotelCountry === "malaysia" || hotelCurrency === "MYR" || isMalaysiaInvoice(hotelName)) {
+      navigate(`/malaysia-invoice/create/${selectedHotelTemplate}`);
+    } else if (hotelCountry === "egypt" || hotelCurrency === "EGP" || isEgyptInvoice(hotelName)) {
       navigate(`/egypt-invoice/create/${selectedHotelTemplate}`);
-    } else if (selectedHotelTemplate === "8" || hotelName.includes("novotel") || hotelCountry === "Tunis") {
+    } else if (selectedHotelTemplate === "8" || hotelName.includes("novotel") || hotelCountry === "tunis" || hotelCurrency === "TND") {
       navigate(`/invoice/create/novotel/${selectedHotelTemplate}`);
     } else {
       navigate(`/invoice/create/${selectedHotelTemplate}`);
@@ -344,19 +343,26 @@ export default function InvoicePage() {
       navigate(`/egypt-invoice/view/${invoiceId}`);
     } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "Tunis") {
       navigate(`/invoice/nview/${invoice.id}`);
-    } else {
+    } else if(country === "Malaysia" || invoice.currency === "MYR" || isMalaysiaInvoice(invoice.hotelName)) {
+      navigate(`/malaysia-invoice/view/${invoiceId}`);
+    }
+    else {
       navigate(`/invoice/view/${invoiceId}`);
     }
   };
 
   // ✅ UPDATED EDIT HANDLER
-  const handleEditInvoice = (invoice) => {
+ const handleEditInvoice = (invoice) => {
     const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
-    const country = hotelConfig?.country || "";
+    const country = (hotelConfig?.country || "").toLowerCase();
+    const currency = (invoice.currency || hotelConfig?.currency || "").toUpperCase();
+    const hotelName = (invoice.hotelName || "").toLowerCase();
 
-    if (country === "Egypt" || isEgyptInvoice(invoice.hotelName)) {
+    if (country === "malaysia" || currency === "MYR" || isMalaysiaInvoice(hotelName)) {
+      navigate(`/malaysia-invoice/edit/${invoice.id}`);
+    } else if (country === "egypt" || currency === "EGP" || isEgyptInvoice(hotelName)) {
       navigate(`/egypt-invoice/edit/${invoice.id}`);
-    } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "Tunis") {
+    } else if (hotelName.includes("novotel") || country === "tunis" || currency === "TND") {
       navigate(`/invoice/edit/${invoice.id}`);
     } else {
       navigate(`/invoices/edit/${invoice.id}`);
@@ -396,7 +402,10 @@ export default function InvoicePage() {
         await cairoInvoiceApi.deleteInvoice(invoiceToDelete.id);
       } else if (invoiceToDelete.invoiceType === "turkey") {
         await turkeyInvoiceApi.deleteInvoice(invoiceToDelete.id);
-      } else {
+      } else if (invoiceToDelete.invoiceType === "malaysia") {
+        await malaysiaInvoiceApi.deleteInvoice(invoiceToDelete.id);
+        }
+      else {
         await invoiceApi.deleteInvoice(invoiceToDelete.id);
       }
 
@@ -797,18 +806,25 @@ export default function InvoicePage() {
                         <button onClick={() => handleDownloadPDF(inv)} className="p-1.5 text-slate-400 hover:text-[#003d7a] hover:bg-blue-50 rounded transition-colors" title="Download PDF">
                           <FileText size={16} />
                         </button>
-                        <button onClick={() => {
-                            // ✅ UPDATED: DUPLICATE LOGIC
-                            let dupPath = `/invoices/duplicate/${inv.id}`;
-                            if (isEgyptInvoice(inv.hotelName)) {
-                              dupPath = `/egypt-invoice/duplicate/${inv.id}`;
-                            } else if (inv.hotelName === "Novotel Tunis Lac") {
-                              dupPath = `/invoices/novotel/duplicate/${inv.id}`;
-                            }
-                            navigate(dupPath);
-                          }} className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" title="Duplicate">
-                          <Copy size={16} />
-                        </button>
+                       <button onClick={() => {
+    let dupPath = `/invoices/duplicate/${inv.id}`;
+    const hotelConfig = hotels.find(h => h.name === inv.hotelName);
+    const country = (hotelConfig?.country || "").toLowerCase();
+    const currency = (inv.currency || hotelConfig?.currency || "").toUpperCase();
+    const hotelName = (inv.hotelName || "").toLowerCase();
+
+    if (country === "malaysia" || currency === "MYR" || isMalaysiaInvoice(hotelName)) {
+      dupPath = `/malaysia-invoice/duplicate/${inv.id}`;
+    } else if (country === "egypt" || currency === "EGP" || isEgyptInvoice(hotelName)) {
+      dupPath = `/egypt-invoice/duplicate/${inv.id}`;
+    } else if (hotelName.includes("novotel") || country === "tunis" || currency === "TND") {
+      dupPath = `/invoices/novotel/duplicate/${inv.id}`;
+    }
+    navigate(dupPath);
+  }} 
+  className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" title="Duplicate">
+  <Copy size={16} />
+</button>
                         <button onClick={() => handleViewInvoice(inv.id)} className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" title="View">
                           <Eye size={16} />
                         </button>

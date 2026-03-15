@@ -27,6 +27,8 @@ import NovotelInvoiceFooter from "./NovotelInvoiceFooter";
 import NovotelInvoiceHeader from "./NovotelInvoiceHeader";
 import EgyptConditionalSection from "./EgyptDynamicComponents/EgyptConditionalSection";
 import EgyptSummarySection from "./EgyptDynamicComponents/EgyptSummarySection";
+import MalaysiaConditionalSection from "./MalaysiaDynamicComponents/MalaysiaConditionalSection";
+import MalaysiaSummarySection from "./MalaysiaDynamicComponents/MalaysiaSummarySection";
 export {
     Header,
     NovotelInvoiceHeader,
@@ -56,6 +58,8 @@ export {
     InvoiceTemplate,
     EgyptConditionalSection,
     EgyptSummarySection,
+    MalaysiaConditionalSection,
+    MalaysiaSummarySection,
     NovotelInvoiceFooter
     
 }

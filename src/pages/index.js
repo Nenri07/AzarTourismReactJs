@@ -16,16 +16,26 @@ import DynamicInvoiceFormPageEgypt from './DynamicInvoiceFormPageEgypt'
 import RaddisonInvoiceView from "./viewTemplates/RaddisonInvoiceView";
 import IntercontinentalInvoiceView from "./viewTemplates/intercontinentalInvoiceView";
 import HiltonInvoiceView from "./viewTemplates/HiltonInvoiceView";
-
-
+import DusitThaniInvoiceView from "./viewTemplates/DusitThanniInvoiceView";
+import TulipAlexendriaView from "./viewTemplates/TulipAlexendriaView";
+import DynamicInvoiceformPageMalaysia from "./DynamicInvoiceFormPageMalaysia";
+import LansonPalaceInvoiceView from "./viewTemplates/LansonPalaceInvoiceView";
+import GrandHayattInvoiceView from "./viewTemplates/GrandHayattInvoiceView";
+import OasiaInvoiceView from "./viewTemplates/OasiaInvoiceView";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
     CVKInvoiceView, HotelConfigPage, DynamicInvoiceFormPage,
-    TRYPInvoiceView,DynamicInvoiceViewPage,DynamicInvoiceFormPageEgypt
+    TRYPInvoiceView,DynamicInvoiceViewPage,DynamicInvoiceFormPageEgypt,DynamicInvoiceformPageMalaysia
     ,NotFoundPage,
     GrandArasInvoiceView,
     RaddisonInvoiceView,
     IntercontinentalInvoiceView,
     HiltonInvoiceView,
+    DusitThaniInvoiceView,
+    TulipAlexendriaView,
+    LansonPalaceInvoiceView,
+    GrandHayattInvoiceView,
+    OasiaInvoiceView,
+
 };
