@@ -1621,7 +1621,7 @@ import cairoInvoiceApi from "../../Api/cairoInvoice.api"; // adjust path as need
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components"; // adjust path as needed
-import logo from "../../../public/tolip_alexendria-logo.png"; // adjust path as needed
+import logo from "../../../public/Tolip_Alexendria-logo.png"; // adjust path as needed
 
 // ─── Rows per page (tune as needed) ──────────────────────────────────────────
 // Keep this at 21-25 max. 32 will physically overflow an A4 page.
