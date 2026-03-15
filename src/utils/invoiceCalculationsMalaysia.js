@@ -99,6 +99,58 @@ export const HOTEL_CONFIGS = {
     }
   },
 
+  // ── 3. Pullman ─────────────────────────────────────────────────────────────
+  PULLMAN: {
+    detect: (name) => name.toLowerCase().includes('pullman'),
+    columns: ['DATE', 'DESCRIPTION', 'REFERENCE', 'DEBIT', 'CREDIT'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => {
+      const nightlyTotalMyr = usdAmount * exchangeRate;
+      const nightlyTtx = 10.00; 
+      const remainingAmount = nightlyTotalMyr - nightlyTtx;
+      
+      const nightlyRoomPackage = remainingAmount / 1.08;
+      const nightlySst = nightlyRoomPackage * 0.08;
+
+      return {
+        nightlyTotalMyr: parseNum(nightlyTotalMyr),
+        nightlyTtx: parseNum(nightlyTtx),
+        nightlyRoomPackage: parseNum(nightlyRoomPackage),
+        nightlySst: parseNum(nightlySst)
+      };
+    },
+    buildRows: ({ date, nightlyTotalMyr }) => {
+      return [
+        { date, description: 'Room Charge', amount: parseNum(nightlyTotalMyr) }
+      ];
+    }
+  },
+
+  // ── 4. Perdana ─────────────────────────────────────────────────────────────
+  PERDANA: {
+    detect: (name) => name.toLowerCase().includes('perdana'),
+    columns: ['Date', 'Description', 'Reference', 'Charges (MYR)', 'Credits (MYR)'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => {
+      const nightlyTotalMyr = usdAmount * exchangeRate;
+      const nightlyTtx = 10.00; 
+      const remainingAmount = nightlyTotalMyr - nightlyTtx;
+      
+      const nightlyRoomPackage = remainingAmount / 1.08;
+      const nightlySst = nightlyRoomPackage * 0.08;
+
+      return {
+        nightlyTotalMyr: parseNum(nightlyTotalMyr),
+        nightlyTtx: parseNum(nightlyTtx),
+        nightlyRoomPackage: parseNum(nightlyRoomPackage),
+        nightlySst: parseNum(nightlySst)
+      };
+    },
+    buildRows: ({ date, nightlyTotalMyr }) => {
+      return [
+        { date, description: 'Room Charges', amount: parseNum(nightlyTotalMyr) }
+      ];
+    }
+  },
+
   // ── FALLBACK: Other Malaysian Hotels ───────────────────────────────────────
   OTHER_MALAYSIA: {
     detect: () => true,

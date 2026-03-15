@@ -1,10 +1,9 @@
 import DashboardPage from "./DashboardPage";
 import InvoicePage from "./InvoicePage";
-
 import InvoiceViewPage from "./viewTemplates/InvoiceViewPage";
 import InvoiceFormPage from "./InvoiceFormPage";
 import Unauthorized from "./UnAuthorizePage";
-import EmployeePage from './EmployeePage'
+import EmployeePage from './EmployeePage';
 import CVKInvoiceView from "./viewTemplates/CVKInvoiceView";
 import HotelConfigPage from "./HotelConfigPage";
 import DynamicInvoiceFormPage from "./DynamicInvoiceFormPage";
@@ -22,7 +21,6 @@ import DynamicInvoiceformPageMalaysia from "./DynamicInvoiceFormPageMalaysia";
 import LansonPalaceInvoiceView from "./viewTemplates/LansonPalaceInvoiceView";
 import GrandHayattInvoiceView from "./viewTemplates/GrandHayattInvoiceView";
 import OasiaInvoiceView from "./viewTemplates/OasiaInvoiceView";
-import IntercontinentalInvoiceViewMalaysia from "./viewTemplates/IntercontinentalInvoiceViewMalaysia";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
@@ -38,6 +36,4 @@ export {
     LansonPalaceInvoiceView,
     GrandHayattInvoiceView,
     OasiaInvoiceView,
-    IntercontinentalInvoiceViewMalaysia,
-
 };

@@ -25,6 +25,9 @@ import RaddisonBluInvoiceView from "./RaddisonBluInvoiceView";
 import LansonPalaceInvoiceView from "./LansonPalaceInvoiceView";
 import GrandHayattInvoiceView from "./GrandHayattInvoiceView";
 import OasiaInvoiceView from "./OasiaInvoiceView";
+import RitzCarltonInvoiceView from "./RitzCarltonInvoiceView";
+import FourSeasonsInvoiceView from "./FourSeasonsInvoiceView";
+import WaldorfAstoriaInvoiceView from "./WaldorfAstoriaInvoiceView";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -129,8 +132,21 @@ export default function DynamicInvoiceViewPage() {
       else if (hotelName.includes("oasia")) {
         detectedType = "Oasia";
       }
-
-      
+      else if (hotelName.includes("ritz") || hotelName.includes("carlton")) {
+        detectedType = "Ritz";
+      }
+      else if (hotelName.includes("four") && hotelName.includes("season")) {
+        detectedType = "FourSeasons";
+      }
+      else if (hotelName.includes("waldorf") && hotelName.includes("astoria")) {
+        detectedType = "WaldorfAstoria";
+      }      
+      else if (hotelName.includes("pullman")) {
+        detectedType = "Pullman";
+      }
+      else if (hotelName.includes("perdana")) {
+        detectedType = "Perdana";
+      }
       console.log("🎯 Detected hotel type:", detectedType);
       setHotelType(detectedType);
       
@@ -218,8 +234,14 @@ export default function DynamicInvoiceViewPage() {
   }
   else if(hotelType === "Oasia") {
     return <OasiaInvoiceView invoiceData={invoice} />;
+  }else if(hotelType === "Ritz") {
+    return <RitzCarltonInvoiceView invoiceData={invoice} />;
+  }else if(hotelType === "FourSeasons") {
+    return <FourSeasonsInvoiceView invoiceData={invoice} />;
   }
-
+  else if(hotelType === "WaldorfAstoria") {
+    return <WaldorfAstoriaInvoiceView invoiceData={invoice} />;
+  }
   else {
     // Default fallback
     return <GrandArasInvoiceView invoiceData={invoice} />;

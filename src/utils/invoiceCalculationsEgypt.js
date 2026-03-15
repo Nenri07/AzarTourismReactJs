@@ -267,7 +267,7 @@ export const HOTEL_CONFIGS = {
   // Row formula : roomEGP = USD × exchangeRate
   // Balance USD : grandTotal / exchangeRate
   // Table cols  : Date, Description, Charges EGP, Credits EGP
-  INTERCONTINENTAL: {
+  DUSIT_THANI: {
     detect: (name) => name.includes('dusit thani'),
     columns: ['date', 'description', 'chargesEgp', 'creditsEgp'],
     calculateNightlyRate: ({ usdAmount, exchangeRate }) => ({
@@ -276,7 +276,7 @@ export const HOTEL_CONFIGS = {
     }),
     buildRow: ({ date, roomAmountEgp }) => ({
       date,
-      description:   'Accommodation Charge Bed only',
+      description:   'Accommodation',
       rate:          parseNum(roomAmountEgp),
       baseRate:      0,
       serviceCharge: 0,
@@ -287,6 +287,96 @@ export const HOTEL_CONFIGS = {
     }),
     balanceDirection: 'divide',
   },
+
+  // ── 8. FOUR SEASONS ────────────────────────────────────────────────────────
+  // Row formula : roomEGP = USD * exchangeRate
+  // Balance USD : grandTotal / exchangeRate
+  // Table cols  : Date, Text, Charges EGP, Credits EGP
+  FOUR_SEASONS: {
+    detect: (name) => name.includes('four season') || name.includes('fourseason'),
+    columns: ['date', 'text', 'chargesEgp', 'creditsEgp'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => ({
+      roomAmountEgp: usdAmount * exchangeRate,
+      breakdown: null,
+    }),
+    buildRow: ({ date, roomAmountEgp }) => ({
+      date,
+      description:   'Accommodation Charge Bed only',
+      text:          'Room Accommodation',
+      rate:          parseNum(roomAmountEgp),
+      baseRate:      0,
+      serviceCharge: 0,
+      cityTax:       0,
+      vat:           0,
+      chargesEgp:    parseNum(roomAmountEgp),
+      creditsEgp:    0,
+    }),
+    balanceDirection: 'divide',
+  },
+
+  // ── 9. RITZ CARLTON ────────────────────────────────────────────────────────
+  // Row formula : roomEGP = USD * exchangeRate
+  // Balance USD : grandTotal / exchangeRate
+  // Table cols  : Date, Text, Detail, Debits EGP, Credits EGP
+  RITZ_CARLTON: {
+    detect: (name) => name.includes('ritz') || name.includes('carlton'),
+    columns: ['date', 'text', 'detail', 'debitsEgp', 'creditsEgp'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => ({
+      roomAmountEgp: usdAmount * exchangeRate,
+      breakdown: null,
+    }),
+    buildRow: ({ date, roomAmountEgp, usdAmount, exchangeRate }) => ({
+      date,
+      description:   'Accommodation',
+      text:          'Accommodation',
+      detail:        `${(usdAmount || 0).toFixed(2)} USD x ${(exchangeRate || 0).toFixed(2)}`,
+      rate:          parseNum(roomAmountEgp),
+      baseRate:      0,
+      serviceCharge: 0,
+      cityTax:       0,
+      vat:           0,
+      debitsEgp:     parseNum(roomAmountEgp),
+      creditsEgp:    0,
+    }),
+    balanceDirection: 'divide',
+  },
+
+  // ── 10. WALDORF ASTORIA ────────────────────────────────────────────────────
+  WALDORF_ASTORIA: {
+    detect: (name) => name.toLowerCase().includes('waldorf') || name.toLowerCase().includes('astoria'),
+    columns: ['date', 'description', 'baseRate', 'serviceCharge', 'cityTax', 'vat', 'rate'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => {
+      const realCal = usdAmount * exchangeRate;
+      const withDiv = realCal / 1.289568;
+      const a = withDiv;                            // Base EGP
+      const b = a * 0.12;                           // 12% SC
+
+      const includingprev = a + b;
+      const c = includingprev * 0.01;               // 1% City Tax
+      const includingprev2 = c + includingprev;
+      const d = includingprev2 * 0.14;              // 14% VAT
+      const e = a + b + c + d;                      // Nightly Gross
+
+      return {
+        roomAmountEgp: e,
+        breakdown: { a, b, c, d, e },
+      };
+    },
+    buildRow: ({ date, breakdown }) => ({
+      date,
+      description:   'GUEST ROOM',
+      baseRate:      parseNum(breakdown.a),
+      serviceCharge: parseNum(breakdown.b),
+      cityTax:       parseNum(breakdown.c),
+      vat:           parseNum(breakdown.d),
+      rate:          parseNum(breakdown.e),
+      chargesEgp:    parseNum(breakdown.e),
+      creditsEgp:    0,
+    }),
+    balanceDirection: 'divide',
+  },
+
+
   // ── FALLBACK ───────────────────────────────────────────────────────────────
   OTHER_EGYPT: {
     detect: () => true,
@@ -555,6 +645,9 @@ startingRefNo: formData.starting_ref_no || Math.floor(1000000 + Math.random() * 
 
       checkInTime:   formData.checkin_time || '',
       checkOutTime:  formData.checkout_time || '',
+      cashierName:   formData.cashier_name || '',
+      noOfGuests:    formData.no_of_guests || 1,
+      package:       formData.package || '',
 
       //dusit Thani new fields
       crsNo: formData.crs_no,

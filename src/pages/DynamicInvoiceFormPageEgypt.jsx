@@ -201,6 +201,9 @@ export default function DynamicInvoiceFormPageEgypt() {
       //dusit thani fields
       printed_by: data.printedBy,
       crs_no: data.crsNo,
+      cashier_name: data.cashierName || '',
+      no_of_guests: data.noOfGuests || 1,
+      package: data.package || '',
 
       // Fixed: Mapped all Fairmont Root Fields
       user_id: data.userId || '',
