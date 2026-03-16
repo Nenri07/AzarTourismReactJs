@@ -28,6 +28,8 @@ import OasiaInvoiceView from "./OasiaInvoiceView";
 import RitzCarltonInvoiceView from "./RitzCarltonInvoiceView";
 import FourSeasonsInvoiceView from "./FourSeasonsInvoiceView";
 import WaldorfAstoriaInvoiceView from "./WaldorfAstoriaInvoiceView";
+import PullmanInvoiceView from "./PullmanInvoiceView";
+import PerdanaInvoiceView from "./PerdanaInvoiceView";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -165,7 +167,7 @@ export default function DynamicInvoiceViewPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <div className="text-center">
-          <Loader2 size={48} className="animate-spin text-[#003d7a] mx-auto mb-4" />
+          <Loader2 size={48} className="animate-spin text-azar-blue mx-auto mb-4" />
           <p className="text-slate-600 text-lg">Loading invoice...</p>
           <p className="text-slate-400 text-sm mt-2">ID: {invoiceId?.substring(0, 8)}...</p>
         </div>
@@ -186,7 +188,7 @@ export default function DynamicInvoiceViewPage() {
           <p className="text-slate-600 mb-6">The requested invoice could not be loaded.</p>
           <button
             onClick={() => navigate("/invoices")}
-            className="btn bg-[#003d7a] hover:bg-[#002a5c] text-white border-none gap-2"
+            className="btn bg-azar-blue hover:bg-azar-dark text-white border-none gap-2"
           >
             <ArrowLeft size={16} />
             Back to Invoices
@@ -241,6 +243,12 @@ export default function DynamicInvoiceViewPage() {
   }
   else if(hotelType === "WaldorfAstoria") {
     return <WaldorfAstoriaInvoiceView invoiceData={invoice} />;
+  }
+  else if(hotelType === "Pullman") {
+    return <PullmanInvoiceView invoiceData={invoice} />;
+  }
+  else if(hotelType === "Perdana") {
+    return <PerdanaInvoiceView invoiceData={invoice} />;
   }
   else {
     // Default fallback
