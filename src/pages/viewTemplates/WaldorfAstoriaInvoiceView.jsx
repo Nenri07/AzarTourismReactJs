@@ -280,7 +280,7 @@ const WaldorfAstoriaInvoiceView = ({ invoiceData }) => {
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `Waldorf_Invoice_${invoice.invoiceNo || 'Waldorf'}.pdf`,
+        filename: `${invoice.referenceNo}.pdf`,
         image: { type: 'jpeg', quality: 3 },
         html2canvas: { 
             scale: 4, 
@@ -484,12 +484,12 @@ const WaldorfAstoriaInvoiceView = ({ invoiceData }) => {
                         </div>
                         <div style={{ display: 'flex'}}>
                             <div style={{ width: '135px' }}>VAT 14%</div>
-                            <div style={{ width: '140px', textAlign: 'right', marginLeft: '30px' }}>{formatCurrency(invoice.baseTaxableAmount)}</div>
+                            <div style={{ width: '140px', textAlign: 'right', marginLeft: '30px' }}>{formatCurrency(invoice.totalExVat)}</div>
                             <div style={{ width: '80px', textAlign: 'right', marginLeft: '40px' }}>{formatCurrency(invoice.vat14Percent)}</div>
                         </div>
                         <div style={{ display: 'flex'}}>
                             <div style={{ width: '135px' }}>Municipality Tax 1%</div>
-                            <div style={{ width: '140px', textAlign: 'right', marginLeft: '30px' }}>{formatCurrency(invoice.baseTaxableAmount)}</div>
+                            <div style={{ width: '140px', textAlign: 'right', marginLeft: '30px' }}>{formatCurrency(invoice.munichTax1percent)}</div>
                             <div style={{ width: '80px', textAlign: 'right', marginLeft: '40px' }}>{formatCurrency(invoice.cityTax)}</div>
                         </div>
                         <div style={{ display: 'flex' }}>
