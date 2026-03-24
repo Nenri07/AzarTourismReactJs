@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '../../../public/LPBC-logo.png';
+import logo from '/LPBC-logo.png';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FORMAT DATE
@@ -91,7 +92,7 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
   const [paginatedData, setPaginatedData] = useState([]);
 
   const invoiceRef = useRef(null);
-  const ROWS_PER_PAGE = 25;
+  const ROWS_PER_PAGE = 30;
   const isPdfDownload = location.pathname.includes("/download-pdf");
 
   const dummyData = {
@@ -180,7 +181,7 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
     const MAX_ROWS_WITH_FOOTER = 15;
 
     // Max rows when no footer is needed (full page of rows only).
-    const MAX_ROWS_NORMAL_PAGE = ROWS_PER_PAGE; // 25
+    const MAX_ROWS_NORMAL_PAGE = ROWS_PER_PAGE; // 30
 
     if (tx.length === 0) {
       pages.push({ items: [], pageNo: 1, totalPages: 1, showTotals: true });
@@ -381,8 +382,8 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
           .lp-meta-left  { width: 56%; }
           .lp-meta-right { width: 45%; padding-left: 33px; }
           .lp-meta-table { width: 100%; border-collapse: collapse; }
-          .lp-meta-table td { padding: 3px 0; vertical-align: middle; }
-          .lp-meta-table td:nth-child(1) { width: 130px; }
+          .lp-meta-table td { padding: 1px 0; vertical-align: middle; }
+          .lp-meta-table td:nth-child(1) { width: 97px; }
           .lp-meta-table td:nth-child(2) { width: 15px; }
           .lp-items-table {
               width: 100%;
@@ -400,14 +401,14 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
           }
-          .lp-items-table th.center { text-align: center; }
+          .lp-items-table th.center { text-align: left; }
           .lp-items-table th.right,
           .lp-items-table td.right {
               text-align: right;
               width: 100px;
           }
           .lp-items-table td {
-              padding: 6px 8px !important;
+              padding: 1px 8px !important;
               vertical-align: middle !important;
           }
           .lp-items-table tbody tr:nth-child(even):not(.tbl-total-row) {
@@ -415,12 +416,12 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
           }
-          .tbl-total-row td  { padding-top: 15px !important; }
+          .tbl-total-row td  { padding-top: 23px !important; }
           .tbl-total-label   { font-weight: bold; padding-right: 20px; }
           .amount-total-cell { border-top: 1px solid #000; padding-top: 8px !important; }
           .lp-bottom-right   { width: 400px; margin-left: auto; padding-right: 4px; }
           .lp-summary-table  { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-          .lp-summary-table td { text-align: right; padding: 3px 0; }
+          .lp-summary-table td { text-align: right; padding: 1.5px 0; }
           .lp-summary-table td:first-child { font-weight: bold; padding-right: 20px; }
           .lp-summary-table td:last-child  { width: 100px; }
           .lp-sig-text { text-align: left; margin-bottom: 60px; line-height: 1.5; }
@@ -509,7 +510,7 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
                           {cashierLine2 && <><br />{cashierLine2}</>}
                         </td>
                       </tr>
-                      <tr><td>Page No.</td><td>:</td><td>{page.pageNo}/{page.totalPages}</td></tr>
+                      <tr ><td style={{paddingTop:"17px"}}>Page No.</td><td style={{verticalAlign:"bottom"}}>:</td><td style={{verticalAlign:"bottom"}}>{page.pageNo}/{page.totalPages}</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -578,14 +579,6 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
                     </tbody>
                   </table>
 
-                  <div style={{paddingLeft:"116px"}}>
-                    <div className="lp-sig-text">
-                      Regardless of charge instruction, I agree to be held<br />
-                      personally liable for paying/reimbursing of the above<br />
-                      amounts.
-                    </div>
-                    <div className="lp-sig-line">Signature</div>
-                  </div>
                 </div>
               )}
             </div>

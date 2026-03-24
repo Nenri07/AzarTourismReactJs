@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '../../../public/OASIA-logo.png';
+import logo from '/OASIA-logo.png';
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
@@ -226,6 +226,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
     >
       <div className="oasia-invoice-wrapper" ref={invoiceRef}>
         <style dangerouslySetInnerHTML={{__html: `
+          @page { size: A4; margin: 0mm; }
           .oasia-invoice-wrapper { width: 100%; background-color: transparent; }
           .oasia-invoice-wrapper * { font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 12px; line-height: 1.3; }
           .page {
@@ -255,11 +256,11 @@ const OasiaInvoiceView = ({ invoiceData }) => {
           .oasia-items-table tbody td { padding: 3px 0; }
           
           .text-right { text-align: right !important; }
-          .text-left { text-align: left !important; padding }
+          .text-left { text-align: right !important; padding }
            .text-right1 { text-align: center !important; }
           .oasia-bottom-section { margin-top: 10px; width: 100%; display: flex; justify-content: space-between; }
-          .oasia-left-col { width: 45%; padding-right: 30px; display: flex; flex-direction: column; justify-content: space-between; }
-          .oasia-right-col { width: 55%; border-bottom: 1px solid; padding-bottom: 20px;}
+          .oasia-left-col { width: 37%; padding-right: 0px; display: flex; flex-direction: column; justify-content: space-between; }
+          .oasia-right-col { width: 62%; border-bottom: 1px solid; padding-bottom: 20px;}
           
           .oasia-balance-row {
               display: flex; justify-content: space-between; align-items: center; 
@@ -273,9 +274,10 @@ const OasiaInvoiceView = ({ invoiceData }) => {
           .oasia-footer { text-align: center; margin-top: 40px; font-size: 9px; line-height: 1.4; }
           
           @media print { 
-            .page { box-shadow: none; margin: 0; padding: 10mm; page-break-after: always; break-after: page; } 
-            .page:last-child { page-break-after: avoid; break-after: avoid; }
-            .no-print { display: none; } 
+            .oasia-invoice-wrapper { padding: 0 !important; background: none !important; }
+            .page { box-shadow: none !important; margin: 0 auto !important; page-break-after: always !important; break-after: page !important; } 
+            .page:last-child { page-break-after: avoid !important; break-after: avoid !important; }
+            .no-print { display: none !important; } 
           }
         `}} />
 
@@ -348,16 +350,16 @@ const OasiaInvoiceView = ({ invoiceData }) => {
               <table className="oasia-items-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '14%' }}>Date</th>
+                    <th style={{ width: '14%' , textAlign: 'center'}}>Date</th>
                     <th style={{ width: '47%' }}>Description</th>
-                    <th className="text-right1" style={{ width: '15%' }}>Charges<br/>MYR</th>
+                    <th className="text-right1" style={{ width: '12%' }}>Charges<br/>MYR</th>
                     <th className="text-right1" style={{ width: '15%' }}>Credits<br/>MYR</th>
                   </tr>
                 </thead>
                 <tbody>
                   {page.items.map((item) => (
                     <tr key={item.id}>
-                      <td>{item.date}</td>
+                      <td style={{textAlign: 'center'}}>{item.date}</td>
                       <td>{item.desc}</td>
                       <td className="text-right">{formatCurrency(item.charges)}</td>
                       <td className="text-right">{item.credits ? formatCurrency(item.credits) : ""}</td>
@@ -372,7 +374,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                 <>
                   <div className="oasia-bottom-section">
                     <div className="oasia-left-col">
-                      <div style={{ textAlign: 'justify', marginTop: '10px',fontSize: '10px' }}>
+                      <div style={{ textAlign: 'justify', marginTop: '30px',fontSize: '10px' }}>
                         I hereby agree to be jointly and severally liable with the
                         person, company or association as may be indicated on this
                         folio for all charges incurred on all accounts which I may
@@ -386,17 +388,17 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                     <div className="oasia-right-col">
                       <div className="oasia-balance-row">
                         <div style={{ flex: 1, textAlign: 'left', fontWeight: 'bold' }}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Balance &nbsp;&nbsp; RM</div>
-                        <div style={{ width: '80px', textAlign: 'right' }}>{formatCurrency(invoice.summary.balance)} MYR</div>
+                        <div style={{ width: '85px', textAlign: 'right' }}>{formatCurrency(invoice.summary.balance)} MYR</div>
                       </div>
 
                       <div className="oasia-summary-header">
-                        * * * * * * * * * * * * * &nbsp;&nbsp;&nbsp; SUMMARY &nbsp;&nbsp;&nbsp; * * * * * * * * * * * * *
+                        &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; * * * * * * * * * * *  &nbsp;&nbsp;&nbsp; SUMMARY &nbsp;&nbsp;&nbsp; * * * * * * * * * * * 
                       </div>
                       <table className="oasia-summary-details">
                         <tbody>
                           <tr>
                             <td className="text-left">Total Amount Before Taxes</td>
-                            <td className="text-right" style={{ width: '80px', fontWeight: 'bold' }}>{formatCurrency(invoice.summary.beforeTax)}</td>
+                            <td className="text-right" style={{ width: '233px', fontWeight: 'bold' }}>{formatCurrency(invoice.summary.beforeTax)}</td>
                           </tr>
                           <tr>
                             <td className="text-left">Total Amount Non Taxable</td>
@@ -431,16 +433,11 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                 </>
               )}
             </div>
-            
-         
           </div>
         ))}
       </div>
     </InvoiceTemplate>
   );
 };
-
-
-
 
 export default OasiaInvoiceView;

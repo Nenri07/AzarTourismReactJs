@@ -30,6 +30,9 @@ import FourSeasonsInvoiceView from "./FourSeasonsInvoiceView";
 import WaldorfAstoriaInvoiceView from "./WaldorfAstoriaInvoiceView";
 import PullmanInvoiceView from "./PullmanInvoiceView";
 import PerdanaInvoiceView from "./PerdanaInvoiceView";
+import SomersetInvoiceView from "./SomersetInvoiceView";
+import TrillionSuitesInvoiceView from "./TrillionSuitesInvoiceView";
+import IntercontinentalInvoiceViewMalaysia from "./IntercontinentalInvoiceViewMalaysia";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -149,6 +152,15 @@ export default function DynamicInvoiceViewPage() {
       else if (hotelName.includes("perdana")) {
         detectedType = "Perdana";
       }
+      else if (hotelName.includes("somerset") || hotelName.includes("ampang")) {
+        detectedType = "Somerset";
+      }
+      else if (hotelName.includes("trillion") || hotelName.includes("suites")) {
+        detectedType = "TrillionSuites";
+      }
+      else if (hotelName.includes("intercontinental") || hotelName.includes("malaysia")) {
+        detectedType = "IntercontinentalMalaysia";
+      }
       console.log("🎯 Detected hotel type:", detectedType);
       setHotelType(detectedType);
       
@@ -249,6 +261,15 @@ export default function DynamicInvoiceViewPage() {
   }
   else if(hotelType === "Perdana") {
     return <PerdanaInvoiceView invoiceData={invoice} />;
+  }
+  else if (hotelType === "Somerset") {
+    return <SomersetInvoiceView invoiceData={invoice} />;
+  }
+  else if (hotelType === "TrillionSuites") {
+    return <TrillionSuitesInvoiceView invoiceData={invoice} />;
+  }
+  else if (hotelType === "IntercontinentalMalaysia") {
+    return <IntercontinentalInvoiceViewMalaysia invoiceData={invoice} />;
   }
   else {
     // Default fallback

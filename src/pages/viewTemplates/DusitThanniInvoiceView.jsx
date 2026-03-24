@@ -4,7 +4,7 @@ import cairoInvoiceApi from "../../Api/cairoInvoice.api";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from "../../../public/dusit_Thani-logo.png"; 
+import logo from "/dusit_Thani-logo.png"; 
 
 const DusitThaniInvoiceView = ({ invoiceData }) => {
   const { invoiceId } = useParams();

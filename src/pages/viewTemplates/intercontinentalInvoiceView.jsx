@@ -5,7 +5,7 @@ import html2pdf from 'html2pdf.js';
 import toast from 'react-hot-toast';
 import { InvoiceTemplate } from '../../components';
 import cairoInvoiceApi from '../../Api/cairoInvoice.api';
-import logo from '../../../public/intercontinental-logo.png';
+import logo from '/intercontinental-logo.png';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const formatDate = (dateString) => {

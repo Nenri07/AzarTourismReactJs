@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
 import cairoInvoiceApi from "../../Api/cairoInvoice.api";
-import logo from "../../../public/Hilton-logo.png";
+import logo from "/Hilton-logo.png";
 
 const HiltonInvoiceViewPage = ({ invoiceData }) => {
   const { invoiceId } = useParams();

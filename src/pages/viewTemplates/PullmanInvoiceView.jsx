@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '../../../public/pullman-logo.png';
+import logo from '/pullman-logo.png';
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
   try {
@@ -96,7 +96,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
       meta: {
         title: "COPY OF INVOICE",
         date: formatDate(data.invoiceDate) + " / " + (data.invoiceTime),
-        membership: data.membershipNo,
+        membershipNo: data.membershipNo,
         arrival: formatDate(data.arrivalDate),
         departure: formatDate(data.departureDate),
         roomNo: data.roomNo,
@@ -116,7 +116,8 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
         st8: data.totalSst8Percent || 0,
         tourismTax: data.totalTourismTax || 0,
         totalWithTaxes: data.grandTotalMyr || 0,
-        balanceDue: 0.00 // Assuming paid/balanced for this view like in screenshot
+        balanceDue: 0.00, // Assuming paid/balanced for this view like in screenshot
+        balanceUsd: data.balanceUsd
       }
     };
   };
@@ -143,7 +144,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
 
     const tx = invoice.items;
     const pages = [];
-    const MAX_ROWS = 18; 
+    const MAX_ROWS = 15; 
 
     if (tx.length === 0) {
       pages.push({ items: [], showTotals: true });
@@ -198,7 +199,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
           windowWidth: 794
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: 'css' }
+        pagebreak: { mode: ['css', 'legacy'] }
       };
 
       await html2pdf().set(opt).from(element).save();
@@ -229,35 +230,45 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
         <style dangerouslySetInnerHTML={{__html: `
           @media print {
             @page { size: A4; margin: 0; }
-            body { margin: 0; padding: 0; background: #fff; }
-            .pullman-invoice-wrapper { padding: 0 !important; margin: 0 !important; height: auto !important; }
-            .a4-page { box-shadow: none; border: none; margin: 0 !important; page-break-after: always !important; }
-            .a4-page:last-child { page-break-after: avoid !important; margin-bottom: 0 !important; }
+            body { margin: 0 !important; padding: 0 !important; background: #fff; }
+            .pullman-invoice-wrapper { padding: 0 !important; margin: 0 !important; height: auto !important; background: none !important; }
+            .a4-page { margin: 0 !important; box-shadow: none !important; border: none !important; width: 210mm !important; height: 296mm !important; overflow: hidden !important; }
+            .a4-page:not(:last-child) { page-break-after: always !important; }
+            .no-print { display: none !important; }
           }
 
           .pullman-invoice-wrapper {
-            padding: 40px 0;
+            padding: 0;
+            margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             font-family: "Arial", sans-serif;
           }
 
+          .pullman-invoice-wrapper * {
+            box-sizing: border-box;
+          }
+
           .a4-page {
             background: #fff;
             width: 210mm;
-            min-height: 296mm;
+            height: 296mm;
+            overflow: hidden;
             padding: 8mm 12mm;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
             position: relative;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            font-size: 9pt;
           }
 
           .header-main {
             display: flex;
             justify-content: center;
+            margin-top: 40px;
             margin-bottom: 35px;
             position: relative;
           }
@@ -286,7 +297,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
             display: flex;
             justify-content: center;
             gap: 145px;
-            font-size: 8.5pt;
+            font-size: 9pt;
             margin-bottom: 15px;
           }
 
@@ -308,7 +319,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
 
           .meta-row {
             display: flex;
-            line-height: 1.1;
+            line-height: 1.2;
             margin-bottom: 1px;
           }
 
@@ -331,14 +342,15 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
 
           .items-table th {
             border: none;
-            padding: 1px 2px;
+            padding: 2px 2px;
+            line-height: 1.6;
             text-align: left;
             font-weight: bold;
           }
 
           .items-table td {
             padding: 0px 2px;
-            line-height: 1.1;
+            line-height: 1.25;
             vertical-align: top;
           }
           
@@ -351,7 +363,8 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
             display: flex;
             justify-content: flex-end;
             margin-top: 10px;
-            padding: 2px 8px 2px 0px;
+            padding: 3px 8px 2px 0px;
+            line-height: 1.6;
             font-size: 9pt;
           }
 
@@ -365,21 +378,21 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
           }
 
           .summary-table { width: 300px}
-          .summary-row { display: flex; justify-content: space-between;  margin-bottom: 2px; text-align: right; padding-left: 22px; }
+          .summary-row { display: flex; justify-content: space-between;  margin-bottom: 2px; text-align: right; padding-left: 22px; line-height: 1.5; }
           .summary-row span{ width: 200px;}
           .summary-row.total { font-weight: bold; margin-top: 2px; }
 
           .legal-signature-section {
             margin-top: 30px;
             display: flex;
-            justify-content: start;
+            justify-content: end;
             gap: 110px;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 1.3;
           }
 
-          .legal-text { width: 45%; text-align: justify;}
-          .signature-area { width: 30%; text-align: center; margin-top: 35px;}
+          // .legal-text { width: 48%; text-align: justify;}
+          .signature-area { width: 30%; text-align: center; margin-top: 35px; font-size: 8.5pt; margin-right: 40px;}
           .sig-line { border-top: 0.5pt solid #000; margin-bottom: 4px; }
 
           .footer-section {
@@ -475,13 +488,14 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
                     <div className="summary-row"><span>ST 8%</span><span>{formatCurrency(invoice.summary.st8)}</span></div>
                     <div className="summary-row"><span>Tourism Tax</span><span>{formatCurrency(invoice.summary.tourismTax)}</span></div>
                     <div className="summary-row"><span>Total Charges with Taxes</span><span>{formatCurrency(invoice.summary.totalWithTaxes)}</span></div>
+                    <div className="summary-row"><span>Total Amount USD</span><span>{formatCurrency(invoice.summary.balanceUsd)}</span></div>
                   </div>
                 </div>
 
                 <div className="legal-signature-section">
-                  <div className="legal-text">
+                  {/* <div className="legal-text">
                     I agree that my liability for this bill is not waived and agree to be held personally liable in the event that the indicated person, company, or association fails to pay for any part or the full amount of these charges.
-                  </div>
+                  </div> */}
                   <div className="signature-area">
                     <div className="sig-line"></div>
                     <div>Guest Signature</div>

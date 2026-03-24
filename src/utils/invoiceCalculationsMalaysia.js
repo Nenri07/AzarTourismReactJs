@@ -86,14 +86,15 @@ export const HOTEL_CONFIGS = {
     },
     // The Grand Hyatt React component expects one object per night with the breakdown fields.
     // It will automatically split this into the 3 required rows on the frontend.
-    buildRows: ({ date, nightlyRoomPackage, nightlySst, nightlyTtx }) => {
+    buildRows: ({ date, nightlyRoomPackage, nightlySst, nightlyTtx, reference }) => {
       return [
         { 
           date, 
           description: 'Accommodation', 
           baseRate: parseNum(nightlyRoomPackage),
           serviceCharge: parseNum(nightlySst),
-          tourismTax: parseNum(nightlyTtx)
+          tourismTax: parseNum(nightlyTtx),
+          reference
         }
       ];
     }
@@ -118,9 +119,9 @@ export const HOTEL_CONFIGS = {
         nightlySst: parseNum(nightlySst)
       };
     },
-    buildRows: ({ date, nightlyTotalMyr }) => {
+    buildRows: ({ date, nightlyTotalMyr, reference }) => {
       return [
-        { date, description: 'Room Charge', amount: parseNum(nightlyTotalMyr) }
+        { date, description: 'Room Charge', amount: parseNum(nightlyTotalMyr), reference }
       ];
     }
   },
@@ -144,9 +145,88 @@ export const HOTEL_CONFIGS = {
         nightlySst: parseNum(nightlySst)
       };
     },
+    buildRows: ({ date, nightlyTotalMyr, reference }) => {
+      return [
+        { date, description: 'Room Charges', amount: parseNum(nightlyTotalMyr), reference }
+      ];
+    }
+  },
+
+  // ── 5. Somerset ─────────────────────────────────────────────────────────────
+  SOMERSET: {
+    detect: (name) => name.toLowerCase().includes('somerset') || name.toLowerCase().includes('ampang'),
+    columns: ['DATE', 'Room', 'DESCRIPTION', 'AMOUNT (MYR)'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => {
+      const nightlyTotalMyr = usdAmount * exchangeRate;
+      const nightlyTtx = 10.00; 
+      const remainingAmount = nightlyTotalMyr - nightlyTtx;
+      
+      const nightlyRoomPackage = remainingAmount / 1.08;
+      const nightlySst = nightlyRoomPackage * 0.08;
+
+      return {
+        nightlyTotalMyr: parseNum(nightlyTotalMyr),
+        nightlyTtx: parseNum(nightlyTtx),
+        nightlyRoomPackage: parseNum(nightlyRoomPackage),
+        nightlySst: parseNum(nightlySst)
+      };
+    },
     buildRows: ({ date, nightlyTotalMyr }) => {
       return [
-        { date, description: 'Room Charges', amount: parseNum(nightlyTotalMyr) }
+        { date, description: 'Daily Apartment Rental (SR)', amount: parseNum(nightlyTotalMyr) }
+      ];
+    }
+  },
+
+  // ── 6. Trillion Suites ──────────────────────────────────────────────────────
+  TRILLION_SUITES: {
+    detect: (name) => name.toLowerCase().includes('trillion suites') || name.toLowerCase().includes('terillion suites'),
+    columns: ['Date', 'Description', 'Ref No.', 'Total'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => {
+      const nightlyTotalMyr = usdAmount * exchangeRate;
+      const nightlyTtx = 10.00; 
+      const remainingAmount = nightlyTotalMyr - nightlyTtx;
+      
+      const nightlyRoomPackage = remainingAmount / 1.08;
+      const nightlySst = nightlyRoomPackage * 0.08;
+
+      return {
+        nightlyTotalMyr: parseNum(nightlyTotalMyr),
+        nightlyTtx: parseNum(nightlyTtx),
+        nightlyRoomPackage: parseNum(nightlyRoomPackage),
+        nightlySst: parseNum(nightlySst)
+      };
+    },
+    buildRows: ({ date, nightlyTotalMyr, reference, room_number, guest_name }) => {
+      const roomChargeDesc = `Room Charge : ${room_number || ''} : ${(guest_name || '').toUpperCase()}`;
+      return [
+        { date, description: roomChargeDesc, amount: parseNum(nightlyTotalMyr), reference }
+      ];
+    }
+  },
+
+  // ── 7. Intercontinental Kuala Lumpur ────────────────────────────────────────
+  IntercontinentaMalaysia: {
+    detect: (name) => name.toLowerCase().includes('intercontinental kuala lumpur'),
+    columns: ['Date', 'Description', 'Amount'],
+    calculateNightlyRate: ({ usdAmount, exchangeRate }) => {
+      const nightlyTotalMyr = usdAmount * exchangeRate;
+      const nightlyTtx = 10.00;
+      const remainingAmount = nightlyTotalMyr - nightlyTtx;
+      
+      const nightlyRoomPackage = remainingAmount / 1.08;
+      const nightlySst = nightlyRoomPackage * 0.08;
+
+      return {
+        nightlyTotalMyr: parseNum(nightlyTotalMyr),
+        nightlyTtx: parseNum(nightlyTtx),
+        nightlyRoomPackage: parseNum(nightlyRoomPackage),
+        nightlySst: parseNum(nightlySst)
+      };
+    },
+    buildRows: ({ date, nightlyRoomPackage }) => {
+      return [
+        { date, description: 'Adhoc 20 Off Igbbb', amount: parseNum(nightlyRoomPackage) },
       ];
     }
   },
@@ -320,7 +400,10 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       nightlyTotalMyr: accCalc.nightlyTotalMyr,
       nightlyRoomPackage: accCalc.nightlyRoomPackage,
       nightlySst: accCalc.nightlySst,
-      nightlyTtx: accCalc.nightlyTtx
+      nightlyTtx: accCalc.nightlyTtx,
+      reference: formData.reference_no,
+      room_number: formData.room_number,
+      guest_name: formData.guest_name
     });
 
     rowsForNight.forEach(row => {
@@ -334,7 +417,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
     date: formatDate(service.service_date || formData.invoice_date),
   }));
 
-  return {
+ return {
     data: {
       // Configuration & Routing
       hotel: formData.hotel_name || '',
@@ -368,7 +451,9 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       roomNo: formData.room_number || '',
       roomType: formData.room_type || '',
       arrivalDate: formatDate(formData.arrival_date),
+      arrival_time: formData.arrival_time || '',
       departureDate: formatDate(formData.departure_date),
+      departure_time: formData.departure_time || '',
       confNo: formData.conf_no || '',
       groupCode: formData.group_code || '',
       crsNo: formData.crs_no || '',

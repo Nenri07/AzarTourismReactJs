@@ -13,7 +13,7 @@ import MalaysiaInvoiceApi from "../Api/malaysiaInvoice.api";
 import { DynamicFormSection, SuccessModal, MalaysiaConditionalSection, MalaysiaSummarySection } from '../components';
 
 // Dedicated Math
-import { calculateFinalSummary, mapToBackendSchema } from "../utils/invoiceCalculationsMalaysia";
+import { calculateFinalSummary, mapToBackendSchema, detectHotelType } from "../utils/invoiceCalculationsMalaysia";
 
 export default function DynamicInvoiceFormPageMalaysia() {
   const navigate = useNavigate();
@@ -67,7 +67,8 @@ export default function DynamicInvoiceFormPageMalaysia() {
   useEffect(() => {
     if (hotelConfig && formData.accommodation_details) {
       try {
-        const newSummary = calculateFinalSummary(formData, hotelConfig ? hotelConfig.hotel_name : "");
+        const hotelType = detectHotelType(hotelConfig);
+        const newSummary = calculateFinalSummary(formData, hotelType);
         setSummary(newSummary);
       } catch (err) {
         console.error("Error calculating summary:", err);
@@ -134,11 +135,11 @@ export default function DynamicInvoiceFormPageMalaysia() {
         else if (fieldId === 'exchange_rate') accommodationDetails[fieldId] = data.exchangeRate || data.exchange_rate || '';
         else if (fieldId === 'total_nights') accommodationDetails[fieldId] = data.nights || data.total_nights || '';
         // FIXED - reads from the actual API response keys
-else if (fieldId === 'nightly_base_myr') accommodationDetails[fieldId] = data.roombaseAmount || '';
-else if (fieldId === 'nightly_sst_myr') accommodationDetails[fieldId] = data.roomSST || '';
-else if (fieldId === 'nightly_tourism_tax_myr') accommodationDetails[fieldId] = data.tourismTax || '';
-else if (fieldId === 'room_amount_myr') accommodationDetails[fieldId] = data.totalNightGrossMyr || '';
-else if (fieldId === 'total_room_all_nights') accommodationDetails[fieldId] = data.totalRoomGrossMyr || '';
+        else if (fieldId === 'nightly_base_myr') accommodationDetails[fieldId] = data.roombaseAmount || '';
+        else if (fieldId === 'nightly_sst_myr') accommodationDetails[fieldId] = data.roomSST || '';
+        else if (fieldId === 'nightly_tourism_tax_myr') accommodationDetails[fieldId] = data.tourismTax || '';
+        else if (fieldId === 'room_amount_myr') accommodationDetails[fieldId] = data.totalNightGrossMyr || '';
+        else if (fieldId === 'total_room_all_nights') accommodationDetails[fieldId] = data.totalRoomGrossMyr || '';
         else accommodationDetails[fieldId] = data[fieldId] !== undefined ? data[fieldId] : '';
       });
     }
@@ -158,7 +159,7 @@ else if (fieldId === 'total_room_all_nights') accommodationDetails[fieldId] = da
       });
     }
 
-    return {
+return {
       // -----------------------------------------------------
       // REPLACED: ALL MALAYSIAN HOTEL FIELDS MAPPED HERE
       // -----------------------------------------------------
@@ -166,22 +167,22 @@ else if (fieldId === 'total_room_all_nights') accommodationDetails[fieldId] = da
       // Hotel / Property Information
       reference_no: data.referenceNo,
       hotel_name: data.hotel_name || data.hotel || hotelConfig?.hotel_name || '',
-      company_reg_no: data.company_reg_no || '',
+      company_reg_no: data.company_reg_no || data.companyRegNo || '',
       sst_reg_no: data.sst_reg_no || data.sstRegNo || '',
       ttx_reg_no: data.ttx_reg_no || data.ttxRegNo || '',
-      tin_no: data.tin_no || '',
+      tin_no: data.tin_no || data.tinNo || '',
       hotel_address: data.hotel_address || '',
-      hotel_phone: data.hotel_phone || '',
-      hotel_fax: data.hotel_fax || '',
-      hotel_email: data.hotel_email || '',
+      hotel_phone: data.hotel_phone || data.hotelPhone || '',
+      hotel_fax: data.hotel_fax || data.hotelFax || '',
+      hotel_email: data.hotel_email || data.hotelEmail || '',
 
       // Guest & Client Information
       guest_name: data.guest_name || data.guestName || data.attention || '',
       company_name: data.company_name || data.companyName || data.agent || '',
       address: data.address || '',
       nationality: data.nationality || '',
-      guest_phone: data.guest_phone || data.phone || '',
-      guest_email: data.guest_email || data.email || '',
+      guest_phone: data.guestPhone || data.hotelPhone || data.hotel_phone || '',
+      guest_email: data.guestEmail || data.hotelEmail || data.hotel_email || data.email || '',
       membership_no: data.membership_no || data.membershipNo || '',
       adults: String(data.adults || data.paxAdult || 1),
       children: String(data.children || data.paxChild || 0),
@@ -189,9 +190,11 @@ else if (fieldId === 'total_room_all_nights') accommodationDetails[fieldId] = da
 
       // Stay & Reservation Details
       room_number: data.room_number || data.roomNo || '',
-      room_type: data.room_type || '',
+      room_type: data.room_type || data.roomType || '',
       arrival_date: data.arrival_date || data.arrivalDate || '',
+      arrival_time: data.arrival_time || '',
       departure_date: data.departure_date || data.departureDate || '',
+      departure_time: data.departure_time || '',
       conf_no: data.conf_no || data.confNo || data.booking_no || data.reservation_no || '',
       group_code: data.group_code || data.ta_code || '',
       crs_no: data.crsNo || data.ota_no || '',
@@ -204,13 +207,13 @@ else if (fieldId === 'total_room_all_nights') accommodationDetails[fieldId] = da
       folio_no: data.folio_no || data.e_invoice_no || '',
       ar_number: data.ar_number || data.arNumber || '',
       po_no: data.poNo || data.job_no || data.reference_no || '',
-      third_party_no: data.third_party_no || '',
-      vessel_name: data.vesselName || '',
-      booker_name: data.bookerName || '',
+      third_party_no: data.third_party_no || data.thirdPartyNo || '',
+      vessel_name: data.vesselName || data.vesselName || '',
+      booker_name: data.bookerName || data.bookerName || '',
       invoice_date: data.invoice_date || data.invoiceDate || '',
       invoice_time: data.invoice_time || data.invoiceTime || '',
-      cashier_id: data.cashier_id || data.cashier || data.userId || '',
-      cashier_name:data.cashierName||'',
+      cashier_id: data.cashier_id || data.cashierId || data.cashier || data.userId || '',
+      cashier_name: data.cashierName || data.cashier_name || '',
       uuid: data.uuid || '',
 
       // Bank & Payment Details

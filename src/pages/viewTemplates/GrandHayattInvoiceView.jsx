@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '../../../public/Grand-hayat-logo.jpeg';
+import logo from '/Grand-hayat-logo.jpeg';
 
 const GrandHayattInvoiceView = ({ invoiceData }) => {
   const { invoiceId } = useParams();
@@ -331,7 +331,7 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
           .right-col { width: 290px; }
 
           .logo-img {
-              height: 55px; 
+              height: 67px; 
               width: auto;
               margin-top: 10px;
           }
@@ -355,13 +355,13 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
           }
           .meta-text-block {
               margin-top: 30px;
-              font-size: 11.5px;
+              font-size: 13.0px;
           }
           .guest-name-row {
               display: flex;
               margin-top: 18px;
           }
-          .guest-name-label { width: 215px; }
+          .guest-name-label { width: 190px; }
           
           .meta-table {
               width: 100%;
@@ -371,13 +371,13 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
               padding: 1.5px 0;
               vertical-align: top;
           }
-          .meta-table td:first-child { width: 135px; }
+          .meta-table td:first-child { width: 143px; }
 
           .main-table {
               width: 100%;
               border-collapse: collapse;
               margin-top: 25px;
-              font-size: 12px !important;
+              font-size: 12.5px !important;
           }
           .main-table thead tr {
               background-color: #c0c0c0 !important;
@@ -394,7 +394,7 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
           .main-table th.border-right { border-right: 1px solid #000; }
           
           .main-table td {
-              padding: 3px 6px;
+              padding: 4px 6px;
               vertical-align: top;
           }
           .col-date { width: 14%; text-align: left; }
@@ -406,7 +406,6 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
           .totals-row td {
               border-bottom: 1px solid #000;
               padding: 5px 6px;
-              font-weight: bold;
           }
 
           .summary-wrapper {
@@ -431,11 +430,11 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
               float: right;
               font-size: 11px;
           }
-          .balance-table td { padding: 1.5px 4px; }
-          .balance-label { text-align: right; }
+          .balance-table td { padding: 1.5px 4px;  }
+          .balance-label { text-align: right; width: 206px;}
           .balance-colon { text-align: center; }
           .balance-currency { width: 30px; text-align: left; }
-          .balance-amount { text-align: right; width: 183px; }
+          .balance-amount { text-align: right; width: 270px; }
 
           .legal-text {
               clear: both;
@@ -510,11 +509,8 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
             </div>
 
             <div className="flex-row invoice-title-row">
-                <div className="left-col invoice-title" style={{flex:"1"}}>
+                <div className="left-col invoice-title" style={{flex:"1", textAlign:"center"}}>
                     INFORMATION TAX INVOICE
-                </div>
-                <div className="right-col" style={{ fontSize: '11.5px' }}>
-                    SST No. W10-1808-31027072
                 </div>
             </div>
 
@@ -569,9 +565,9 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
                     {page.showTotals && (
                         <>
                             <tr><td colSpan="5" style={{ padding: '2px' }}></td></tr>
-                            <tr className="totals-row">
+                            <tr  className="totals-row" style={{fontSize:"11.5px"}}>
                                 <td colSpan="2"></td>
-                                <td className="col-ref" style={{ textAlign: 'right' }}>Total / Jumlah</td>
+                                <td className="col-ref" style={{ textAlign: 'center', paddingLeft:"33px" }}>Total / Jumlah</td>
                                 <td className="col-debit">{formatCurrency(invoice.grandTotalMyr )}</td>
                                 <td className="col-credit">{formatCurrency(invoice.grandTotalMyr )}</td>
                             </tr>
@@ -585,12 +581,11 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
                     <div className="summary-wrapper">
                         <div className="hyatt-summary">
                             <div className="hyatt-title">World of Hyatt Stay Summary</div>
-                            <div style={{ marginTop: '3px' }}>{invoice.membershipNo ? `Membership: ${invoice.membershipNo}` : "No Membership to be credited."}</div><br />
+                            <div style={{ marginTop: '3px' }}>Membership: No Membership to be credited.</div><br />
                             <div>Join World of Hyatt today and start earning points<br />for stays, dining and more.<br />Visit worldofhyatt.com.</div><br />
-                            <div style={{ fontSize: '9.5px' }}>Summary Invoice, please see Front Desk for eligibility details.</div>
                         </div>
                         
-                        <div style={{ width: '329px' }}>
+                        <div style={{ width: '340px' }}>
                             <table className="balance-table">
                                 <tbody>
                                     <tr>
@@ -604,6 +599,7 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
                                         <td className="balance-colon">:</td>
                                         <td className="balance-currency">MYR</td>
                                         <td className="balance-amount">{formatCurrency(invoice.grandTotalMyr || invoice.grandTotalEgp)}</td>
+                                        <td style={{width:"510px"}}></td>
                                     </tr>
                                     <tr>
                                         <td className="balance-label">SST 6%</td>
@@ -622,6 +618,12 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
                                         <td className="balance-colon">:</td>
                                         <td className="balance-currency">MYR</td>
                                         <td className="balance-amount">{formatCurrency(invoice.totalTourismTax || invoice.cityTax || 0)}</td>
+                                    </tr>
+                                     <tr>
+                                        <td className="balance-label">Total Amount </td>
+                                        <td className="balance-colon">:</td>
+                                        <td className="balance-currency">USD</td>
+                                        <td className="balance-amount">{formatCurrency(invoice.balanceUsd || invoice.cityTax || 0)}</td>
                                     </tr>
                                 </tbody>
                             </table>

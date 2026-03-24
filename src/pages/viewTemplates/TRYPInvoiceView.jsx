@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate,useLocation } from "react-router-dom";
-import logo from '../../../public/TRYP-Logo.png';
+import logo from '/TRYP-Logo.png';
 import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import toast from "react-hot-toast";
 import { InvoiceTemplate } from "../../components";
@@ -173,7 +173,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         },
         totalEuro: m,
         summary: {
-          totalAmount: k, // Check if this should be f or k based on label. Usually "Total Amount" before tax is f.
+          //totalAmount: k, //Check if this should be f or k based on label. Usually "Total Amount" before tax is f.
           // Grand Aras uses: totalAmount = totalTaxableAmount (f). Let's stick to your TRYP logic or Grand Aras?
           // Grand Aras: totalAmount = Taxable. TRYP: totalAmount = Grand Total.
           // I will use Grand Aras logic for the SUMMARY display to match the visual expectations if the labels are "Total Amount" vs "Inc VAT"
