@@ -26,6 +26,3 @@ dist-ssr
 *.sln
 *.sw?
 
-# Invoice Templates
-src/pages/viewTemplates/PerdanaInvoiceView.jsx
-src/pages/viewTemplates/PullmanInvoiceView.jsx
