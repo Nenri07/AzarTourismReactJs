@@ -122,7 +122,7 @@ const mapApiDataToInvoice = (data) => {
       roomType: data.roomType || data.room_type || "",
       arrival: formatDateSomerset(data.arrivalDate),
       departure: formatDateSomerset(data.departureDate),
-      reservation: data.confNo || "",
+      reservation: data.reservationNo || "",
       regnNo: data.companyRegNo || data.company_reg_no || "",
       sstNo: data.sstRegNo || data.sst_reg_no || "",
       ttxNo: data.ttxRegNo || data.ttx_reg_no || "",

@@ -556,7 +556,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
                     <div className="totals-row"><span>Deposit Transfer at C/IN</span><span>{invoice.totals.summary.deposit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
                   </div>
 
-
+                  
                   <div className="totals-row balance-row"><span>Balance/Bakiye</span><span>{invoice.totals.summary.balance.toFixed(2)}</span></div>
                 </div>
               </div>
