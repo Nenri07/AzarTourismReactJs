@@ -15,7 +15,7 @@ import GrandArasInvoiceView from "./GrandarasInvoiceView";
 import StaybridgeInvoiceView from "./StaybridgeInvoiceView"; 
 import InvoiceViewPage from "./InvoiceViewPage";
 import RaddisonInvoiceView from "./RaddisonInvoiceView";
-import IntercontinentalInvoiceView from "./intercontinentalInvoiceView";
+import IntercontinentalInvoiceView from "./IntercontinentalInvoiceView";
 import FairmontInvoiceView from "./FairmontInvoiceView";
 import HolidayInvoiceView from "./HolidayInvoiceView";
 import HiltonInvoiceView from "./HiltonInvoiceView";
@@ -103,6 +103,9 @@ export default function DynamicInvoiceViewPage() {
       } else if (hotelName.includes(" radisson residences") || hotelName.includes(" radisson residence") || hotelName.includes(" radisson residance") || hotelName.includes(" radisson residencies")) {
         detectedType = "Raddison1";
       }
+      else if (hotelName.includes("intercontinental kuala lumpur") || (hotelName.includes("intercontinental") && isMalaysiaRoute)) {
+        detectedType = "IntercontinentalMalaysia";
+      }
       else if (hotelName.includes("intercontinental")) {
         detectedType = "Intercontinental";
       }
@@ -158,7 +161,7 @@ export default function DynamicInvoiceViewPage() {
       else if (hotelName.includes("trillion") || hotelName.includes("suites")) {
         detectedType = "TrillionSuites";
       }
-      else if (hotelName.includes("intercontinental") || hotelName.includes("malaysia")) {
+      else if (hotelName.includes("malaysia")) {
         detectedType = "IntercontinentalMalaysia";
       }
       console.log("🎯 Detected hotel type:", detectedType);

@@ -206,7 +206,7 @@ export const HOTEL_CONFIGS = {
   },
 
   // ── 7. Intercontinental Kuala Lumpur ────────────────────────────────────────
-  IntercontinentaMalaysia: {
+  IntercontinentalMalaysia: {
     detect: (name) => name.toLowerCase().includes('intercontinental kuala lumpur'),
     columns: ['Date', 'Description', 'Amount'],
     calculateNightlyRate: ({ usdAmount, exchangeRate }) => {

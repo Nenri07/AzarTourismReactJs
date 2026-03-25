@@ -13,7 +13,7 @@ import NotFoundPage from "./NotFoundPage";
 import GrandArasInvoiceView from "./viewTemplates/GrandarasInvoiceView";
 import DynamicInvoiceFormPageEgypt from './DynamicInvoiceFormPageEgypt'
 import RaddisonInvoiceView from "./viewTemplates/RaddisonInvoiceView";
-import IntercontinentalInvoiceView from "./viewTemplates/intercontinentalInvoiceView";
+import IntercontinentalInvoiceView from "./viewTemplates/IntercontinentalInvoiceView";
 import HiltonInvoiceView from "./viewTemplates/HiltonInvoiceView";
 import DusitThaniInvoiceView from "./viewTemplates/DusitThanniInvoiceView";
 import TulipAlexendriaView from "./viewTemplates/TulipAlexendriaView";
@@ -23,6 +23,7 @@ import GrandHayattInvoiceView from "./viewTemplates/GrandHayattInvoiceView";
 import OasiaInvoiceView from "./viewTemplates/OasiaInvoiceView";
 import PullmanInvoiceView from "./viewTemplates/PullmanInvoiceView";
 import PerdanaInvoiceView from "./viewTemplates/PerdanaInvoiceView";
+import IntercontinentalInvoiceViewMalaysia from "./viewTemplates/IntercontinentalInvoiceViewMalaysia";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
@@ -40,4 +41,5 @@ export {
     OasiaInvoiceView,
     PullmanInvoiceView,
     PerdanaInvoiceView,
+    IntercontinentalInvoiceViewMalaysia,
 };

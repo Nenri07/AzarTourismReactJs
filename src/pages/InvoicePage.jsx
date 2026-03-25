@@ -65,7 +65,7 @@ export default function InvoicePage() {
            name.includes("holiday") || 
            name.includes("radisson") || 
            name.includes("raddison") ||
-           name.includes("intercontinental");
+           (name.includes("intercontinental") && !name.includes("kuala lumpur"));
   };
 
   const isMalaysiaInvoice = (hotelName) => {
@@ -73,7 +73,7 @@ export default function InvoicePage() {
     return name.includes("grand hyatt") || 
            name.includes("trillion suites") || 
            name.includes("oasia") || 
-           name.includes("intercontinental kuala lampur") || 
+           name.includes("intercontinental kuala lumpur") || 
            name.includes("lanson place")||
            name.includes("perdana")||
            name.includes("pullman")||
@@ -339,14 +339,13 @@ export default function InvoicePage() {
     const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
     const country = hotelConfig?.country || "";
 
-    if (country === "Egypt" || isEgyptInvoice(invoice.hotelName)) {
+    if (country === "Malaysia" || invoice.currency === "MYR" || isMalaysiaInvoice(invoice.hotelName)) {
+      navigate(`/malaysia-invoice/view/${invoiceId}`);
+    } else if (country === "Egypt" || isEgyptInvoice(invoice.hotelName)) {
       navigate(`/egypt-invoice/view/${invoiceId}`);
     } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "Tunis") {
       navigate(`/invoice/nview/${invoice.id}`);
-    } else if(country === "Malaysia" || invoice.currency === "MYR" || isMalaysiaInvoice(invoice.hotelName)) {
-      navigate(`/malaysia-invoice/view/${invoiceId}`);
-    }
-    else {
+    } else {
       navigate(`/invoice/view/${invoiceId}`);
     }
   };
@@ -374,7 +373,9 @@ export default function InvoicePage() {
     const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
     const country = hotelConfig?.country || "";
 
-    if (country === "Egypt" || isEgyptInvoice(invoice.hotelName)) {
+    if (country === "Malaysia" || invoice.currency === "MYR" || isMalaysiaInvoice(invoice.hotelName)) {
+      navigate(`/malaysia-invoice/download-pdf/${invoice.id}`);
+    } else if (country === "Egypt" || isEgyptInvoice(invoice.hotelName) ) {
       navigate(`/egypt-invoice/download-pdf/${invoice.id}`);
     } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "Tunis") {
       navigate(`/invoices/nvdownload-pdf/${invoice.id}`);
@@ -398,14 +399,13 @@ export default function InvoicePage() {
       const hotelConfig = hotels.find(h => h.name === invoiceToDelete.hotelName);
       const country = hotelConfig?.country || "";
 
-      if (country === "Egypt" || isEgyptInvoice(invoiceToDelete.hotelName)) {
+      if (invoiceToDelete.invoiceType === "malaysia" || country === "Malaysia" || isMalaysiaInvoice(invoiceToDelete.hotelName)) {
+        await malaysiaInvoiceApi.deleteInvoice(invoiceToDelete.id);
+      } else if (country === "Egypt" || isEgyptInvoice(invoiceToDelete.hotelName)) {
         await cairoInvoiceApi.deleteInvoice(invoiceToDelete.id);
       } else if (invoiceToDelete.invoiceType === "turkey") {
         await turkeyInvoiceApi.deleteInvoice(invoiceToDelete.id);
-      } else if (invoiceToDelete.invoiceType === "malaysia") {
-        await malaysiaInvoiceApi.deleteInvoice(invoiceToDelete.id);
-        }
-      else {
+      } else {
         await invoiceApi.deleteInvoice(invoiceToDelete.id);
       }
 
