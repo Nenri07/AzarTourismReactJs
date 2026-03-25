@@ -455,6 +455,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       departureDate: formatDate(formData.departure_date),
       departure_time: formData.departure_time || '',
       confNo: formData.conf_no || '',
+      reservationNo: formData.reservation_no || '',
       groupCode: formData.group_code || '',
       crsNo: formData.crs_no || '',
 

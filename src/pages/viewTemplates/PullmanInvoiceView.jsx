@@ -230,7 +230,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
         <style dangerouslySetInnerHTML={{__html: `
           @media print {
             @page { size: A4; margin: 0; }
-            body { margin: 0 !important; padding: 0 !important; background: #fff; }
+            body { margin: 0 !important; padding: 0 !important; background: #fff; color: #000; !important; }
             .pullman-invoice-wrapper { padding: 0 !important; margin: 0 !important; height: auto !important; background: none !important; }
             .a4-page { margin: 0 !important; box-shadow: none !important; border: none !important; width: 210mm !important; height: 296mm !important; overflow: hidden !important; }
             .a4-page:not(:last-child) { page-break-after: always !important; }

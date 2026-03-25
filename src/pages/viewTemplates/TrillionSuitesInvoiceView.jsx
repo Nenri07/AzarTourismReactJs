@@ -21,10 +21,26 @@ const formatDateShort = (dateStr) => {
 
 const formatTime = (timeStr) => {
   if (!timeStr) return "";
+  
   try {
-    const d = new Date(timeStr);
+    let d;
+    // Handle HH:MM or HH:MM:SS strings
+    if (typeof timeStr === 'string' && /^\d{1,2}:\d{1,2}(:\d{1,2})?$/.test(timeStr)) {
+      const parts = timeStr.split(':');
+      d = new Date();
+      d.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), parts[2] ? parseInt(parts[2], 10) : 0);
+    } else {
+      d = new Date(timeStr);
+    }
+
     if (isNaN(d.getTime())) return timeStr;
-    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    return d.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit', 
+      hour12: true 
+    });
   } catch {
     return timeStr;
   }
@@ -89,8 +105,8 @@ const mapApiDataToInvoice = (data) => {
     guest: {
       name: data.guestName || "",
       company: data.companyName || "",
-      phone: data.guestPhone || data.hotelPhone || data.hotel_phone || "",
-      email: data.guestEmail || data.hotelEmail || data.hotel_email || "",
+      phone: data.hotelPhone || data.guestPhone || data.hotel_phone || "",
+      email: data.hotelEmail || data.guestEmail || data.hotel_email || "",
       address: data.address || "",
       uuid: data.uuid || ""
     },
@@ -98,8 +114,8 @@ const mapApiDataToInvoice = (data) => {
       roomNo: data.roomNo || "",
       arrival: formatDateShort(data.arrivalDate),
       departure: formatDateShort(data.departureDate),
-      arrivalTime: data.arrival_time || data.arrivalTime || formatTime(data.arrivalDate) || "",
-      departureTime: data.departure_time || data.departureTime || formatTime(data.departureDate) || "",
+      arrivalTime: formatTime(data.arrival_time || data.arrivalTime || data.arrivalDate),
+      departureTime: formatTime(data.departure_time || data.departureTime || data.departureDate),
       invoiceNo: data.invoiceNo || "",
       bookingNo: data.confNo || data.bookingNo || "",
       cashierName: data.cashierName || "",
@@ -275,27 +291,27 @@ const TrillionSuitesInvoiceView = ({ invoiceData }) => {
           }
 
           /* Header */
-          .ts-header { text-align: center; margin-bottom: 60px; position: relative;}
+          .ts-header { text-align: center; position: relative;}
           .ts-logo { max-width: 160px; height: 40px; margin-bottom: 13px; }
           .ts-header .co-name { font-weight: bold; font-size: 10pt; }
-          .ts-header .co-sub { font-size: 10pt; }
+          .ts-header .co-sub { font-size: 10pt; line-height: 1.5; }
           
           .ts-invoice-block { text-align: center; margin-top: 15px; margin-bottom: 15px; }
           .ts-invoice-badge { font-weight: bold; font-size: 12pt; }
           
           .ts-invoice-meta { position: absolute; top: 190px; right: 42px; text-align: left; }
-          .ts-inv-no { font-size: 10pt; margin-bottom: 12px; font-weight: bold; }
-          .ts-inv-date { font-size: 10pt; }
+          .ts-inv-no { font-size: 10pt; margin-bottom: 10px; font-weight: bold; }
+          .ts-inv-date { font-size: 8pt; }
 
           /* Guest Info */
-          .ts-guest-section { margin: 0px 15px 20px 15px; font-size: 9pt; width: 100%; }
+          .ts-guest-section { margin: 65px 15px 20px 15px; font-size: 8pt; width: 100%; }
           .ts-guest-top { margin-bottom: 5px; }
-          .ts-guest-name-label { margin-bottom: 6px; font-size: 10pt; color: #000; }
+          .ts-guest-name-label { margin-bottom: 6px; font-size: 10pt; color: #000; line-height: 1.8; }
           .ts-guest-name-val { font-weight: bold; font-family: "Arial Bold", Arial, sans-serif; font-size: 10pt; text-transform: uppercase; }
           
           .ts-guest-bottom { display: flex; width: 100%; align-items: flex-start; }
-          .ts-guest-col-left { width: 53%; }
-          .ts-guest-col-mid { width: 47%; }
+          .ts-guest-col-left { width: 55%; }
+          .ts-guest-col-mid { width: 45%; }
           
           .ts-g-row { display: flex; margin-bottom: 10px; align-items: flex-start; min-height: 18px; }
           // .ts-g-label { width: 115px; flex-shrink: 0; }
@@ -304,13 +320,13 @@ const TrillionSuitesInvoiceView = ({ invoiceData }) => {
           /* Details Grid */
           .ts-details-grid { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 8pt; text-align: center; }
           .ts-details-grid thead { background-color: #f2f2f2; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .ts-details-grid th { padding: 6px 0px; font-weight: normal; color: #444; }
+          .ts-details-grid th { padding: 6px 0px; font-weight: normal; color: #000 line-height: 1.6; }
           .ts-details-grid td { padding: 0px 5px;}
           
           /* Main Table */
           .ts-main-table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 15px;}
           .ts-main-table thead { background-color: #f2f2f2; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .ts-main-table th { padding: 6px 0px; text-align: left; color: #444; font-weight: normal; border: none; }
+          .ts-main-table th { padding: 6px 0px; text-align: left; color: #000; font-weight: normal; border: none; line-height: 1.8; }
           .ts-main-table td { line-height: 1.5; vertical-align: top; }
           .text-right { text-align: right !important; }
           .text-center { text-align: center !important; }
@@ -420,7 +436,7 @@ const TrillionSuitesInvoiceView = ({ invoiceData }) => {
                   <tr key={idx}>
                     <td style={{ textAlign: 'center' }}>{item.date}</td>
                     <td>{item.desc}</td>
-                    <td className="text-center" style={{ paddingLeft: '30px' }}>{item.ref}</td>
+                    <td className="text-center" style={{ paddingLeft: '30px' }}>{item.refs}</td>
                     <td className="text-right" style={{ paddingRight: '20px' }}>{item.charges ? formatCurrency(item.charges) : ""}</td>
                   </tr>
                 ))}

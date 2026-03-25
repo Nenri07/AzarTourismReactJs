@@ -195,7 +195,8 @@ return {
       arrival_time: data.arrival_time || '',
       departure_date: data.departure_date || data.departureDate || '',
       departure_time: data.departure_time || '',
-      conf_no: data.conf_no || data.confNo || data.booking_no || data.reservation_no || '',
+      conf_no: data.conf_no || data.confNo || data.booking_no || '',
+      reservation_no: data.reservation_no || data.reservationNo || '',
       group_code: data.group_code || data.ta_code || '',
       crs_no: data.crsNo || data.ota_no || '',
      
