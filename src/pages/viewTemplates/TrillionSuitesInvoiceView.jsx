@@ -127,7 +127,8 @@ const mapApiDataToInvoice = (data) => {
       serviceTax8: data.totalSst8Percent || 0,
       serviceTax6: 0.00,
       tourismTax: data.totalTourismTax || 0,
-      total: data.grandTotalMyr || 0 
+      total: data.grandTotalMyr || 0 ,
+      totalUsd: data.balanceUsd || 0
     }
   };
 };
@@ -294,7 +295,7 @@ const TrillionSuitesInvoiceView = ({ invoiceData }) => {
           .ts-header { text-align: center; position: relative;}
           .ts-logo { max-width: 160px; height: 40px; margin-bottom: 13px; }
           .ts-header .co-name { font-weight: bold; font-size: 10pt; }
-          .ts-header .co-sub { font-size: 10pt; line-height: 1.5; }
+          .ts-header .co-sub { font-size: 8.8pt; line-height: 1.5; }
           
           .ts-invoice-block { text-align: center; margin-top: 15px; margin-bottom: 15px; }
           .ts-invoice-badge { font-weight: bold; font-size: 12pt; }
@@ -464,8 +465,12 @@ const TrillionSuitesInvoiceView = ({ invoiceData }) => {
                         <td className="s-val">{formatCurrency(invoice.summary.tourismTax)}</td>
                       </tr>
                       <tr className="s-total">
-                        <td className="s-label">TOTAL</td>
+                        <td className="s-label">TOTAL MYR</td>
                         <td className="s-val">{formatCurrency(invoice.summary.total)}</td>
+                      </tr>
+                      <tr className="s-total">
+                        <td className="s-label">TOTAL USD</td>
+                        <td className="s-val">{formatCurrency(invoice.summary.totalUsd)}</td>
                       </tr>
                     </tbody>
                   </table>

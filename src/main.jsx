@@ -25,6 +25,7 @@ import {
   DynamicInvoiceViewPage,
   DynamicInvoiceFormPageEgypt,
   DynamicInvoiceformPageMalaysia,
+  DynamicInvoiceFormTurkey,
   RaddisonInvoiceView,
   IntercontinentalInvoiceView,
   HiltonInvoiceView,DusitThaniInvoiceView,
@@ -326,9 +327,49 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
+      // ==========================================
+      // Turkey Version 2 7 hotels
+      // ==========================================
+      {
+        path: "turkey-invoice/create/:hotelId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["super_admin", "employee"]}>
+            <DynamicInvoiceFormTurkey />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "turkey-invoice/edit/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormTurkey />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "turkey-invoice/duplicate/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormTurkey/>
+          </AuthLayout>
+        ),
+      },
+      
+      {
+        path: "turkey-invoice/download-pdf/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceViewPage />
+          </AuthLayout>
+        ),
+      },
+    
     ],
   },
-  
+  {
+  path: "turkey-invoice/view/:invoiceId",
+  element: <DynamicInvoiceViewPage />,
+},
   // PUBLIC INVOICE VIEWS (no auth required)
   {
     path: "invoice/cvkview/:invoiceNumber",

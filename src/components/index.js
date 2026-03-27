@@ -29,6 +29,8 @@ import EgyptConditionalSection from "./EgyptDynamicComponents/EgyptConditionalSe
 import EgyptSummarySection from "./EgyptDynamicComponents/EgyptSummarySection";
 import MalaysiaConditionalSection from "./MalaysiaDynamicComponents/MalaysiaConditionalSection";
 import MalaysiaSummarySection from "./MalaysiaDynamicComponents/MalaysiaSummarySection";
+import TurkeyConditionalSection from "./TurkeyDynamicComponents/TurkeyConditionalSection";
+import TurkeySummarySection from "./TurkeyDynamicComponents/TurkeySummarySection";
 export {
     Header,
     NovotelInvoiceHeader,
@@ -60,6 +62,8 @@ export {
     EgyptSummarySection,
     MalaysiaConditionalSection,
     MalaysiaSummarySection,
+    TurkeyConditionalSection,
+    TurkeySummarySection,
     NovotelInvoiceFooter
     
 }

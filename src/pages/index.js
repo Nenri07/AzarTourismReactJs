@@ -24,11 +24,13 @@ import OasiaInvoiceView from "./viewTemplates/OasiaInvoiceView";
 import PullmanInvoiceView from "./viewTemplates/PullmanInvoiceView";
 import PerdanaInvoiceView from "./viewTemplates/PerdanaInvoiceView";
 import IntercontinentalInvoiceViewMalaysia from "./viewTemplates/IntercontinentalInvoiceViewMalaysia";
+import DynamicInvoiceFormTurkey from "./DynamicInvoiceFormTurkey";
+import RadissonHerbyeInvoiceView from "./viewTemplates/RadissonHerbyeInvoiceView";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
     CVKInvoiceView, HotelConfigPage, DynamicInvoiceFormPage,
-    TRYPInvoiceView,DynamicInvoiceViewPage,DynamicInvoiceFormPageEgypt,DynamicInvoiceformPageMalaysia
+    TRYPInvoiceView,DynamicInvoiceViewPage,DynamicInvoiceFormPageEgypt,DynamicInvoiceformPageMalaysia,DynamicInvoiceFormTurkey
     ,NotFoundPage,
     GrandArasInvoiceView,
     RaddisonInvoiceView,
@@ -42,4 +44,6 @@ export {
     PullmanInvoiceView,
     PerdanaInvoiceView,
     IntercontinentalInvoiceViewMalaysia,
+    RadissonHerbyeInvoiceView
+
 };

@@ -93,6 +93,7 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
                 serviceTax:  data.totalSst8Percent  || 0,
                 tourismTax:  data.totalTourismTax   || 0,
                 totalAmount: data.grandTotalMyr     || 0,
+                totalAmountUsd: data.balanceUsd     || 0,
                 balance:     0.00
             }
         };
@@ -273,6 +274,10 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
                     .details-container { display: flex; justify-content: space-between; margin-bottom: 30px; margin-top: 40px;}
                     .details-table { width: 100%; border-collapse: collapse; font-size: 12px;}
                     .details-table td { padding: 3px 0; vertical-align: top; border: none; }
+                    detials-table2 { width: 100%; border-collapse: collapse; font-size: 12px;}
+                    detials-table2 td { padding: 2px 0; vertical-align: top; border: none; }
+                    .details-table2 .colon { width: 10px; text-align: center; }
+
                     .details-table .lbl { width: 95px; }
                     .details-table .colon { width: 10px; text-align: center; }
                     .left-details-wrapper { width: 48%; }
@@ -303,7 +308,7 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
                     }
                     .main-table th.right-align { text-align: right; padding-right: 48px; }
                     .main-table td { 
-                        padding: 3px 10px;
+                        padding: 10px 10px;
                         vertical-align: top; 
                         border: none; 
                         line-height: 1.3;
@@ -322,8 +327,9 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
                     .thick-line { border-top: 3px solid #000; width: 100%; margin-bottom: 11px; margin-top: 13px;}
                     
                     .totals-table { width: 80%; border-collapse: collapse; font-size: 12px; }
-                    .totals-table td { padding: 2px 0px 2px 20px; border: none; }
+                    .totals-table td { padding: 2px 0px 2px 30px; border: none; }
                     .totals-table .label-col { text-align: right; }
+                    .label-col2 { text-align: right; padding-left: 0px !important; }
                     .totals-table .val-col { text-align: left; padding-right: 15px; }
                     
                     .footer { text-align: center; font-size: 10px; line-height: 1.4; color: #000; margin-top: auto; padding-top: 20px; }
@@ -389,10 +395,10 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
                                 </table>
                             </div>
                             <div className="right-details-wrapper">
-                                <table className="details-table">
+                                <table className="details-table2">
                                     <tbody>
                                         <tr>
-                                            <td className="lbl">Invoice No.</td>
+                                            <td className="lbl" style={{width: "110px"}}>Invoice No.</td>
                                             <td className="colon">:</td>
                                             <td>{invoice.invoiceNo}</td>
                                         </tr>
@@ -460,20 +466,24 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
                                     <table className="totals-table">
                                         <tbody>
                                             <tr>
-                                                <td className="label-col">Total Amount Excluded Service Tax:</td>
+                                                <td className="label-col2">Total Amount Excluded Service Tax:</td>
                                                 <td className="val-col">{formatCurrency(invoice.summary.excludedTax)}</td>
                                             </tr>
                                             <tr>
-                                                <td className="label-col">Service Tax:</td>
+                                                <td className="label-col2">Service Tax:</td>
                                                 <td className="val-col">{formatCurrency(invoice.summary.serviceTax)}</td>
                                             </tr>
                                             <tr>
-                                                <td className="label-col">TTX @ RM10.00 per Night:</td>
+                                                <td className="label-col2">TTX @ RM10.00 per Night:</td>
                                                 <td className="val-col">{formatCurrency(invoice.summary.tourismTax)}</td>
                                             </tr>
                                             <tr>
-                                                <td className="label-col">Total Amount:</td>
+                                                <td className="label-col2">Total Amount:</td>
                                                 <td className="val-col">{formatCurrency(invoice.summary.totalAmount)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="label-col2"> Total USD:</td>
+                                                <td className="val-col">{formatCurrency(invoice.summary.totalAmountUsd)}</td>
                                             </tr>
                                         </tbody>
                                     </table>

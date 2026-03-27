@@ -80,6 +80,18 @@ export default function InvoicePage() {
            name.includes("somerset");
          
   };
+ const isTurkey2Invoice = (hotelName) => {
+  const name = (hotelName || "").toLowerCase();
+  return (
+    name.includes("radisson collection") ||
+    name.includes("radisson blu istanbul sisli") ||   
+    name.includes("hilton istanbul bosphorus") ||
+    name.includes("marmara taksim") ||               
+    name.includes("yotelair") ||
+    name.includes("cheya") ||
+    name.includes("radisson hotel istanbul harbiye")
+  );
+};
 
   useEffect(() => {
     loadHotels();
@@ -308,81 +320,114 @@ export default function InvoicePage() {
     }
   };
 
- const handleCreateInvoice = () => {
-    if (!selectedHotelTemplate) {
-      toast.error("Please select a hotel", { duration: 2000 });
-      return;
-    }
+const handleCreateInvoice = () => {
+  if (!selectedHotelTemplate) {
+    toast.error("Please select a hotel", { duration: 2000 });
+    return;
+  }
+ 
+  const selectedHotel = hotels.find(h => String(h.id) === String(selectedHotelTemplate));
+  const hotelName     = (selectedHotel?.name    || "").toLowerCase();
+  const hotelCountry  = (selectedHotel?.country || "").toLowerCase();
+  const hotelCurrency = (selectedHotel?.currency || "").toUpperCase();
+ 
+  if (isTurkey2Invoice(hotelName)) {
+    navigate(`/turkey-invoice/create/${selectedHotelTemplate}`);
+ 
+  } else if (hotelCountry === "malaysia" || hotelCurrency === "MYR" || isMalaysiaInvoice(hotelName)) {
+    navigate(`/malaysia-invoice/create/${selectedHotelTemplate}`);
+ 
+  } else if (hotelCountry === "egypt" || hotelCurrency === "EGP" || isEgyptInvoice(hotelName)) {
+    navigate(`/egypt-invoice/create/${selectedHotelTemplate}`);
+ 
+  } else if (selectedHotelTemplate === "8" || hotelName.includes("novotel") || hotelCountry === "tunis" || hotelCurrency === "TND") {
+    navigate(`/invoice/create/novotel/${selectedHotelTemplate}`);
+ 
+  } else if (hotelCountry === "turkey" || hotelCurrency === "TRY") {
+    // ← OLD Turkey 3 (CVK, Grand Aras, TRYP) fall here
+    navigate(`/invoice/create/${selectedHotelTemplate}`);
+ 
+  } else {
+    navigate(`/invoice/create/${selectedHotelTemplate}`);
+  }
+};
+ 
 
-    const selectedHotel = hotels.find(h => String(h.id) === String(selectedHotelTemplate));
-    const hotelName = (selectedHotel?.name || "").toLowerCase();
-    const hotelCountry = (selectedHotel?.country || "").toLowerCase();
-    const hotelCurrency = (selectedHotel?.currency || "").toUpperCase();
+ const handleViewInvoice = (invoiceId) => {
+  const invoice = invoices.find((inv) => inv.id === invoiceId);
+  if (!invoice) return toast.error("Invoice not found");
+ 
+  const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
+  const country     = (hotelConfig?.country || "").toLowerCase();
+  const hotelName   = (invoice.hotelName || "").toLowerCase();
+ 
+  // ✅ New Turkey 7 — check first
+  if (isTurkey2Invoice(hotelName)) {
+    navigate(`/turkey-invoice/view/${invoiceId}`);   // goes to DynamicInvoiceViewPage
+ 
+  } else if (country === "malaysia" || invoice.currency === "MYR" || isMalaysiaInvoice(invoice.hotelName)) {
+    navigate(`/malaysia-invoice/view/${invoiceId}`);
+ 
+  } else if (country === "egypt" || isEgyptInvoice(invoice.hotelName)) {
+    navigate(`/egypt-invoice/view/${invoiceId}`);
+ 
+  } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "tunis") {
+    navigate(`/invoice/nview/${invoice.id}`);
+ 
+  } else {
+    // Old Turkey 3 + fallback
+    navigate(`/invoice/view/${invoiceId}`);
+  }
+};
+ 
 
-    // BULLETPROOF CHECK: Checks Country, Name, OR Currency (MYR)
-    if (hotelCountry === "malaysia" || hotelCurrency === "MYR" || isMalaysiaInvoice(hotelName)) {
-      navigate(`/malaysia-invoice/create/${selectedHotelTemplate}`);
-    } else if (hotelCountry === "egypt" || hotelCurrency === "EGP" || isEgyptInvoice(hotelName)) {
-      navigate(`/egypt-invoice/create/${selectedHotelTemplate}`);
-    } else if (selectedHotelTemplate === "8" || hotelName.includes("novotel") || hotelCountry === "tunis" || hotelCurrency === "TND") {
-      navigate(`/invoice/create/novotel/${selectedHotelTemplate}`);
-    } else {
-      navigate(`/invoice/create/${selectedHotelTemplate}`);
-    }
-  };
-
-  // ✅ UPDATED VIEW HANDLER
-  const handleViewInvoice = (invoiceId) => {
-    const invoice = invoices.find((inv) => inv.id === invoiceId);
-    if (!invoice) return toast.error("Invoice not found");
-
-    const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
-    const country = hotelConfig?.country || "";
-
-    if (country === "Malaysia" || invoice.currency === "MYR" || isMalaysiaInvoice(invoice.hotelName)) {
-      navigate(`/malaysia-invoice/view/${invoiceId}`);
-    } else if (country === "Egypt" || isEgyptInvoice(invoice.hotelName)) {
-      navigate(`/egypt-invoice/view/${invoiceId}`);
-    } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "Tunis") {
-      navigate(`/invoice/nview/${invoice.id}`);
-    } else {
-      navigate(`/invoice/view/${invoiceId}`);
-    }
-  };
-
-  // ✅ UPDATED EDIT HANDLER
- const handleEditInvoice = (invoice) => {
-    const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
-    const country = (hotelConfig?.country || "").toLowerCase();
-    const currency = (invoice.currency || hotelConfig?.currency || "").toUpperCase();
-    const hotelName = (invoice.hotelName || "").toLowerCase();
-
-    if (country === "malaysia" || currency === "MYR" || isMalaysiaInvoice(hotelName)) {
-      navigate(`/malaysia-invoice/edit/${invoice.id}`);
-    } else if (country === "egypt" || currency === "EGP" || isEgyptInvoice(hotelName)) {
-      navigate(`/egypt-invoice/edit/${invoice.id}`);
-    } else if (hotelName.includes("novotel") || country === "tunis" || currency === "TND") {
-      navigate(`/invoice/edit/${invoice.id}`);
-    } else {
-      navigate(`/invoices/edit/${invoice.id}`);
-    }
-  };
-
-  // ✅ UPDATED PDF DOWNLOAD HANDLER
-  const handleDownloadPDF = (invoice) => {
-    const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
-    const country = hotelConfig?.country || "";
-
-    if (country === "Malaysia" || invoice.currency === "MYR" || isMalaysiaInvoice(invoice.hotelName)) {
-      navigate(`/malaysia-invoice/download-pdf/${invoice.id}`);
-    } else if (country === "Egypt" || isEgyptInvoice(invoice.hotelName) ) {
-      navigate(`/egypt-invoice/download-pdf/${invoice.id}`);
-    } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "Tunis") {
-      navigate(`/invoices/nvdownload-pdf/${invoice.id}`);
-    } else {
-      navigate(`/invoices/download-pdf/${invoice.id}`);
-    }
-  };
+  
+const handleEditInvoice = (invoice) => {
+  const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
+  const country     = (hotelConfig?.country || "").toLowerCase();
+  const currency    = (invoice.currency || hotelConfig?.currency || "").toUpperCase();
+  const hotelName   = (invoice.hotelName || "").toLowerCase();
+ 
+  if (isTurkey2Invoice(hotelName)) {
+    navigate(`/turkey-invoice/edit/${invoice.id}`);
+ 
+  } else if (country === "malaysia" || currency === "MYR" || isMalaysiaInvoice(hotelName)) {
+    navigate(`/malaysia-invoice/edit/${invoice.id}`);
+ 
+  } else if (country === "egypt" || currency === "EGP" || isEgyptInvoice(hotelName)) {
+    navigate(`/egypt-invoice/edit/${invoice.id}`);
+ 
+  } else if (hotelName.includes("novotel") || country === "tunis" || currency === "TND") {
+    navigate(`/invoice/edit/${invoice.id}`);
+ 
+  } else {
+    // Old Turkey 3 + fallback
+    navigate(`/invoices/edit/${invoice.id}`);
+  }
+};
+const handleDownloadPDF = (invoice) => {
+  const hotelConfig = hotels.find(h => h.name === invoice.hotelName);
+  const country     = (hotelConfig?.country || "").toLowerCase();
+  const hotelName   = (invoice.hotelName || "").toLowerCase();
+ 
+  if (isTurkey2Invoice(hotelName)) {
+    navigate(`/turkey-invoice/download-pdf/${invoice.id}`);
+ 
+  } else if (country === "malaysia" || invoice.currency === "MYR" || isMalaysiaInvoice(invoice.hotelName)) {
+    navigate(`/malaysia-invoice/download-pdf/${invoice.id}`);
+ 
+  } else if (country === "egypt" || isEgyptInvoice(invoice.hotelName)) {
+    navigate(`/egypt-invoice/download-pdf/${invoice.id}`);
+ 
+  } else if (invoice.hotelName === "Novotel Tunis Lac" || country === "tunis") {
+    navigate(`/invoices/nvdownload-pdf/${invoice.id}`);
+ 
+  } else {
+    // Old Turkey 3 + fallback
+    navigate(`/invoices/download-pdf/${invoice.id}`);
+  }
+};
+  
 
   // ✅ UPDATED DELETE HANDLER
   const openDeleteModal = (invoice) => {
@@ -807,21 +852,26 @@ export default function InvoicePage() {
                           <FileText size={16} />
                         </button>
                        <button onClick={() => {
-    let dupPath = `/invoices/duplicate/${inv.id}`;
-    const hotelConfig = hotels.find(h => h.name === inv.hotelName);
-    const country = (hotelConfig?.country || "").toLowerCase();
-    const currency = (inv.currency || hotelConfig?.currency || "").toUpperCase();
-    const hotelName = (inv.hotelName || "").toLowerCase();
-
-    if (country === "malaysia" || currency === "MYR" || isMalaysiaInvoice(hotelName)) {
-      dupPath = `/malaysia-invoice/duplicate/${inv.id}`;
-    } else if (country === "egypt" || currency === "EGP" || isEgyptInvoice(hotelName)) {
-      dupPath = `/egypt-invoice/duplicate/${inv.id}`;
-    } else if (hotelName.includes("novotel") || country === "tunis" || currency === "TND") {
-      dupPath = `/invoices/novotel/duplicate/${inv.id}`;
-    }
-    navigate(dupPath);
-  }} 
+  const hotelConfig = hotels.find(h => h.name === inv.hotelName);
+  const country     = (hotelConfig?.country || "").toLowerCase();
+  const currency    = (inv.currency || hotelConfig?.currency || "").toUpperCase();
+  const hotelName   = (inv.hotelName || "").toLowerCase();
+ 
+  let dupPath = `/invoices/duplicate/${inv.id}`; 
+ 
+  // ✅ New Turkey 7 — check first
+  if (isTurkey2Invoice(hotelName)) {
+    dupPath = `/turkey-invoice/duplicate/${inv.id}`;
+  } else if (country === "malaysia" || currency === "MYR" || isMalaysiaInvoice(hotelName)) {
+    dupPath = `/malaysia-invoice/duplicate/${inv.id}`;
+  } else if (country === "egypt" || currency === "EGP" || isEgyptInvoice(hotelName)) {
+    dupPath = `/egypt-invoice/duplicate/${inv.id}`;
+  } else if (hotelName.includes("novotel") || country === "tunis" || currency === "TND") {
+    dupPath = `/invoices/novotel/duplicate/${inv.id}`;
+  }
+ 
+  navigate(dupPath);
+}}
   className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" title="Duplicate">
   <Copy size={16} />
 </button>

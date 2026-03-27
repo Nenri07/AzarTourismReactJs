@@ -230,7 +230,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
           .oasia-invoice-wrapper { width: 100%; background-color: transparent; }
           .oasia-invoice-wrapper * { font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 12px; line-height: 1.3; }
           .page {
-              width: 100%; max-width: 794px; padding: 15mm 15mm; margin: 0 auto 20px auto;
+              width: 100%; max-width: 794px; padding: 10mm 10mm; margin: 0 auto 20px auto;
               background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box;
               page-break-after: always; break-after: page;
           }
@@ -253,7 +253,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
               border-bottom: 1.5px solid #000; 
               font-weight: bold; 
           }
-          .oasia-items-table tbody td { padding: 3px 0; }
+          .oasia-items-table tbody td { padding: 4px 0; }
           
           .text-right { text-align: right !important; }
           .text-left { text-align: right !important; padding }
@@ -321,7 +321,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                     </table>
                   </td>
 
-                  <td style={{ width: '23%', verticalAlign: 'top' }}>
+                  <td style={{ width: '30%', verticalAlign: 'top' }}>
                     <table className="oasia-info-table">
                       <tbody>
                         <tr><td className="oasia-label">FOLIO</td><td></td><td></td></tr>
@@ -350,8 +350,8 @@ const OasiaInvoiceView = ({ invoiceData }) => {
               <table className="oasia-items-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '14%' , textAlign: 'center'}}>Date</th>
-                    <th style={{ width: '47%' }}>Description</th>
+                    <th style={{ width: '8%' , textAlign: 'center', marginRight: '10px' }}>Date</th>
+                    <th style={{ width: '47%' , paddingLeft:"25px"}}>Description</th>
                     <th className="text-right1" style={{ width: '12%' }}>Charges<br/>MYR</th>
                     <th className="text-right1" style={{ width: '15%' }}>Credits<br/>MYR</th>
                   </tr>
@@ -360,7 +360,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                   {page.items.map((item) => (
                     <tr key={item.id}>
                       <td style={{textAlign: 'center'}}>{item.date}</td>
-                      <td>{item.desc}</td>
+                      <td  style={{paddingLeft:"25px"}}>{item.desc}</td>
                       <td className="text-right">{formatCurrency(item.charges)}</td>
                       <td className="text-right">{item.credits ? formatCurrency(item.credits) : ""}</td>
                     </tr>
@@ -387,18 +387,18 @@ const OasiaInvoiceView = ({ invoiceData }) => {
 
                     <div className="oasia-right-col">
                       <div className="oasia-balance-row">
-                        <div style={{ flex: 1, textAlign: 'left', fontWeight: 'bold' }}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Balance &nbsp;&nbsp; RM</div>
-                        <div style={{ width: '85px', textAlign: 'right' }}>{formatCurrency(invoice.summary.balance)} MYR</div>
+                        <div style={{ flex: 1, textAlign: 'center', fontWeight: 'bold' ,paddingRight:"25px"}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Balance &nbsp;&nbsp; RM</div>
+                        <div style={{ width: '140px', textAlign: 'center' }}>{formatCurrency(invoice.summary.balance)} MYR</div>
                       </div>
 
                       <div className="oasia-summary-header">
-                        &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; * * * * * * * * * * *  &nbsp;&nbsp;&nbsp; SUMMARY &nbsp;&nbsp;&nbsp; * * * * * * * * * * * 
+                        &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; * * * * * * * * * * * * * * * * *  &nbsp;&nbsp;&nbsp; SUMMARY &nbsp;&nbsp;&nbsp; * * * * * * * * * * * * * * * * * 
                       </div>
                       <table className="oasia-summary-details">
                         <tbody>
                           <tr>
                             <td className="text-left">Total Amount Before Taxes</td>
-                            <td className="text-right" style={{ width: '233px', fontWeight: 'bold' }}>{formatCurrency(invoice.summary.beforeTax)}</td>
+                            <td className="text-right" style={{ width: '258px', fontWeight: 'bold' }}>{formatCurrency(invoice.summary.beforeTax)}</td>
                           </tr>
                           <tr>
                             <td className="text-left">Total Amount Non Taxable</td>

@@ -581,7 +581,7 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
                     <div className="summary-wrapper">
                         <div className="hyatt-summary">
                             <div className="hyatt-title">World of Hyatt Stay Summary</div>
-                            <div style={{ marginTop: '3px' }}>Membership: No Membership to be credited.</div><br />
+                            <div style={{ marginTop: '3px' }}> No Membership to be credited.</div><br />
                             <div>Join World of Hyatt today and start earning points<br />for stays, dining and more.<br />Visit worldofhyatt.com.</div><br />
                         </div>
                         
