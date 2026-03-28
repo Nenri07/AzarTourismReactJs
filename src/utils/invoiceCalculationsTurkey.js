@@ -163,9 +163,7 @@ export const HOTEL_CONFIGS = {
 
   // ── 5. THE MARMARA TAKSIM ────────────────────────────────────────────────
   MARMARA_TAKSIM: {
-    detect: (name) =>
-      name.includes('marmara') &&
-      (name.includes('taksim') || name.includes('istanbul')),
+    detect: (name) => name.includes('marmara'),
     accommodationDescription: 'Accommodation Package',
     currency: 'TRY',
     isRadisson: false,
