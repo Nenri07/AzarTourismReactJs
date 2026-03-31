@@ -341,12 +341,15 @@ const PerdanaInvoiceViewPage = ({ invoiceData }) => {
               <div className="guest-block">
                 <strong>{invoice.guest.name}</strong><br />
                 {invoice.guest.company && <strong>{invoice.guest.company}<br /></strong>}
-                {invoice.guest.address.split('\n').map((line, idx, arr) => (
+                {/* {invoice.guest.address.split('\n').map((line, idx, arr) => (
                   <React.Fragment key={idx}>
                     <strong>{line}</strong>
                     {idx < arr.length - 1 && <br />}
                   </React.Fragment>
-                ))}
+                ))} */}
+                <strong>Algeria Square Building</strong><br />
+                <strong>Number 12 First Floor</strong><br />
+                <strong>Tripoli, Libya</strong>
               </div>
               <div className="meta-block">
                 <div className="meta-title">INTERIM INVOICE</div>
@@ -407,7 +410,7 @@ const PerdanaInvoiceViewPage = ({ invoiceData }) => {
                   <tr key={idx}>
                     <td style={{paddingLeft: '10px'}}>{item.date}</td>
                     <td>{item.desc}</td>
-                    <td>{item.ref}</td>
+                    <td></td>
                     <td className="text-right">{item.charges ? formatCurrency(item.charges) : ""}</td>
                     <td className="text-right" style={{paddingRight: '10px'}}>{item.credits ? formatCurrency(item.credits) : ""}</td>
                   </tr>

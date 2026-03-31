@@ -204,12 +204,20 @@ export const HOTEL_CONFIGS = {
     calculateNightlyRate: ({ eurAmount, exchangeRate }) => ({
       roomAmountTry: eurAmount * exchangeRate,
     }),
-    buildRow: ({ date, roomAmountTry, eurAmount }) => ({
-      date,
-      description: 'Daily Charges',
-      eurAmount:   parseNum(eurAmount),
-      rate:        parseNum(roomAmountTry),
-    }),
+    buildRow: ({ date, roomAmountTry, eurAmount }) => {
+      const d = new Date(date);
+      const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const formattedDate = `${dd}-${mm}-${d.getFullYear()}`;
+      
+      return {
+        date,
+        description: `Daily Charges For ${weekday} ${formattedDate}`,
+        eurAmount:   parseNum(eurAmount),
+        rate:        parseNum(roomAmountTry),
+      };
+    },
   },
 
   // ── EXISTING HOTELS ───────────────────────────────────────────────────────

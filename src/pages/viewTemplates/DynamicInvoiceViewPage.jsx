@@ -35,6 +35,8 @@ import TrillionSuitesInvoiceView from "./TrillionSuitesInvoiceView";
 import IntercontinentalInvoiceViewMalaysia from "./IntercontinentalInvoiceViewMalaysia";
 import RadissonHerbyeInvoiceView from "./RadissonHerbyeInvoiceView";
 import MarmaraInvoiceView from "./MarmaraInvoiceView";
+import YotelairInvoiceView from "./YotelInvoiceView";
+import CheyaInvoiceView from "./CheyaInvoiceView";
 
 
 export default function DynamicInvoiceViewPage() {
@@ -199,6 +201,13 @@ else if (hotelName.includes("hilton") && hotelName.includes("bosphorus")) {
       else if (hotelName.includes("marmara")) {
         detectedType = "MARMARA_TAKSIM";
       }
+      else if (hotelName.includes("yotelair")) {
+        detectedType = "Yotelair";
+      }
+      else if (hotelName.includes("cheya")) {
+        detectedType = "Cheya";
+      }
+
       
       console.log("🎯 Detected hotel type:", detectedType);
       setHotelType(detectedType);
@@ -322,15 +331,12 @@ else if (hotelType === "RadissonCollection") {
 else if (hotelType === "MARMARA_TAKSIM") {
   return <MarmaraInvoiceView invoiceData={invoice} />;
 }
-// else if (hotelType === "RadissonBluSisli") {
-//   return <RadissonBluSisliInvoiceView invoiceData={invoice} />;
-// }
-// else if (hotelType === "Yotelair") {
-//   return <YotelairInvoiceView invoiceData={invoice} />;
-// }
-// else if (hotelType === "Cheya") {
-//   return <CheyaInvoiceView invoiceData={invoice} />;
-// }
+else if (hotelType === "Yotelair") {
+  return <YotelairInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "Cheya") {
+  return <CheyaInvoiceView invoiceData={invoice} />;
+}
   else {
     // Default fallback
     return <GrandArasInvoiceView invoiceData={invoice} />;

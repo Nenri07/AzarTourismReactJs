@@ -157,6 +157,7 @@ const mapApiDataToInvoice = (data = {}) => {
     cashierNo:    data.cashierNo || data.cashier_no || "",
     userId:       data.userId    || data.user_code  || "",
     folioNo:      data.folioNo   || data.folio_no   || data.invoiceNo || "",
+    confNo:       data.confNo    || data.conf_no    || "",
     accountNo:    data.accountNo || data.account_no || "",
 
     items:        allItems,
@@ -320,7 +321,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
     .inv-page {
       width: 100%;
       max-width: 794px;
-      padding: 18mm 12mm 18mm 12mm;
+      padding: 22mm 12mm 18mm 12mm;
       margin: 0 auto 24px auto;
       background: #fff;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -362,7 +363,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
       vertical-align: top;
     }
     .marmara-table td { 
-      padding: 4px 2px; 
+      padding: 4.5px 2px; 
       vertical-align: top;
       line-height: 1.4;
     }
@@ -375,7 +376,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
       line-height: 1.3;
     }
     .marmara-totals td {
-      padding: 8px 2px;
+      padding: 2px 2px 2px;
     }
     .marmara-totals td:nth-child(n+3) {
       border-top: 1px solid #000;
@@ -436,7 +437,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
           <div style={{ marginTop: '15px', display: 'grid', gridTemplateColumns: '90px 1fr', lineHeight: '1.3'}}>
             <span>A/R Number</span><span>: {invoice.arNumber || ""}</span>
             <span>Group Code</span><span>: {invoice.groupCode || ""}</span>
-            <span>Company Name</span><span>: {invoice.party}</span>
+            <span>Company Name</span><span>: {invoice.party || "Azar Tourism Services"}</span>
             <span>Account No</span><span>: {invoice.accountNo || ""}</span>
           </div>
         </div>
@@ -449,7 +450,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
           <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', marginTop: '34px', lineHeight: '1.3' }}>
             <span>Page No.</span><span>: {page.pageNo} of {page.totalPages}</span>
             <span>Folio No.</span><span>: {invoice.folioNo || ""}</span>
-            <span>Conf. No.</span><span>: {invoice.reservation || ''}</span>
+            <span>Conf. No.</span><span>: {invoice.confNo || ''}</span>
             <span>Cashier No.</span><span>: {invoice.cashierNo || ''}</span>
             <span>User ID</span><span>: {invoice.userId || ''}</span>
           </div>
@@ -495,7 +496,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
                 </tr>
               </thead>
               <tbody>
-                <tr style={{ height: '15px' }}><td colSpan="7"></td></tr>
+                <tr style={{ height: '0px', padding: '0px 0px !important' }}><td colSpan="7"></td></tr>
                 {page.items.map((item, i) => (
                    <tr key={i}>
                      <td>{item.date}</td>
@@ -507,7 +508,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
                      <td className="text-center">{item.credit != null && item.credit !== "" && Number(item.credit) !== 0 ? formatCurrency(item.credit) : "0.00"}</td>
                    </tr>
                 ))}
-                <tr style={{ height: '15px' }}><td colSpan="7"></td></tr>
+                <tr style={{ height: '18px' }}><td colSpan="7"></td></tr>
               </tbody>
               
               {page.showTotals && (
