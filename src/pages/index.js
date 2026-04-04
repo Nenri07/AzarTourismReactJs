@@ -26,17 +26,25 @@ import PerdanaInvoiceView from "./viewTemplates/PerdanaInvoiceView";
 import IntercontinentalInvoiceViewMalaysia from "./viewTemplates/IntercontinentalInvoiceViewMalaysia";
 import DynamicInvoiceFormTurkey from "./DynamicInvoiceFormTurkey";
 import RadissonHerbyeInvoiceView from "./viewTemplates/RadissonHerbyeInvoiceView";
+import HiltonIstambulInvoiceView from "./viewTemplates/HiltonIstanbulInvoiceView";
+import DynamicInvoiceFormPageUK from "./DynamicInvoiceFormPageUK";
+import MarriotInvoiceView from "./viewTemplates/MarriotInvoiceView";
+import RadissonCollection from "./viewTemplates/RadissonCollection";
+import RadissonHerbyeInvoiceView from "./viewTemplates/RadissonBlueHarbye";
+import RadissonBlueSisli from "./viewTemplates/RadissonBlueSisli";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
     CVKInvoiceView, HotelConfigPage, DynamicInvoiceFormPage,
     TRYPInvoiceView,DynamicInvoiceViewPage,DynamicInvoiceFormPageEgypt,DynamicInvoiceformPageMalaysia,DynamicInvoiceFormTurkey
+    ,HiltonIstambulInvoiceView
     ,NotFoundPage,
     GrandArasInvoiceView,
     RaddisonInvoiceView,
     IntercontinentalInvoiceView,
     HiltonInvoiceView,
     DusitThaniInvoiceView,
+    MarriotInvoiceView,
     TulipAlexendriaView,
     LansonPalaceInvoiceView,
     GrandHayattInvoiceView,
@@ -44,6 +52,9 @@ export {
     PullmanInvoiceView,
     PerdanaInvoiceView,
     IntercontinentalInvoiceViewMalaysia,
-    RadissonHerbyeInvoiceView
+    RadissonHerbyeInvoiceView,
+    RadissonBlueSisli,
+    RadissonCollection,
+    DynamicInvoiceFormPageUK
 
 };

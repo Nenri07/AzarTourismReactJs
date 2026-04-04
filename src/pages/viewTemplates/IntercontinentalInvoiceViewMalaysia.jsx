@@ -152,73 +152,167 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
         setPaginatedData(pages);
     }, [invoice]);
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // PDF GENERATION — Staybridge-style (style guard + restore)
-    // ─────────────────────────────────────────────────────────────────────────────
-    const handleDownloadPDF = async () => {
-        if (!invoiceRef.current) return;
-        setPdfLoading(true);
+const handleDownloadPDF = async () => {
+    if (!invoiceRef.current) return;
+    setPdfLoading(true);
 
-        // 1. Style Guard — collect all head styles
-        const headStyles = Array.from(
-            document.head.querySelectorAll('link[rel="stylesheet"], style')
+    const headStyles = Array.from(
+        document.head.querySelectorAll('link[rel="stylesheet"], style')
+    );
+    headStyles.forEach(s => s.parentNode?.removeChild(s));
+
+    try {
+        const images = invoiceRef.current.querySelectorAll('img');
+        await Promise.all(
+            Array.from(images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            })
         );
 
-        // 2. Remove only non-essential styles (keep our inline invoice style)
-        headStyles.forEach(style => {
-            if (style.parentNode) {
-                style.parentNode.removeChild(style);
-            }
-        });
+        await new Promise(resolve => setTimeout(resolve, 400));
 
-        try {
-            // 3. Wait for all images to load
-            const images = invoiceRef.current.querySelectorAll('img');
-            await Promise.all(
-                Array.from(images).map(img => {
-                    if (img.complete) return Promise.resolve();
-                    return new Promise(resolve => {
-                        img.onload = resolve;
-                        img.onerror = resolve;
+        const opt = {
+            margin: 0,
+            filename: `IC_KualaLumpur_${invoice.invoiceNo || 'Invoice'}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                letterRendering: true,
+                scrollX: 0,
+                scrollY: 0,
+                windowWidth: 794,
+                onclone: (clonedDoc) => {
+                    // 1. Fix wrapper
+                    const wrapper = clonedDoc.querySelector('.ic-main-wrapper');
+                    if (wrapper) {
+                        wrapper.style.width = '794px';
+                        wrapper.style.margin = '0';
+                        wrapper.style.padding = '0';
+                        wrapper.style.background = '#fff';
+                    }
+
+                    // 2. Fix sheets
+                    const sheets = clonedDoc.querySelectorAll('.ic-sheet');
+                    sheets.forEach(s => {
+                        s.style.width = '794px';
+                        s.style.minHeight = '1100px';
+                        s.style.margin = '0';
+                        s.style.padding = '30px 25px';
+                        s.style.boxSizing = 'border-box';
+                        s.style.display = 'flex';
+                        s.style.flexDirection = 'column';
                     });
-                })
-            );
 
-            // 4. Layout settle delay
-            await new Promise(resolve => setTimeout(resolve, 500));
+                    // 3. Spacer — pushes totals to bottom without overflow
+                    clonedDoc.querySelectorAll('.ic-spacer').forEach(s => {
+                        s.style.display = 'block';
+                        s.style.flexGrow = '1';
+                        s.style.minHeight = '20px';
+                        s.style.maxHeight = '400px';
+                    });
 
-            const element = invoiceRef.current;
-            const opt = {
-                margin: 0,
-                filename: `IC_KualaLumpur_${invoice.invoiceNo || 'Invoice'}.pdf`,
-                image: { type: 'jpeg', quality: 3 },
-                html2canvas: {
-                    scale: 4,
-                    useCORS: true,
-                    letterRendering: true,
-                    scrollY: 0,
-                    windowWidth: 794
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] }
-            };
+                    // 4. Fix stray black line on details
+                    clonedDoc.querySelectorAll('.details-container, .left-details-wrapper, .right-details-wrapper, .details-table, .details-table td, .details-table2, .details-table2 td').forEach(el => {
+                        el.style.border = 'none';
+                        el.style.borderBottom = 'none';
+                        el.style.boxShadow = 'none';
+                        el.style.outline = 'none';
+                    });
 
-            await html2pdf().set(opt).from(element).save();
-            toast.success("Invoice Downloaded Successfully");
-        } catch (err) {
-            console.error("❌ PDF Error:", err);
-            toast.error("Error generating PDF");
-        } finally {
-            // 5. Instant Recovery — restore all removed styles
-            headStyles.forEach(style => {
-                if (!style.parentNode) {
-                    document.head.appendChild(style);
+                 // 5. Left details — nudge down to align with right side
+clonedDoc.querySelectorAll('.left-details-wrapper').forEach(el => {
+    el.style.marginTop = '18px'; // Increased to push the bottom line down
+});
+
+                    // 6. Fix user-info-row alignment
+                    clonedDoc.querySelectorAll('.user-info-row').forEach(row => {
+                        row.style.display = 'flex';
+                        row.style.justifyContent = 'space-between';
+                        row.style.marginBottom = '10px';
+                        row.style.fontSize = '12px';
+
+                        const divs = row.querySelectorAll('div');
+
+                        // Room No
+                        if (divs[0]) {
+                            divs[0].style.flex = '1';
+                            divs[0].style.marginLeft = '8%';
+                            divs[0].style.textAlign = 'left';
+                        }
+
+                        // User
+                       // User
+if (divs[1]) {
+    divs[1].style.flex = '1';
+    divs[1].style.textAlign = 'right'; 
+    divs[1].style.paddingRight = '15%'; // Pushes it exactly to the spot you drew
+    divs[1].style.marginRight = '0';
+    divs[1].style.marginLeft = '0';
+}
+
+                        // Cashier No
+                        if (divs[2]) {
+                            divs[2].style.flex = '1';
+                            divs[2].style.textAlign = 'right';
+                            divs[2].style.marginRight = '12%';
+                        }
+                    });
+
+                    // 7. Fix main table layout
+                    clonedDoc.querySelectorAll('.main-table').forEach(table => {
+                        table.style.tableLayout = 'fixed';
+                        table.style.width = '100%';
+                        table.style.borderCollapse = 'collapse';
+                    });
+
+                    // 8. Fix th widths and alignment
+                    const thConfigs = [
+                        { width: '12%', textAlign: 'left',  padding: '6px 10px' },
+                        { width: '43%', textAlign: 'left',  padding: '6px 0px 6px 10px' },
+                        { width: '35%', textAlign: 'left',  padding: '6px 0' },
+                        { width: '10%', textAlign: 'right', padding: '6px 48px 6px 10px' },
+                    ];
+                    clonedDoc.querySelectorAll('.main-table thead tr').forEach(row => {
+                        row.querySelectorAll('th').forEach((th, i) => {
+                            if (thConfigs[i]) {
+                                th.style.width           = thConfigs[i].width;
+                                th.style.textAlign       = thConfigs[i].textAlign;
+                                th.style.padding         = thConfigs[i].padding;
+                                th.style.fontWeight      = 'normal';
+                                th.style.backgroundColor = '#d1d1d1';
+                                th.style.border          = 'none';
+                            }
+                        });
+                    });
+
+                    // 9. Fix td right-align
+                    clonedDoc.querySelectorAll('.main-table td.right-align').forEach(td => {
+                        td.style.textAlign    = 'right';
+                        td.style.paddingRight = '48px';
+                    });
                 }
-            });
-            setPdfLoading(false);
-        }
-    };
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] }
+        };
 
+        await html2pdf().set(opt).from(invoiceRef.current).save();
+        toast.success("Invoice Downloaded Successfully");
+    } catch (err) {
+        console.error("❌ PDF Error:", err);
+        toast.error("Error generating PDF");
+    } finally {
+        headStyles.forEach(s => {
+            if (!s.parentNode) document.head.appendChild(s);
+        });
+        setPdfLoading(false);
+    }
+};
     // ─────────────────────────────────────────────────────────────────────────────
     // PRINT — Staybridge-style
     // ─────────────────────────────────────────────────────────────────────────────
@@ -273,21 +367,22 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
                     
                     .details-container { display: flex; justify-content: space-between; margin-bottom: 30px; margin-top: 40px;}
                     .details-table { width: 100%; border-collapse: collapse; font-size: 12px;}
-                    .details-table td { padding: 3px 0; vertical-align: top; border: none; }
+                    .details-table td {  vertical-align: top; border: none; }
+                    .padding-class {padding-top: 3px; padding-bottom: 3px;}
                     detials-table2 { width: 100%; border-collapse: collapse; font-size: 12px;}
                     detials-table2 td { padding: 2px 0; vertical-align: top; border: none; }
                     .details-table2 .colon { width: 10px; text-align: center; }
 
                     .details-table .lbl { width: 95px; }
                     .details-table .colon { width: 10px; text-align: center; }
-                    .left-details-wrapper { width: 48%; }
+                    .left-details-wrapper { width: 48%; margin-top: 10px;}
                     .right-details-wrapper { width: 40%; }
                     
                     .user-info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px;}
                     .user-info-row > div { flex: 1; }
-                    .user-info-row > div:nth-child(1) { padding-left: 15%; }
-                    .user-info-row > div:nth-child(2) { text-align: center; }
-                    .user-info-row > div:nth-child(3) { text-align: right; padding-right: 10%; }
+                    .user-info-row > div:nth-child(1) { margin-left: 8%; }
+                    .user-info-row > div:nth-child(2) { text-align: center; margin-left:25px; }
+                    .user-info-row > div:nth-child(3) { text-align: right; margin-right: 12%; }
                     
                     .main-table { 
                         width: 100%; 
@@ -377,17 +472,17 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
                                 <table className="details-table">
                                     <tbody>
                                         <tr>
-                                            <td className="lbl">Membership No.</td>
+                                            <td className="lbl" style={{padding:"3px 0px"}}>Membership No.</td>
                                             <td className="colon">:</td>
                                             <td>{invoice.membershipNo}</td>
                                         </tr>
                                         <tr>
-                                            <td className="lbl">Company Name</td>
+                                            <td className="lbl" style={{padding:"3px 0px"}}>Company Name</td>
                                             <td className="colon">:</td>
                                             <td>{invoice.companyName}</td>
                                         </tr>
                                         <tr>
-                                            <td className="lbl">SST No.</td>
+                                            <td className="lbl" style={{padding:"3px 0px"}}>SST No.</td>
                                             <td className="colon">:</td>
                                             <td>{invoice.sstNo}</td>
                                         </tr>
@@ -434,8 +529,8 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
                             <thead>
                                 <tr>
                                     <th style={{ width: '12%' }}>Date</th>
-                                    <th style={{ width: '43%' }}>Descriptions</th>
-                                    <th style={{ width: '35%' }}>References</th>
+                                    <th style={{ width: '43%', paddingRight: "0px" }}>Descriptions</th>
+                                    <th style={{ width: '35%' , padding: '6px 0' }}>References</th>
                                     <th className="right-align" style={{ width: '15%' }}>Amount</th>
                                 </tr>
                             </thead>

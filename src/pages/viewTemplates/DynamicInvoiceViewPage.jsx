@@ -33,8 +33,9 @@ import PerdanaInvoiceView from "./PerdanaInvoiceView";
 import SomersetInvoiceView from "./SomersetInvoiceView";
 import TrillionSuitesInvoiceView from "./TrillionSuitesInvoiceView";
 import IntercontinentalInvoiceViewMalaysia from "./IntercontinentalInvoiceViewMalaysia";
-import RadissonHerbyeInvoiceView from "./RadissonHerbyeInvoiceView";
 import MarmaraInvoiceView from "./MarmaraInvoiceView";
+import HiltonIstanbulInvoiceView from "./HiltonIstanbulInvoiceView";
+import { HiltonIstambulInvoiceView, RadissonBlueSisli, RadissonCollection , RadissonHerbyeInvoiceView } from "..";
 import YotelairInvoiceView from "./YotelInvoiceView";
 import CheyaInvoiceView from "./CheyaInvoiceView";
 
@@ -105,7 +106,7 @@ export default function DynamicInvoiceViewPage() {
       
       let detectedType = "GrandAras"; // Default fallback
       
-      if (hotelName.includes("cvk") || hotelName.includes("bosphorus")) {
+      if (hotelName.includes("cvk") || hotelName.includes("cvk hotels") || hotelName.includes("cvk park bosphorus")) {
         detectedType = "CVK";
       } else if (hotelName.includes("tryp")) {
         detectedType = "TRYP";
@@ -131,6 +132,7 @@ else if (hotelName.includes("radisson blu") && (hotelName.includes("sisli") || h
 else if (hotelName.includes("radisson") && hotelName.includes("harbiye")) {
   detectedType = "RadissonHarbiye";
 }
+
 else if (hotelName.includes("marmara") && hotelName.includes("taksim")) {
   detectedType = "MARMARA_TAKSIM";
 }
@@ -140,7 +142,7 @@ else if (hotelName.includes("yotelair") || hotelName.includes("yotel")) {
 else if (hotelName.includes("cheya")) {
   detectedType = "Cheya";
 }
-else if (hotelName.includes("hilton") && hotelName.includes("bosphorus")) {
+else if (hotelName.includes("hilton istanbul bosphorus") || hotelName.includes("hilton bosphorus") || hotelName.includes("hilton istanbul")) {
   detectedType = "HiltonBosphorus";   // ← more specific than generic "Hilton"
 }
 
@@ -320,7 +322,7 @@ else if (hotelName.includes("hilton") && hotelName.includes("bosphorus")) {
     return <IntercontinentalInvoiceViewMalaysia invoiceData={invoice} />;
   }
   else if (hotelType === "HiltonBosphorus") {
-  return <HiltonBosphorusInvoiceView invoiceData={invoice} />;
+  return <HiltonIstambulInvoiceView invoiceData={invoice} />;
 }
 else if (hotelType === "RadissonHarbiye") {
   return <RadissonHerbyeInvoiceView invoiceData={invoice} />;
@@ -330,6 +332,9 @@ else if (hotelType === "RadissonCollection") {
 }
 else if (hotelType === "MARMARA_TAKSIM") {
   return <MarmaraInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "RadissonBluSisli") {
+  return <RadissonBlueSisli invoiceData={invoice} />;
 }
 else if (hotelType === "Yotelair") {
   return <YotelairInvoiceView invoiceData={invoice} />;

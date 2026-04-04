@@ -26,10 +26,12 @@ import {
   DynamicInvoiceFormPageEgypt,
   DynamicInvoiceformPageMalaysia,
   DynamicInvoiceFormTurkey,
+  DynamicInvoiceFormPageUK,
   RaddisonInvoiceView,
   IntercontinentalInvoiceView,
   HiltonInvoiceView,DusitThaniInvoiceView,
   TulipAlexendriaView,
+  MarriotInvoiceView,
   LansonPalaceInvoiceView,
   GrandHayattInvoiceView,
   NotFoundPage
@@ -363,11 +365,55 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
+        // ==========================================
+      // UK INVOICES 
+      // ==========================================
+      {
+        path: "uk-invoice/create/:hotelId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["super_admin", "employee"]}>
+            <DynamicInvoiceFormPageUK />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "uk-invoice/edit/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPageUK />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "uk-invoice/duplicate/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPageUK />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "uk-invoice/download-pdf/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceViewPage />
+          </AuthLayout>
+        ),
+      },
+   
     
     ],
   },
   {
+  path: "marriot/view/m",
+  element: <MarriotInvoiceView />,
+},
+  {
   path: "turkey-invoice/view/:invoiceId",
+  element: <DynamicInvoiceViewPage />,
+},
+{
+  path: "uk-invoice/view/:invoiceId",
   element: <DynamicInvoiceViewPage />,
 },
   // PUBLIC INVOICE VIEWS (no auth required)

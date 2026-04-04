@@ -366,6 +366,7 @@ export default function DynamicInvoiceFormTurkey() {
       cashier_id:      data.cashierId      || "",
       frequent_flyer:  data.frequentFlyer  || "",
       hilton_honors:   data.hiltonHonors   || "",
+      invoice_time:      data.invoiceTime     || "",
 
       // ── Yotelair extra fields ─────────────────────────────────────────────
       invoice_number:      data.invoiceNumber      || "",

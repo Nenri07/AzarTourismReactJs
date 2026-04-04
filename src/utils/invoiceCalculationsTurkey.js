@@ -92,7 +92,8 @@ const buildRadissonNightRows = ({ date, roomAmountTry, pax }) => {
 
 export const HOTEL_CONFIGS = {
 
-  // ── 1. HILTON ISTANBUL BOSPHORUS ─────────────────────────────────────────
+ // ── 1. HILTON ISTANBUL BOSPHORUS ─────────────────────────────────────────
+ // ── 1. HILTON ISTANBUL BOSPHORUS ─────────────────────────────────────────
   HILTON_BOSPHORUS: {
     detect: (name) =>
       name.includes('hilton') &&
@@ -100,15 +101,28 @@ export const HOTEL_CONFIGS = {
     accommodationDescription: 'GUEST ROOM',
     currency: 'TRY',
     isRadisson: false,
-    calculateNightlyRate: ({ eurAmount, exchangeRate }) => ({
-      roomAmountTry: eurAmount * exchangeRate,
-    }),
-    buildRow: ({ date, roomAmountTry, eurAmount, exchangeRate }) => ({
-      date,
-      description: 'GUEST ROOM',
-      rateLabel:   `${eurAmount} EUR * ${exchangeRate}`,
-      rate:        parseNum(roomAmountTry),
-    }),
+    calculateNightlyRate: ({ eurAmount, exchangeRate }) => {
+      // Gross EUR * Exchange Rate = Gross TRY
+      // Gross TRY / 1.12 = Net TRY (Room Amount)
+      const grossTry = eurAmount * exchangeRate;
+      const netTry = grossTry / 1.12;
+      return { roomAmountTry: netTry };
+    },
+    buildRow: ({ date, roomAmountTry, eurAmount, exchangeRate }) => {
+      // Calculate the Net EUR amount to display in the description
+      const netEur = parseNum(roomAmountTry / exchangeRate);
+      
+      // TAX is 12% of the Net Room Amount
+      const taxAmount = parseNum(roomAmountTry * 0.12); 
+
+      return {
+        date,
+        description: `GUEST ROOM ( ${netEur.toFixed(2)} EUR * ${exchangeRate} )`,
+        rateLabel: `${netEur.toFixed(2)} EUR * ${exchangeRate}`,
+        rate: parseNum(roomAmountTry),
+        taxAmount: taxAmount,
+      };
+    },
   },
 
   // ── 2. RADISSON HOTEL ISTANBUL HARBIYE ───────────────────────────────────
@@ -415,12 +429,12 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
   const accCalc      = calculateAccommodation(formData, hotelType);
   const servicesCalc = calculateServices(formData.other_services);
   const summary      = calculateFinalSummary(formData, hotelType);
-
+ 
   const formatDate = (dateStr) => {
     if (!dateStr) return new Date().toISOString().split('T')[0];
     return dateStr.split('T')[0];
   };
-
+ 
   const capitalizeWords = (str) => {
     if (!str) return '';
     return str.trim().replace(/\s+/g, ' ')
@@ -428,17 +442,19 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
       .join(' ');
   };
-
+ 
+  
+ 
   // ── Accommodation details array ────────────────────────────────────────────
   // Radisson: 2 row objects per night | Others: 1 row object per night
   const accommodationDetailsArray = [];
   const arrivalDate = new Date(formData.arrival_date);
-
+ 
   for (let i = 0; i < accCalc.totalNights; i++) {
     const currentDate = new Date(arrivalDate);
     currentDate.setDate(currentDate.getDate() + i);
     const dateStr = currentDate.toISOString().split('T')[0];
-
+ 
     if (hotelCfg.isRadisson) {
       const nightRows = accCalc.radissonNightRows[i];
       if (nightRows) {
@@ -461,7 +477,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       accommodationDetailsArray.push({ day: i + 1, ...row });
     }
   }
-
+ 
   const otherServicesArray = servicesCalc.services.map(service => ({
     name:           capitalizeWords(service.service_name) || 'Service',
     amount:         parseNum(service.gross_amount),
@@ -469,64 +485,69 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
     vat_20_percent: parseNum(service.vat_20_percent),
     date:           formatDate(service.service_date || formData.invoice_date),
   }));
-
+ 
   return {
     data: {
       hotel: formData.hotel_name || '',
       hotelType,
-
+ 
       guestName:  capitalizeWords(formData.guest_name) || 'Guest',
       roomNo:     formData.room_number || '',
       passportNo: formData.passport_no || '',
-      paxAdult:   parseInt(formData.adults) || 1,
+      paxAdult:   parseInt(formData.adults)   || 1,
       paxChild:   parseInt(formData.children) || 0,
       pax:        parseInt(formData.pax) || parseInt(formData.adults) || 1,
-
+ 
       invoiceDate:   formatDate(formData.invoice_date),
       arrivalDate:   formatDate(formData.arrival_date),
       departureDate: formatDate(formData.departure_date),
-
+ 
       referenceNo:  formData.reference_no   || formData.company_name || `INV-${Date.now()}`,
       voucherNo:    formData.voucher_no     || '',
       folioNo:      formData.folio_no       || formData.folio_number || '',
       userId:       formData.user_code      || formData.user_id      || '',
       batchNo:      formData.cash_no        || '',
-
-      // HILTON BOSPHORUS
+ 
+      // ── HILTON BOSPHORUS ──────────────────────────────────────────────────
       ratePlan:       formData.rate_plan       || '',
       confirmationNo: formData.confirmation_no || '',
       cashierId:      formData.cashier_id      || '',
       frequentFlyer:  formData.frequent_flyer  || '',
       hiltonHonors:   formData.hilton_honors   || '',
+        invoiceTime:    formData.invoice_time    || '',
+     accommodationRefId: formData.accommodation_ref_id || [...Array(5)].map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''),
+servicesRefId: formData.services_ref_id || [...Array(5)].map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''),
+startingRefNo: formData.starting_ref_no || Math.floor(1000000 + Math.random() * 9000000),
 
-      // RADISSON (all 3)
+ 
+      // ── RADISSON (all 3) ──────────────────────────────────────────────────
       invoiceN:    formData.invoice_n   || '',
       billingDate: formatDate(formData.billing_date || formData.invoice_date),
       party:       formData.party       || '',
       branch:      formData.branch      || '',
       reservation: formData.reservation || '',
-
-      // CHEYA
+ 
+      // ── CHEYA ─────────────────────────────────────────────────────────────
       folyoNo:  formData.folyo_no  || '',
       odaNo:    formData.oda_no    || '',
       roomType: formData.room_type || '',
       kisi:     formData.kisi      || '',
-
-      // MARMARA TAKSIM
+ 
+      // ── MARMARA TAKSIM ────────────────────────────────────────────────────
       arNumber:    formData.ar_number    || '',
       confNo:      formData.conf_no      || '',
       cashierNo:   formData.cashier_no   || '',
       groupCode:   formData.group_code   || '',
       companyName: formData.company_name || '',
       accountNo:   formData.account_no   || '',
-
-      // YOTELAIR
+ 
+      // ── YOTELAIR ──────────────────────────────────────────────────────────
       invoiceNumber:      formData.invoice_number      || '',
       folioNumber:        formData.folio_number        || '',
       confirmationNumber: formData.confirmation_number || '',
       iataNumber:         formData.iata_number         || '',
       numberOfGuests:     formData.number_of_guests    || formData.adults || 1,
-
+ 
       nights:               accCalc.totalNights,
       eurAmount:            parseNum(accCalc.eurAmount),
       exchangeRate:         parseNum(accCalc.exchangeRate, 5),
@@ -535,24 +556,24 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       taxableAmount:        parseNum(accCalc.taxableAmount),
       vat10Percent:         parseNum(accCalc.vat10Percent),
       accommodationTax:     parseNum(accCalc.accommodationTax),
-
+ 
       totalServicesGross:   parseNum(servicesCalc.totalGross),
       totalServicesTaxable: parseNum(servicesCalc.totalTaxable),
       totalVat20:           parseNum(servicesCalc.totalVat20),
-
+ 
       totalTaxableAmount: parseNum(summary.total_taxable_amount),
       totalVat10:         parseNum(summary.total_vat_10),
       totalVat:           parseNum(summary.total_vat),
       totalAccTax:        parseNum(summary.total_accommodation_tax),
       grandTotal:         parseNum(summary.grand_total),
       totalInEur:         parseNum(summary.total_in_eur),
-
+ 
       accommodationDetails: accommodationDetailsArray,
       otherServices:        otherServicesArray,
-
+ 
       status: formData.status || 'pending',
       note:   formData.note   || '',
-
+ 
       vat5: 0, newVat1_10: 0, newVat7: 0, newVat20: 0, newVat5: 0,
       cityTaxRows: 0, cityTaxAmount: 0, stampTaxRows: 0,
       stampTaxAmount: 0, stampTaxTotal: 0, cityTaxTotal: 0,
