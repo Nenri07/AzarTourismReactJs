@@ -25,7 +25,6 @@ import PullmanInvoiceView from "./viewTemplates/PullmanInvoiceView";
 import PerdanaInvoiceView from "./viewTemplates/PerdanaInvoiceView";
 import IntercontinentalInvoiceViewMalaysia from "./viewTemplates/IntercontinentalInvoiceViewMalaysia";
 import DynamicInvoiceFormTurkey from "./DynamicInvoiceFormTurkey";
-import RadissonHerbyeInvoiceView from "./viewTemplates/RadissonHerbyeInvoiceView";
 import HiltonIstambulInvoiceView from "./viewTemplates/HiltonIstanbulInvoiceView";
 import DynamicInvoiceFormPageUK from "./DynamicInvoiceFormPageUK";
 import MarriotInvoiceView from "./viewTemplates/MarriotInvoiceView";
