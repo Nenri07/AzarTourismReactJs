@@ -33,6 +33,7 @@ import {
   TulipAlexendriaView,
   MarriotInvoiceView,
   LansonPalaceInvoiceView,
+  ParkPlazaInvoiceView,
   GrandHayattInvoiceView,
   NotFoundPage
 } from "./pages";
@@ -407,6 +408,9 @@ const router = createBrowserRouter([
   {
   path: "marriot/view/m",
   element: <MarriotInvoiceView />,
+},
+ {path: "parkplaza/view/p",
+  element: <ParkPlazaInvoiceView />,
 },
   {
   path: "turkey-invoice/view/:invoiceId",

@@ -31,6 +31,7 @@ import MarriotInvoiceView from "./viewTemplates/MarriotInvoiceView";
 import RadissonCollection from "./viewTemplates/RadissonCollection";
 import RadissonHerbyeInvoiceView from "./viewTemplates/RadissonBlueHarbye";
 import RadissonBlueSisli from "./viewTemplates/RadissonBlueSisli";
+import ParkPlazaInvoiceView from "./viewTemplates/ParkPlazaInvoiceView";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
@@ -54,6 +55,7 @@ export {
     RadissonHerbyeInvoiceView,
     RadissonBlueSisli,
     RadissonCollection,
+    ParkPlazaInvoiceView,
     DynamicInvoiceFormPageUK
 
 };

@@ -367,7 +367,8 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
       vertical-align: top;
       line-height: 1.4;
     }
-
+  .right-info span {
+  padding: 1px 0;}
     .marmara-header-line th {
       background-color: #f5f5f5;
       padding-top: 2px;
@@ -376,7 +377,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
       line-height: 1.3;
     }
     .marmara-totals td {
-      padding: 2px 2px 2px;
+      padding: 2.5px 2px 2.5px;
     }
     .marmara-totals td:nth-child(n+3) {
       border-top: 1px solid #000;
@@ -501,7 +502,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
                    <tr key={i}>
                      <td>{item.date}</td>
                      <td>{item.desc}</td>
-                     <td className="text-right" style={{ paddingRight: '30px' }}>{item.exchange}</td>
+                     <td className="text-right" style={{ paddingRight: '30px', paddingTop: "20px" }}>{item.exchange}</td>
                      <td className="text-center">{item.debit != null && item.debit !== "" && Number(item.debit) !== 0 ? formatCurrency(item.debit) : ""}</td>
                      <td className="text-center">{item.credit != null && item.credit !== "" && Number(item.credit) !== 0 ? formatCurrency(item.credit) : ""}</td>
                      <td className="text-center">{item.debit != null && item.debit !== "" && Number(item.debit) !== 0 ? formatCurrency(item.debit) : ""}</td>
@@ -518,9 +519,9 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
                     <td>Total</td>
                     <td></td>
                     <td className="text-center">{formatCurrency(invoice.summary.grandTotal)}</td>
+                    <td className="text-center">0.00</td>
                     <td className="text-center">{formatCurrency(invoice.summary.grandTotal)}</td>
-                    <td className="text-center">{formatCurrency(invoice.summary.grandTotal)}</td>
-                    <td className="text-center">{formatCurrency(invoice.summary.grandTotal)}</td>
+                    <td className="text-center">0.00</td>
                   </tr>
                 </tfoot>
               )}

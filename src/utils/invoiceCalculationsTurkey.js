@@ -501,6 +501,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       invoiceDate:   formatDate(formData.invoice_date),
       arrivalDate:   formatDate(formData.arrival_date),
       departureDate: formatDate(formData.departure_date),
+      invoiceTime: formatDate(formData.invoice_time),
  
       referenceNo:  formData.reference_no   || formData.company_name || `INV-${Date.now()}`,
       voucherNo:    formData.voucher_no     || '',

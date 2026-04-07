@@ -322,6 +322,7 @@ export default function DynamicInvoiceFormTurkey() {
       arrival_date:  data.arrivalDate || "",
       departure_date:data.departureDate || "",
       invoice_date:  data.invoiceDate || "",
+      invoice_time: data.invoicetime ||"",
       room_number:   data.roomNo      || "",
       adults:        String(data.paxAdult || 1),
       children:      String(data.paxChild || 0),

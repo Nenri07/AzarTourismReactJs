@@ -241,7 +241,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
           .oasia-logo-section img { width: 120px; height: auto; }
           .oasia-info-table { width: 100%; border-collapse: collapse; }
           .oasia-info-table td { padding: 1px 0; vertical-align: top; }
-          .oasia-label { width: 110px; }
+.oasia-label { width: 110px; white-space: nowrap; }
           .oasia-sep { width: 15px; text-align: center; }
           
           .oasia-main-content { margin-top: 15px; }
@@ -253,7 +253,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
               border-bottom: 1.5px solid #000; 
               font-weight: bold; 
           }
-          .oasia-items-table tbody td { padding: 4px 0; }
+          .oasia-items-table tbody td { padding: 0px 0; font-size: 11.5px; }
           
           .text-right { text-align: right !important; }
           .text-left { text-align: right !important; padding }
@@ -294,7 +294,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
             <table style={{ width: '100%', marginBottom: '10px' }}>
               <tbody>
                 <tr>
-                  <td style={{ width: '50%', verticalAlign: 'top' }}>
+                  <td style={{ width: '55%', verticalAlign: 'top' }}>
                     <div style={{ fontSize: '11px', marginBottom: '15px' }}>GUEST FOLIO</div>
                     
                     <table className="oasia-info-table">
@@ -305,7 +305,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                       </tbody>
                     </table>
                     
-                    <div style={{ marginTop: '15px', marginBottom: '15px', minHeight: '30px' }}>
+                    <div style={{ marginTop: '19px', marginBottom: '23px', minHeight: '30px' }}>
                       <div>{invoice.guestName}</div>
                       <div>{invoice.address}</div>
                       <div>{invoice.country}</div>
@@ -321,7 +321,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                     </table>
                   </td>
 
-                  <td style={{ width: '30%', verticalAlign: 'top' }}>
+                  <td style={{ width: '45%', verticalAlign: 'top' }}>
                     <table className="oasia-info-table">
                       <tbody>
                         <tr><td className="oasia-label">FOLIO</td><td></td><td></td></tr>
@@ -329,7 +329,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                         <tr><td className="oasia-label">TTX No.</td><td className="oasia-sep">:</td><td>{invoice.ttxNo}</td></tr>
                         <tr><td className="oasia-label">Page No.</td><td className="oasia-sep">:</td><td>{page.pageNo} of {page.totalPages}</td></tr>
                         <tr><td className="oasia-label">Invoice No.</td><td className="oasia-sep">:</td><td>{invoice.invoiceNo}</td></tr>
-                        <tr><td className="oasia-label">e-Invoice / Folio No.</td><td className="oasia-sep">:</td><td>{invoice.folioNo}</td></tr>
+                        <tr><td className="oasia-label" style={{width: "270px"}}>e-Invoice / Folio No.</td><td className="oasia-sep">:</td><td>{invoice.folioNo}</td></tr>
                         <tr><td className="oasia-label">Conf. No.</td><td className="oasia-sep">:</td><td>{invoice.confNo}</td></tr>
                         
                         <tr style={{ height: '15px' }}><td colSpan="3"></td></tr>
