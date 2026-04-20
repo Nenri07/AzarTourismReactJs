@@ -37,7 +37,9 @@ import {
   GrandHayattInvoiceView,
   MarriotTunisInvoiceView,
   DynamicInvoiceFormPageTunisia,
-  NotFoundPage
+  HyattRegencyView,
+  HiltonParkLaneView,
+  FourSeasonParkLaneView
 } from "./pages";
 
 document.addEventListener(

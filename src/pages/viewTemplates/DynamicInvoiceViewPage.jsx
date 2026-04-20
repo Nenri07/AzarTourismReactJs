@@ -40,6 +40,9 @@ import tunisiainvoiceApi from "../../Api/tunisiainvoice.api ";
 import { HiltonIstambulInvoiceView, RadissonBlueSisli, RadissonCollection , RadissonHerbyeInvoiceView ,MarriotInvoiceView, MandarinInvoiceView, ParkPlazaInvoiceView, MarriotTunisInvoiceView} from "..";
 import YotelairInvoiceView from "./YotelInvoiceView";
 import CheyaInvoiceView from "./CheyaInvoiceView";
+import HiltonParkLaneView from "./HiltonParkLaneView";
+import HyattRegencyView from "./HyattRegencyView";
+import FourSeasonParkLaneView from "./FourSeasonParkLaneView";
 
 
 export default function DynamicInvoiceViewPage() {
@@ -51,11 +54,15 @@ export default function DynamicInvoiceViewPage() {
   const [invoice, setInvoice] = useState(null);
   const [hotelType, setHotelType] = useState(null);
 
-  // Check if we are on the Egypt route
+  // Check route context
   const isEgyptRoute = location.pathname.includes('egypt-invoice');
     const isMalaysiaRoute = location.pathname.includes('malaysia-invoice');
     const isUk = location.pathname.includes('uk-invoice');
     const isTunisiaRoute = location.pathname.includes('tunisia-invoice');
+
+  // const isMalaysiaRoute = location.pathname.includes('malaysia-invoice');
+  // const isUKRoute = location.pathname.includes('uk-invoice');
+
 
 
   useEffect(() => {
@@ -87,6 +94,10 @@ export default function DynamicInvoiceViewPage() {
         response = await tunisiainvoiceApi.getInvoiceById(invoiceId);
       }
       else {
+      // } else if (isUKRoute) {
+      //   console.log("Fetching from UK API...");
+      //   response = await ukInvoiceApi.getInvoiceById(invoiceId);
+      // } else {
         console.log("Fetching from Turkey API...");
         response = await turkeyInvoiceApi.getInvoiceById(invoiceId);
       }
@@ -118,7 +129,16 @@ export default function DynamicInvoiceViewPage() {
       
       let detectedType = "GrandAras"; // Default fallback
       
-      if (hotelName.includes("cvk") || hotelName.includes("cvk hotels") || hotelName.includes("cvk park bosphorus")) {
+      if (hotelName.includes("hilton") && hotelName.includes("park lane")) {
+        detectedType = "HiltonParkLane";
+      }
+      else if (hotelName.includes("hyatt") && (hotelName.includes("churchill") || hotelName.includes("regency"))) {
+        detectedType = "HyattUK";
+      }
+      else if (hotelName.includes("four") && hotelName.includes("season") && hotelName.includes("park lane")) {
+        detectedType = "FourSeasonsUK";
+      }
+      else if (hotelName.includes("cvk") || hotelName.includes("cvk hotels") || hotelName.includes("cvk park bosphorus")) {
         detectedType = "CVK";
       } else if (hotelName.includes("tryp")) {
         detectedType = "TRYP";
@@ -135,28 +155,28 @@ export default function DynamicInvoiceViewPage() {
       else if (hotelName.includes("intercontinental")) {
         detectedType = "Intercontinental";
       }
-else if (hotelName.includes("radisson collection") || hotelName.includes("vadistanbul")) {
-  detectedType = "RadissonCollection";
-}
-else if (hotelName.includes("radisson blu") && (hotelName.includes("sisli") || hotelName.includes("şişli"))) {
-  detectedType = "RadissonBluSisli";
-}
-else if (hotelName.includes("radisson") && hotelName.includes("harbiye")) {
-  detectedType = "RadissonHarbiye";
-}
+      else if (hotelName.includes("radisson collection") || hotelName.includes("vadistanbul")) {
+        detectedType = "RadissonCollection";
+      }
+      else if (hotelName.includes("radisson blu") && (hotelName.includes("sisli") || hotelName.includes("şişli"))) {
+        detectedType = "RadissonBluSisli";
+      }
+      else if (hotelName.includes("radisson") && hotelName.includes("harbiye")) {
+        detectedType = "RadissonHarbiye";
+      }
 
-else if (hotelName.includes("marmara") && hotelName.includes("taksim")) {
-  detectedType = "MARMARA_TAKSIM";
-}
-else if (hotelName.includes("yotelair") || hotelName.includes("yotel")) {
-  detectedType = "Yotelair";
-}
-else if (hotelName.includes("cheya")) {
-  detectedType = "Cheya";
-}
-else if (hotelName.includes("hilton istanbul bosphorus") || hotelName.includes("hilton bosphorus") || hotelName.includes("hilton istanbul")) {
-  detectedType = "HiltonBosphorus";   // ← more specific than generic "Hilton"
-}
+      else if (hotelName.includes("marmara") && hotelName.includes("taksim")) {
+        detectedType = "MARMARA_TAKSIM";
+      }
+      else if (hotelName.includes("yotelair") || hotelName.includes("yotel")) {
+        detectedType = "Yotelair";
+      }
+      else if (hotelName.includes("cheya")) {
+        detectedType = "Cheya";
+      }
+      else if (hotelName.includes("hilton istanbul bosphorus") || hotelName.includes("hilton bosphorus") || hotelName.includes("hilton istanbul")) {
+        detectedType = "HiltonBosphorus";   // ← more specific than generic "Hilton"
+      }
 
       else if(hotelName.includes("hilton")){
         detectedType = "Hilton";
@@ -375,7 +395,16 @@ else if (hotelType === "ParkPlazaHotelLondonWaterloo") {
   return <ParkPlazaInvoiceView invoiceData={invoice} />;
 }
 else if (hotelType === "MarriotHotelTunis") {
-  return <MarriotTunisInvoiceView invoiceData={invoice} />;
+  return <MarriotTunisInvoiceView invoiceData={invoice} />
+}
+else if (hotelType === "HiltonParkLane") {
+  return <HiltonParkLaneView invoiceData={invoice} />;
+}
+else if (hotelType === "HyattUK") {
+  return <HyattRegencyView invoiceData={invoice} />;
+}
+else if (hotelType === "FourSeasonsUK") {
+  return <FourSeasonParkLaneView invoiceData={invoice} />;
 }
   else {
     // Default fallback

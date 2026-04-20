@@ -35,6 +35,9 @@ import ParkPlazaInvoiceView from "./viewTemplates/ParkPlazaInvoiceView";
 import MandarinInvoiceView from "./viewTemplates/MandarinInvoiceView";
 import MarriotTunisInvoiceView from "./viewTemplates/MarriotTunisInvoiceView";
 import DynamicInvoiceFormPageTunisia from "./DynamicInvoiceFormPageTunisia";
+import HyattRegencyView from "./viewTemplates/HyattRegencyView";
+import HiltonParkLaneView from "./viewTemplates/HiltonParkLaneView";
+import FourSeasonParkLaneView from "./viewTemplates/FourSeasonParkLaneView";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
@@ -62,7 +65,8 @@ export {
     MandarinInvoiceView,
     MarriotTunisInvoiceView,
     DynamicInvoiceFormPageUK,
-    DynamicInvoiceFormPageTunisia
-
-
+    DynamicInvoiceFormPageTunisia,
+    HyattRegencyView,
+    HiltonParkLaneView,
+    FourSeasonParkLaneView
 };

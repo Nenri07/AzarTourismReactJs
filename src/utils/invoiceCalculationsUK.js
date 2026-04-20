@@ -20,6 +20,7 @@ export const UK_HOTEL_CONFIGS = {
     detect: (name) => name.toLowerCase().includes('metropole'),
     columns: ['DATE', 'DESCRIPTION', 'ID', 'REF NO', 'GUEST CHARGES', 'CREDIT', 'BALANCE'],
     showVatBreakdownInRows: false, // Shows gross in table, VAT summary at bottom
+    defaultRoomDescription: 'ROOM & BREAKFAST',
     buildRows: ({ date, description, grossAmount, refId, refNo, credit }) => [
       {
         date,
@@ -38,6 +39,7 @@ export const UK_HOTEL_CONFIGS = {
     detect: (name) => name.toLowerCase().includes('park lane') && name.toLowerCase().includes('hilton'),
     columns: ['DATE', 'DESCRIPTION', 'ID', 'REF NO', 'GUEST CHARGES', 'CREDIT', 'BALANCE'],
     showVatBreakdownInRows: false,
+    defaultRoomDescription: 'ROOM & BREAKFAST',
     buildRows: ({ date, description, grossAmount, refId, refNo, credit }) => [
       {
         date,
@@ -121,6 +123,7 @@ export const UK_HOTEL_CONFIGS = {
     detect: (name) => name.toLowerCase().includes('hyatt'),
     columns: ['DATE', 'DESCRIPTION', 'REFERENCE', 'DEBIT', 'CREDIT'],
     showVatBreakdownInRows: false,
+    defaultRoomDescription: 'Accommodation',
     buildRows: ({ date, description, grossAmount, reference, credit }) => [
       {
         date,
