@@ -319,7 +319,7 @@ export const mapToUKBackendSchema = (formData, hotelConfig) => {
     const refNo = String(Number(startingRefNo) + accCalc.totalNights + idx);
     const rows = hotelCfg.buildRows({
       date: formatDate(service.service_date || formData.invoice_date),
-      description: service.service_name || service.description || 'Service',
+      description: capitalizeWords(service.service_name) || capitalizeWords(service.description) || 'Service',
       grossAmount: parseFloat(service.gross_amount || 0),
       netAmount: service.net_amount,
       vatAmount: service.vat_amount,

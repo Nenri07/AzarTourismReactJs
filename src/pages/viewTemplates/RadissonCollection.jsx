@@ -3,8 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '../../../public/radisson_collection-logo.jpeg';
-
+import logo from '../../../public/radisson_collection-logo.jpeg'; // ← changed
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PURE HELPERS  
@@ -70,7 +69,7 @@ const mapApiDataToInvoice = (data = {}) => {
         qty:          at.qty,
         netUnitPrice: at.netUnitPrice,
         netAmount:    at.netAmount,
-        tax:          at.tax,
+        tax:          "2%",
         taxAmt:       at.taxAmount,
         debit:        at.debit,
         credit:       at.credit || "",
@@ -96,21 +95,21 @@ const mapApiDataToInvoice = (data = {}) => {
     (a, b) => a.rawDate - b.rawDate
   );
 
-  const taxableRoom     = data.taxableAmount        || 0;   
-  const totalAccTax     = data.totalAccTax          || 0;   
-  const grandTotal      = data.grandTotal           || 0;   
-  const totalVat10      = data.totalVat10           || 0;   
-  const totalVat20      = data.totalVat20           || 0;   
-  const totalSvcGross   = data.totalServicesGross   || 0;   
-  const totalSvcTaxable = data.totalServicesTaxable || 0;   
-  const totalRoomGross  = data.totalRoomAllNights   || 0;   
+  const taxableRoom     = data.taxableAmount        || 0;
+  const totalAccTax     = data.totalAccTax          || 0;
+  const grandTotal      = data.grandTotal           || 0;
+  const totalVat10      = data.totalVat10           || 0;
+  const totalVat20      = data.totalVat20           || 0;
+  const totalSvcGross   = data.totalServicesGross   || 0;
+  const totalSvcTaxable = data.totalServicesTaxable || 0;
+  const totalRoomGross  = data.totalRoomAllNights   || 0;
 
   const taxRows = [];
 
   if (totalAccTax > 0) {
     taxRows.push({
       label:     "Accommodation Tax",
-      taxRate:   "0%",
+      taxRate:   "2%",
       netAmount: totalAccTax,
       taxAmt:    0,
       debit:     totalAccTax,
@@ -141,7 +140,7 @@ const mapApiDataToInvoice = (data = {}) => {
   const taxTotalTaxAmt    = totalVat10 + totalVat20;
 
   return {
-    invoiceNo:    data.invoiceNo       || data.invoiceN || "", 
+    invoiceNo:    data.invoiceNo       || data.invoiceN || "",
     billingDate:  formatDate(data.billingDate  || data.invoiceDate) || "",
     roomNo:       data.roomNo          || "",
     pax:          data.pax             || 1,
@@ -171,16 +170,16 @@ const mapApiDataToInvoice = (data = {}) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PAGINATION (FIXED LOGIC)
+// PAGINATION
 // ─────────────────────────────────────────────────────────────────────────────
 const buildPages = (items = []) => {
   if (items.length === 0) {
     return [{ items: [], showTotals: true, pageNo: 1, totalPages: 1 }];
   }
-  
+
   const pages = [];
-  const MAX_ROWS_NORMAL = 24;
-  const MAX_ROWS_WITH_TOTALS = 14; 
+  const MAX_ROWS_NORMAL      = 24;
+  const MAX_ROWS_WITH_TOTALS = 14;
 
   for (let i = 0; i < items.length;) {
     const remaining = items.length - i;
@@ -192,7 +191,7 @@ const buildPages = (items = []) => {
       isLastPage = true;
     } else if (remaining <= MAX_ROWS_NORMAL && remaining > MAX_ROWS_WITH_TOTALS) {
       take = remaining;
-      isLastPage = false; 
+      isLastPage = false;
     } else {
       take = MAX_ROWS_NORMAL;
     }
@@ -204,10 +203,7 @@ const buildPages = (items = []) => {
     i += take;
 
     if (i >= items.length && !isLastPage) {
-      pages.push({
-        items: [],
-        showTotals: true
-      });
+      pages.push({ items: [], showTotals: true });
       break;
     }
   }
@@ -255,47 +251,45 @@ const RadissonCollection = ({ invoiceData }) => {
   }, [isPdfDownload, invoice, navigate]);
 
   const handleDownloadPDF = async () => {
-  if (!invoiceRef.current) return;
-  setPdfLoading(true);
+    if (!invoiceRef.current) return;
+    setPdfLoading(true);
 
-  // Remove all stylesheets to avoid oklch/Tailwind crash in html2canvas
-  const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
-  headStyles.forEach(style => style.parentNode.removeChild(style));
+    const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
+    headStyles.forEach(style => style.parentNode.removeChild(style));
 
-  try {
-    const images = invoiceRef.current.querySelectorAll('img');
-    await Promise.all(Array.from(images).map(img => {
-      if (img.complete) return Promise.resolve();
-      return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
-    }));
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const images = invoiceRef.current.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+      }));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-    const opt = {
-      margin:    0,
-      filename:  `Radisson_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
-      image:     { type: 'jpeg', quality: 3 },
-      html2canvas: {
-        scale:           4,
-        useCORS:         true,
-        letterRendering: true,
-        scrollY:         0,
-        windowWidth:     794,
-      },
-      jsPDF:     { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['css', 'legacy'] },
-    };
+      const opt = {
+        margin:      0,
+        filename:    `Radisson_Collection_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
+        image:       { type: 'jpeg', quality: 3 },
+        html2canvas: {
+          scale:           4,
+          useCORS:         true,
+          letterRendering: true,
+          scrollY:         0,
+          windowWidth:     794,
+        },
+        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:   { mode: ['css', 'legacy'] },
+      };
 
-    await html2pdf().set(opt).from(invoiceRef.current).save();
-    toast.success("PDF Downloaded");
-  } catch (err) {
-    console.error("PDF Error:", err);
-    toast.error("PDF generation failed");
-  } finally {
-    // Restore all stylesheets
-    headStyles.forEach(style => document.head.appendChild(style));
-    setPdfLoading(false);
-  }
-};
+      await html2pdf().set(opt).from(invoiceRef.current).save();
+      toast.success("PDF Downloaded");
+    } catch (err) {
+      console.error("PDF Error:", err);
+      toast.error("PDF generation failed");
+    } finally {
+      headStyles.forEach(style => document.head.appendChild(style));
+      setPdfLoading(false);
+    }
+  };
 
   if (!invoice) return null;
 
@@ -317,7 +311,7 @@ const RadissonCollection = ({ invoiceData }) => {
     .inv-page {
       width: 100%;
       max-width: 794px;
-      padding: 8mm 10mm 40mm 10mm; /* Increased bottom padding for footer space */
+      padding: 8mm 10mm 6mm 10mm;
       margin: 0 auto 24px auto;
       background: #fff;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -350,7 +344,7 @@ const RadissonCollection = ({ invoiceData }) => {
     .copy-text { font-weight: bold; font-size: 9px; margin-top: 30px; margin-right: 275px; }
 
     table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 4px 2px; vertical-align: top; }
+    th, td { padding: 2px 2px; vertical-align: top; }
     .text-right  { text-align: right  !important; }
     .text-center { text-align: center !important; }
 
@@ -358,9 +352,13 @@ const RadissonCollection = ({ invoiceData }) => {
       text-align: left;
       font-weight: bold;
       font-style: italic;
-      font-size: 8px;
+      font-size: 7px;
     }
-    .guest-table th span { text-decoration: underline; }
+    .guest-table th span {
+      text-decoration: underline;
+      text-decoration-thickness: 1.3px;
+      text-underline-offset: 3px;
+    }
     .guest-table td { padding-bottom: 30px; }
 
     .items-table th {
@@ -369,20 +367,27 @@ const RadissonCollection = ({ invoiceData }) => {
       font-style: italic;
       font-size: 8px;
     }
-    .items-table th span { text-decoration: underline; }
+    .items-table th span {
+      text-decoration: underline;
+      text-decoration-thickness: 1.3px;
+      text-underline-offset: 3px;
+    }
     .items-table { margin-bottom: 16px; }
-    .items-table tbody tr td { line-height: 1.4; }
+    .items-table tbody tr:first-child td { padding-top: 6px; }
+    .items-table tbody tr td { line-height: 1.5; }
 
     .summary-wrapper { display: flex; justify-content: flex-end; margin-bottom: 16px; }
-    .summary-table { width: 40%; }
+    .summary-table { width: 58%; }
     .summary-table td { padding: 3px 0; }
 
     .payment-wrapper { display: flex; justify-content: flex-end; margin-bottom: 20px; }
-    .payment-block   { width: 40%; }
-    .payment-title   { font-weight: bold; font-style: italic; margin-bottom: 6px; }
+    .payment-block   { width: 62%; }
+    .payment-title   { font-weight: bold; font-style: italic; }
     .payment-row     { display: flex; justify-content: space-between; padding: 5px 0; }
     .payment-line    { border-bottom: 1px solid #000; margin: 2px 0; }
 
+    .tax-wrapper { display: flex; justify-content: flex-end; }
+    .tax-table   { width: 80%; }
     .tax-table th {
       font-weight: bold;
       font-style: italic;
@@ -393,18 +398,16 @@ const RadissonCollection = ({ invoiceData }) => {
     .tax-table td { padding: 2px 2px; }
     .tax-total-row td { padding-top: 8px; }
 
-    /* Footer Positioning Rules */
-    .footer-container {
-      position: absolute;
-      bottom: 10mm;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      font-size: 7.5px;
-      line-height: 1.3;
-      color: #000;
+    .signature-block {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-end;
     }
-    .footer-container p { margin: 1px 0; }
+    .sig-text { margin-right: 105px; }
+    .sig-line { border-bottom: 1px solid #000; width: 100px; display: inline-block; }
+
+    .bottom-footer { font-size: 8px; line-height: 1; color: #000; text-align: center; }
+    .bottom-footer p { margin: 1px 0; }
 
     @media print {
       .invoice-box { background: none !important; }
@@ -425,12 +428,12 @@ const RadissonCollection = ({ invoiceData }) => {
   const PageHeader = ({ page }) => (
     <>
       <div className="logo-container">
-        <img src={logo} alt="Radisson Logo" />
+        <img src={logo} alt="Radisson Collection Logo" />
       </div>
 
       <div className="top-section">
         <div className="address-block">
-          <p style={{ fontStyle: 'italic', fontWeight: 'bold', textDecoration: 'underline' }}>
+          <p style={{ fontStyle: 'italic', fontWeight: 'bold', textDecoration: 'underline', textDecorationThickness: '1.2px', textUnderlineOffset: '3px' }}>
             Fiscal Information
           </p>
           <p>/</p>
@@ -453,13 +456,13 @@ const RadissonCollection = ({ invoiceData }) => {
       <table className="guest-table">
         <thead>
           <tr>
-            <th><span>Invoice N</span></th>
-            <th><span>Billing Date</span></th>
-            <th><span>Room</span></th>
-            <th><span>PAX</span></th>
-            <th><span>Main Guest Name</span></th>
-            <th><span>Check in Date</span></th>
-            <th><span>Check out Date</span></th>
+            <th width="10%"><span>Invoice N</span></th>
+            <th style={{ width: "17%" }}><span>Billing Date</span></th>
+            <th width="5%"><span>Room</span></th>
+            <th width="8%"><span>PAX</span></th>
+            <th width="26%"><span>Main Guest Name</span></th>
+            <th width="12%"><span>Check in Date</span></th>
+            <th><span style={{fontSize: "6.8px"}}>Check out Date</span></th>
             <th><span>Page</span></th>
           </tr>
         </thead>
@@ -471,7 +474,7 @@ const RadissonCollection = ({ invoiceData }) => {
             <td>{invoice.pax}</td>
             <td style={{ whiteSpace: 'pre-wrap' }}>{invoice.guestName}</td>
             <td>{invoice.checkInDate}</td>
-            <td>{invoice.checkOutDate}</td>
+            <td style={{fontSize: "9.5px"}}>{invoice.checkOutDate}</td>
             <td>{page.pageNo}/{page.totalPages}</td>
           </tr>
         </tbody>
@@ -479,18 +482,16 @@ const RadissonCollection = ({ invoiceData }) => {
     </>
   );
 
-const PageFooter = () => (
-  <div className="footer-container">
-    <p>Radisson Collection Hotel, Vadistanbul</p>
-    <p>Ayazaga Mahallesi Cendere Caddesi 1A Apt. No. 109A, 34485 Istanbul</p>
-    <p>T: +90 212 341 0000 | sales.vadistanbul@radissoncollection.com</p>
-    <p>https://www.radissonhotels.com/en-us/hotels/radisson-collection-vadistanbul</p>
-    <p>VAT number: 8830446063 | QNB Finansbank - Büyükdere Cad. Şubesi</p>
-    <p>TL HESAP IBAN TR71 0011 1000 0000 0073 1613 83</p>
-    <p>$ HESAP IBAN TR94 0011 1000 0000 0073 1614 54</p>
-    <p>€ HESAP IBAN TR76 0011 1000 0000 0073 1614 87</p>
-  </div>
-);
+  // ── Collection-specific footer ────────────────────────────────────────────
+  const PageFooter = () => (
+    <div className="bottom-footer" style={{ marginTop: '165px', paddingTop: '10px', paddingBottom: 'inherit' }}>
+      <p>Radisson Collection Hotel, Vadistanbul</p>
+      <p>Ayazaga Mahallesi Cendere Caddesi 1A Apt. No. 109A, 34485 Istanbul</p>
+      <p>T: +90 212 341 0000 | sales.vadistanbul@radissoncollection.com</p>
+      <p>https://www.radissonhotels.com/en-us/hotels/radisson-collection-vadistanbul</p>
+    </div>
+  );
+
   return (
     <InvoiceTemplate
       loading={loading}
@@ -519,10 +520,10 @@ const PageFooter = () => (
               <thead>
                 <tr>
                   <th style={{ width: '70px' }}><span>SERV. DATE</span></th>
-                  <th><span>Item</span></th>
+                  <th width="37%"><span>Item</span></th>
                   <th className="text-center"><span>Qty</span></th>
-                  <th className="text-right"><span>Net Unit Price</span></th>
-                  <th className="text-right"><span>Net Amount</span></th>
+                  <th className="text-right" width="9%"><span>Net Unit Price</span></th>
+                  <th className="text-right" width="10%"><span>Net Amount</span></th>
                   <th className="text-right"><span>Tax</span></th>
                   <th className="text-right"><span>Tax Amt</span></th>
                   <th className="text-right"><span>Debit</span></th>
@@ -556,10 +557,6 @@ const PageFooter = () => (
                         <td className="text-right">{formatCurrency(invoice.summary.subtotal)}</td>
                       </tr>
                       <tr>
-                        <td style={{ textAlign: 'left' }}>Accommodation Tax</td>
-                        <td className="text-right">{formatCurrency(invoice.summary.accommodationTax)}</td>
-                      </tr>
-                      <tr>
                         <td style={{ textAlign: 'left' }}>Total</td>
                         <td className="text-right">{formatCurrency(invoice.summary.grandTotal)}</td>
                       </tr>
@@ -582,54 +579,48 @@ const PageFooter = () => (
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '15px' }}>
-                  {/* Signature on the Left Bottom */}
-                  <div style={{ paddingBottom: '12px', display: 'flex', alignItems: 'flex-end' }}>
-                    <span style={{ marginRight: '10px' }}>Signature</span>
-                  </div>
-
-                  {/* Tax Table on the Right */}
-                  <div style={{ width: '80%', paddingBottom: '13px'}}>
-                    <table className="tax-table" style={{ width: '100%',marginBottom: '20px' }}>
-                      <thead>
-                        <tr>
-                          <th style={{ textAlign: 'left', width: '20%' }}>Tax info</th>
-                          <th className="text-center">Tax</th>
-                          <th className="text-right">Net Amount</th>
-                          <th className="text-right">Tax Amt</th>
-                          <th className="text-right">Total Debit</th>
-                          <th className="text-right">Total Credit</th>
-                        </tr>
-                        <tr><td colSpan="6" className="tax-line-header" /></tr>
-                      </thead>
-                      <tbody>
-                        {invoice.taxRows.map((row, i) => (
-                          <tr key={i} style={ i === invoice.taxRows.length - 1 ? { paddingBottom: '12px' } : {}}>
-                            <td style={ i === invoice.taxRows.length - 1 ? { paddingBottom: '12px' } : {}}>{row.label}</td>
-                            <td className="text-center">{row.taxRate}</td>
-                            <td className="text-right">{formatCurrency(row.netAmount)}</td>
-                            <td className="text-right">{formatCurrency(row.taxAmt)}</td>
-                            <td className="text-right">{formatCurrency(row.debit)}</td>
-                            <td></td>
-                          </tr>
-                        ))}
-                        <tr><td colSpan="6" className="tax-line-footer" /></tr>
-                        <tr className="tax-total-row">
-                          <td style={{ fontWeight: 'bold' }}>Total</td>
-                          <td></td>
-                          <td className="text-right">{formatCurrency(invoice.taxTotalNetAmount)}</td>
-                          <td className="text-right">{formatCurrency(invoice.taxTotalTaxAmt)}</td>
-                          <td className="text-right">
-                            {formatCurrency(invoice.grandTotal)} <strong>TRY</strong>
-                          </td>
+                <div className="tax-wrapper">
+                  <table className="tax-table">
+                    <thead>
+                      <tr>
+                        <th style={{ textAlign: 'left', width: '20%' }}>Tax info</th>
+                        <th className="text-center">Tax</th>
+                        <th className="text-right">Net Amount</th>
+                        <th className="text-right">Tax Amt</th>
+                        <th className="text-right">Total Debit</th>
+                        <th className="text-right">Total Credit</th>
+                      </tr>
+                      <tr><td colSpan="6" className="tax-line-header" /></tr>
+                    </thead>
+                    <tbody>
+                      {invoice.taxRows.map((row, i) => (
+                        <tr key={i} style={i === invoice.taxRows.length - 1 ? { paddingBottom: '12px' } : {}}>
+                          <td style={i === invoice.taxRows.length - 1 ? { paddingBottom: '12px' } : {}}>{row.label}</td>
+                          <td className="text-center">{row.taxRate}</td>
+                          <td className="text-right">{formatCurrency(row.netAmount)}</td>
+                          <td className="text-right">{formatCurrency(row.taxAmt)}</td>
+                          <td className="text-right">{formatCurrency(row.debit)}</td>
                           <td></td>
                         </tr>
-                      </tbody>
+                      ))}
+                      <tr><td colSpan="6" className="tax-line-footer" /></tr>
+                      <tr className="tax-total-row">
+                        <td style={{ fontWeight: 'bold' }}>Total</td>
+                        <td></td>
+                        <td className="text-right">{formatCurrency(invoice.taxTotalNetAmount)}</td>
+                        <td className="text-right">{formatCurrency(invoice.taxTotalTaxAmt)}</td>
+                        <td className="text-right">
+                          {formatCurrency(invoice.grandTotal)} <strong>TRY</strong>
+                        </td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
-                    </table>
-                                           <span style={{ borderBottom: '1px solid #000', width: '120px', display: 'inline-block', marginLeft: "15px" }} />
-
-                  </div>
+                <div className="signature-block" style={{ marginTop: '16px' }}>
+                  <span className="sig-text">Signature</span>
+                  <span className="sig-line" />
                 </div>
               </>
             )}

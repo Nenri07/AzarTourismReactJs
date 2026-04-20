@@ -1425,6 +1425,7 @@ const mapApiDataToInvoice = (data = {}) => {
     roomType:     data.roomCategory || data.roomType || "2 BEDROOM APT",
     voucher:      data.voucherNo       || data.reservation || "45216371",
     time:         data.time || "10:39", 
+    totalInEur: data.totalInEur || 0,
     
     items: allItems,
     grandTotal: grandTotal,
@@ -1441,8 +1442,8 @@ const buildPages = (items = []) => {
   }
   
   const pages = [];
-  const MAX_ROWS_NORMAL = 35; 
-  const MAX_ROWS_WITH_TOTALS = 32; 
+  const MAX_ROWS_NORMAL = 27; 
+  const MAX_ROWS_WITH_TOTALS = 22; 
 
   for (let i = 0; i < items.length;) {
     const remaining = items.length - i;
@@ -1622,7 +1623,7 @@ const CheyaInvoiceView = ({ invoiceData }) => {
         margin-top: 35px;
     }
     .title-box h1 {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: bold;
         margin: 0;
         letter-spacing: -0.5px;
@@ -1695,9 +1696,10 @@ const CheyaInvoiceView = ({ invoiceData }) => {
         width: 35%;
         display: flex;
         justify-content: flex-end;
+        padding-right: 5px;
     }
     .right-info-table .label {
-        width: 85px;
+        width: 67px;
         font-weight: bold;
     }
 
@@ -1705,10 +1707,10 @@ const CheyaInvoiceView = ({ invoiceData }) => {
     .data-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 9px;
+        font-size: 10px;
     }
     .data-table td {
-        padding: 3px 8px;
+        padding: 5px 8px;
         text-align: left;
     }
     .data-table th {
@@ -1835,7 +1837,7 @@ const CheyaInvoiceView = ({ invoiceData }) => {
                 </tr>
                 <tr>
                   <td className="label" style={{paddingTop: "0px" , paddingBottom: "3px", lineHeight: "1.7"}}>Folyo<br />No</td>
-                  <td className="colon" style={{ verticalAlign: 'bottom', paddingTop: "0px", paddingBottom: "3px" }}>:</td>
+                  <td className="colon" style={{ verticalAlign: 'middle', paddingTop: "0px", paddingBottom: "3px" }}>:</td>
                   <td className="value" style={{ verticalAlign: 'bottom' ,paddingTop: "0px" , paddingBottom: "3px"}}>{invoice.folioNo}</td>
                 </tr>
                 <tr>
@@ -1933,11 +1935,17 @@ const CheyaInvoiceView = ({ invoiceData }) => {
                   </tr>
                 ))}
                 
-                {page.showTotals && (
-                  <tr className="total-row">
-                    <td colSpan="4" style={{ textAlign: 'left' }}>Toplam</td>
-                    <td className="col-amount">{formatCurrency(invoice.grandTotal)} TRY</td>
-                  </tr>
+              {page.showTotals && (
+                  <>
+                    <tr className="total-row">
+                      <td colSpan="4" style={{ textAlign: 'left' }}>Toplam</td>
+                      <td className="col-amount">{formatCurrency(invoice.grandTotal)} TRY</td>
+                    </tr>
+                    <tr className="total-row">
+                      <td colSpan="4" style={{ textAlign: 'left' }}>Toplam (EUR)</td>
+                      <td className="col-amount">{formatCurrency(invoice.totalInEur)} EUR</td>
+                    </tr>
+                  </>
                 )}
               </tbody>
             </table>

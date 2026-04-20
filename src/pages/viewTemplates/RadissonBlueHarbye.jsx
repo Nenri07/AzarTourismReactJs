@@ -69,7 +69,7 @@ const mapApiDataToInvoice = (data = {}) => {
         qty:          at.qty,
         netUnitPrice: at.netUnitPrice,
         netAmount:    at.netAmount,
-        tax:          at.tax,
+        tax:          "2%",
         taxAmt:       at.taxAmount,
         debit:        at.debit,
         credit:       at.credit || "",
@@ -109,7 +109,7 @@ const mapApiDataToInvoice = (data = {}) => {
   if (totalAccTax > 0) {
     taxRows.push({
       label:     "Accommodation Tax",
-      taxRate:   "0%",
+      taxRate:   "2%",
       netAmount: totalAccTax,
       taxAmt:    0,
       debit:     totalAccTax,
@@ -349,18 +349,22 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
     .copy-text { font-weight: bold; font-size: 9px; margin-top: 30px; margin-right: 275px; }
 
     table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 4px 2px; vertical-align: top; }
+    th, td { padding: 2px 2px; vertical-align: top; }
     .text-right  { text-align: right  !important; }
     .text-center { text-align: center !important; }
 
     .guest-table th {
       text-align: left;
       font-weight: bold;
+
       font-style: italic;
       font-size: 8px;
     }
-    .guest-table th span { text-decoration: underline; }
-    .guest-table td { padding-bottom: 30px; }
+.guest-table th span {
+  text-decoration: underline;
+  text-decoration-thickness: 1.3px; /* ✔ correct */
+  text-underline-offset: 3px;       /* ✔ correct */
+}    .guest-table td { padding-bottom: 30px; }
 
     .items-table th {
       text-align: left;
@@ -368,9 +372,12 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
       font-style: italic;
       font-size: 8px;
     }
-    .items-table th span { text-decoration: underline; }
+    .items-table th span { text-decoration: underline; 
+    text-decoration-thickness: 1.3px; /* ✔ correct */
+  text-underline-offset: 3px;  
+    }
     .items-table { margin-bottom: 16px; }
-    .items-table tbody tr td { line-height: 1.4; }
+    .items-table tbody tr td { line-height: 1.3; }
 
     .summary-wrapper { display: flex; justify-content: flex-end; margin-bottom: 16px; }
     .summary-table { width: 58%; }
@@ -430,9 +437,9 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
 
       <div className="top-section">
         <div className="address-block">
-          <p style={{ fontStyle: 'italic', fontWeight: 'bold', textDecoration: 'underline' }}>
-            Fiscal Information
-          </p>
+        <p style={{ fontStyle: 'italic', fontWeight: 'bold', textDecoration: 'underline', textDecorationThickness: '1.2px',textUnderlineOffset: '3px' }}>
+              Fiscal Information
+            </p>
           <p>/</p>
           <p>AZAR TOURISM</p>
           <p>ALGERIA SQUARE BUILDING NUMBER 12 FIRST FLOOR 12/1</p>
@@ -453,12 +460,12 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
       <table className="guest-table">
         <thead>
           <tr>
-            <th><span>Invoice N</span></th>
-            <th><span>Billing Date</span></th>
-            <th><span>Room</span></th>
-            <th><span>PAX</span></th>
-            <th><span>Main Guest Name</span></th>
-            <th><span>Check in Date</span></th>
+            <th width="10%"><span>Invoice N</span></th>
+            <th style={{width : "17%"}}><span>Billing Date</span></th>
+            <th width="5%"><span>Room</span></th>
+            <th width="8%"><span>PAX</span></th>
+            <th width="26%"><span>Main Guest Name</span></th>
+            <th width="12%"><span>Check in Date</span></th>
             <th><span>Check out Date</span></th>
             <th><span>Page</span></th>
           </tr>
@@ -480,11 +487,9 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
   );
 
   const PageFooter = () => (
-    <div className="bottom-footer" style={{ marginTop: 'auto', paddingTop: '10px',paddingBottom: 'inherit' }}>
+    <div className="bottom-footer" style={{ marginTop: '165px', paddingTop: '10px',paddingBottom: 'inherit' }}>
       <p>Radisson Hotel Istanbul Harbiye, Karadeniz Örme San. ve Dış Tic. A.Ş Harbiye Mah. Cumhuriyet Cad. No:46 ŞİŞLİ/ İSTANBUL Tel: 0090 212 2611783 E-mail:<br></br>  muhasebe.harbiye@radisson.com</p>
-      <p>Web: https://www.radissonhotels.com/en-us/hotels/radisson-hotel-istanbul-harbiye Banka: Garanti BBVA Yenibosna Ticari Şube IBAN: TR46 0006 2000 3040 0006 2906 66 SWIFT Kodu:<br></br>
-       TGBATRİS</p>
-      <p>Hesap No: 304 - 6290666 Vergi Dairesi: MARMARA KURUMLAR Vergi Kimlik No: 5090028808 Ticaret Sicil No: 274484 Mersis No: 050900288080001</p>
+     
     </div>
   );
 
@@ -516,10 +521,10 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
               <thead>
                 <tr>
                   <th style={{ width: '70px' }}><span>SERV. DATE</span></th>
-                  <th><span>Item</span></th>
+                  <th width="37%"><span>Item</span></th>
                   <th className="text-center"><span>Qty</span></th>
-                  <th className="text-right"><span>Net Unit Price</span></th>
-                  <th className="text-right"><span>Net Amount</span></th>
+                  <th className="text-right" width="9%"><span>Net Unit Price</span></th>
+                  <th className="text-right" width="10%"><span>Net Amount</span></th>
                   <th className="text-right"><span>Tax</span></th>
                   <th className="text-right"><span>Tax Amt</span></th>
                   <th className="text-right"><span>Debit</span></th>
@@ -552,10 +557,10 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
                         <td style={{ textAlign: 'left' }}>Subtotal</td>
                         <td className="text-right">{formatCurrency(invoice.summary.subtotal)}</td>
                       </tr>
-                      <tr>
+                      {/* <tr>
                         <td style={{ textAlign: 'left' }}>Accommodation Tax</td>
                         <td className="text-right">{formatCurrency(invoice.summary.accommodationTax)}</td>
-                      </tr>
+                      </tr> */}
                       <tr>
                         <td style={{ textAlign: 'left' }}>Total</td>
                         <td className="text-right">{formatCurrency(invoice.summary.grandTotal)}</td>

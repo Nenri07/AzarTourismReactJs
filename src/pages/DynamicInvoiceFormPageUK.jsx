@@ -340,6 +340,8 @@ export default function DynamicInvoiceFormPageUK() {
 
     try {
       const invoicePayload = mapToUKBackendSchema(formData, hotelConfig);
+      console.log("this is invoice payload",  invoicePayload);
+      
 
       if (isEditMode) {
         await UKInvoiceApi.updateInvoice(invoiceId, invoicePayload);

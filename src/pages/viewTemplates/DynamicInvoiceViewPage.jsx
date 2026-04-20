@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import cairoInvoiceApi from "../../Api/cairoInvoice.api"; 
 import malaysiaInvoiceApi from "../../Api/malaysiaInvoice.api";
+import ukInvoiceApi from "../../Api/ukInvoice.api";
 
 // Views
 import CVKInvoiceView from "./CVKInvoiceView";
@@ -35,7 +36,8 @@ import TrillionSuitesInvoiceView from "./TrillionSuitesInvoiceView";
 import IntercontinentalInvoiceViewMalaysia from "./IntercontinentalInvoiceViewMalaysia";
 import MarmaraInvoiceView from "./MarmaraInvoiceView";
 import HiltonIstanbulInvoiceView from "./HiltonIstanbulInvoiceView";
-import { HiltonIstambulInvoiceView, RadissonBlueSisli, RadissonCollection , RadissonHerbyeInvoiceView } from "..";
+import tunisiainvoiceApi from "../../Api/tunisiainvoice.api ";
+import { HiltonIstambulInvoiceView, RadissonBlueSisli, RadissonCollection , RadissonHerbyeInvoiceView ,MarriotInvoiceView, MandarinInvoiceView, ParkPlazaInvoiceView, MarriotTunisInvoiceView} from "..";
 import YotelairInvoiceView from "./YotelInvoiceView";
 import CheyaInvoiceView from "./CheyaInvoiceView";
 
@@ -52,6 +54,8 @@ export default function DynamicInvoiceViewPage() {
   // Check if we are on the Egypt route
   const isEgyptRoute = location.pathname.includes('egypt-invoice');
     const isMalaysiaRoute = location.pathname.includes('malaysia-invoice');
+    const isUk = location.pathname.includes('uk-invoice');
+    const isTunisiaRoute = location.pathname.includes('tunisia-invoice');
 
 
   useEffect(() => {
@@ -74,7 +78,15 @@ export default function DynamicInvoiceViewPage() {
       } else if (isMalaysiaRoute) {
         console.log("Fetching from Malaysia API...");
         response = await malaysiaInvoiceApi.getInvoiceById(invoiceId);
-      } else {
+      } else if(isUk){
+        console.log("Fetching from UK API...");
+        response = await ukInvoiceApi.getInvoiceById(invoiceId);
+      }
+      else if (isTunisiaRoute) {
+        console.log("Fetching from Tunisia API...");
+        response = await tunisiainvoiceApi.getInvoiceById(invoiceId);
+      }
+      else {
         console.log("Fetching from Turkey API...");
         response = await turkeyInvoiceApi.getInvoiceById(invoiceId);
       }
@@ -209,8 +221,19 @@ else if (hotelName.includes("hilton istanbul bosphorus") || hotelName.includes("
       else if (hotelName.includes("cheya")) {
         detectedType = "Cheya";
       }
+      else if (hotelName.includes('london marriott hotel park lane')) {
+        detectedType = "LondonMarriottHotelParkLane";
+      }
+      else if (hotelName.includes("mandarin oriental mayfair london")) {
+        detectedType = "Mandarin";
+      }
+      else if( hotelName.includes("park plaza london waterloo")) {
+        detectedType = "ParkPlazaHotelLondonWaterloo";
+      }
+      else if(hotelName.includes("tunis marriott hotel")){
+        detectedType = "MarriotHotelTunis";
+      }
 
-      
       console.log("🎯 Detected hotel type:", detectedType);
       setHotelType(detectedType);
       
@@ -328,7 +351,7 @@ else if (hotelType === "RadissonHarbiye") {
   return <RadissonHerbyeInvoiceView invoiceData={invoice} />;
 }
 else if (hotelType === "RadissonCollection") {
-  return <RadissonCollectionInvoiceView invoiceData={invoice} />;
+  return <RadissonCollection invoiceData={invoice} />;
 }
 else if (hotelType === "MARMARA_TAKSIM") {
   return <MarmaraInvoiceView invoiceData={invoice} />;
@@ -341,6 +364,18 @@ else if (hotelType === "Yotelair") {
 }
 else if (hotelType === "Cheya") {
   return <CheyaInvoiceView invoiceData={invoice} />;
+}
+else if(hotelType === "LondonMarriottHotelParkLane") {
+  return <MarriotInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "Mandarin") {
+  return <MandarinInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "ParkPlazaHotelLondonWaterloo") {
+  return <ParkPlazaInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "MarriotHotelTunis") {
+  return <MarriotTunisInvoiceView invoiceData={invoice} />;
 }
   else {
     // Default fallback

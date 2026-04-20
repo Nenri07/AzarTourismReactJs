@@ -1,35 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-// Replace with your actual API path if different
-import ukInvoiceApi from '../../Api/ukInvoice.api'; 
+import invoiceApi from "../../Api/invoice.api"; 
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-
-// Dummy data fallback perfectly matching the Marriott format
-const dummyInvoiceData = {
-  guestName: "Elmghairbi, Ahmed",
-  companyNames: "AZAR TOURISM",
-  companyAddress: "Libya\nLibya\nLibyan Arab Jamahiriya",
-  confNo: "199650950",
-  invoiceDate: "2026-03-12T00:00:00.000Z",
-  folioNo: "",
-  roomNo: "244",
-  arrivalDate: "2026-03-09T00:00:00.000Z",
-  departureDate: "2026-03-12T00:00:00.000Z",
-  cashierNo: "103099",
-  userId: "APOEUR-ATSIM842",
-  vatNo: "GB882156411",
-  accommodationDetails: [
-    { date: "2026-03-09T00:00:00.000Z", text: "Room Accommodation", chargesGbp: 495.00 },
-    { date: "2026-03-09T00:00:00.000Z", text: "Deposit Transfer at C/I", chargesGbp: null, creditsGbp: 1485.00 },
-    { date: "2026-03-10T00:00:00.000Z", text: "Room Accommodation", chargesGbp: 495.00 },
-    { date: "2026-03-11T00:00:00.000Z", text: "Room Accommodation", chargesGbp: 495.00 },
-  ],
-  otherServices: [],
-  grandTotalGbp: 1485.00,
-  creditsTotal: 1485.00
-};
+import logo from "/marriot_london-logo.jfif";
 
 const MarriotInvoiceView = ({ invoiceData }) => {
   const { invoiceId } = useParams();
@@ -51,7 +26,7 @@ const MarriotInvoiceView = ({ invoiceData }) => {
     } else if (invoiceId) {
       fetchInvoiceData();
     } else {
-      setInvoice(transformInvoiceData(dummyInvoiceData));
+      setInvoice(null);
       setLoading(false);
     }
   }, [invoiceData, invoiceId]);
@@ -69,22 +44,17 @@ const MarriotInvoiceView = ({ invoiceData }) => {
   const fetchInvoiceData = async () => {
     try {
       setLoading(true);
-      const response = await ukInvoiceApi.getInvoiceById(invoiceId);
+      const response = await invoiceApi.getInvoiceById(invoiceId);
       
       let rawData = response.data || response;
-      if (rawData.data) {
-        rawData = rawData.data;
-        if (rawData.data) {
-          rawData = rawData.data;
-        }
-      }
+      if (rawData.data) rawData = rawData.data;
+      if (rawData.data) rawData = rawData.data;
       
       setInvoice(transformInvoiceData(rawData));
     } catch (err) {
       console.error("Error fetching Marriott invoice:", err);
-      setError("Failed to load invoice data. Displaying sample data.");
-      toast.error("Failed to load invoice from API. Using dummy data.");
-      setInvoice(transformInvoiceData(dummyInvoiceData));
+      toast.error("Failed to load invoice from API.");
+      setInvoice(null);
     } finally {
       setLoading(false);
     }
@@ -97,12 +67,16 @@ const MarriotInvoiceView = ({ invoiceData }) => {
     
     if (data.accommodationDetails && Array.isArray(data.accommodationDetails)) {
         data.accommodationDetails.forEach(item => {
+            const charge = parseFloat(item.charges_gbp || item.chargesGbp || 0);
+            const credit = parseFloat(item.credits_gbp || item.creditsGbp || 0);
+            
             items.push({
                 date: formatDate(item.date),
                 rawDate: new Date(item.date),
-                text: item.text || item.description || "Room Accommodation",
-                chargesGBP: item.chargesGbp ? formatCurrency(item.chargesGbp) : "",
-                creditsGBP: item.creditsGbp ? formatCurrency(item.creditsGbp) : "",
+                text: item.text || item.description || "",
+                chargesGBP: charge ? formatCurrency(charge) : "",
+                creditsGBP: credit ? formatCurrency(credit) : "",
+                rawCredit: credit, 
                 type: 'accommodation'
             });
         });
@@ -110,12 +84,16 @@ const MarriotInvoiceView = ({ invoiceData }) => {
 
     if (data.otherServices && Array.isArray(data.otherServices)) {
         data.otherServices.forEach(service => {
+            const charge = parseFloat(service.charges_gbp || service.chargesGbp || service.amount || 0);
+            const credit = parseFloat(service.credits_gbp || service.creditsGbp || 0);
+
             items.push({
                 date: formatDate(service.date),
                 rawDate: new Date(service.date),
-                text: service.name || service.text || "Service",
-                chargesGBP: service.amount || service.chargesGbp ? formatCurrency(service.amount || service.chargesGbp) : "",
-                creditsGBP: service.creditsGbp ? formatCurrency(service.creditsGbp) : "",
+                text: service.text || service.name || service.service_type || "",
+                chargesGBP: charge ? formatCurrency(charge) : "",
+                creditsGBP: credit ? formatCurrency(credit) : "",
+                rawCredit: credit, 
                 type: 'service'
             });
         });
@@ -132,7 +110,7 @@ const MarriotInvoiceView = ({ invoiceData }) => {
     return {
       ...data,
       items,
-      formattedInvoiceDate: formatDate(data.invoiceDate || new Date()),
+      formattedInvoiceDate: formatDate(data.invoiceDate || data.taxDate),
       formattedArrivalDate: formatDate(data.arrivalDate),
       formattedDepartureDate: formatDate(data.departureDate),
     };
@@ -151,7 +129,7 @@ const MarriotInvoiceView = ({ invoiceData }) => {
   };
 
   const formatCurrency = (val) => {
-    if (val === undefined || val === null || val === "") return "";
+    if (val === undefined || val === null || val === "" || isNaN(val)) return "";
     return parseFloat(val).toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
@@ -162,28 +140,40 @@ const MarriotInvoiceView = ({ invoiceData }) => {
     if (invoice && invoice.items) {
       const pages = [];
       const items = invoice.items;
+      
+      const CHUNK_SIZE = 22; 
+      const SAFE_CHUNK_FOR_FOOTER = 15; 
       const totalTx = items.length;
 
-      // 20 items per page limit
-      if (totalTx > 20) {
-        const CHUNK_SIZE = 20;
-        for (let i = 0; i < totalTx; i += CHUNK_SIZE) {
+      let i = 0;
+      let pageNum = 1;
+
+      while (i < totalTx) {
+          const remaining = totalTx - i;
+          let take = CHUNK_SIZE;
+
+          if (remaining <= CHUNK_SIZE) {
+              if (remaining > SAFE_CHUNK_FOR_FOOTER) {
+                  take = SAFE_CHUNK_FOR_FOOTER;
+              } else {
+                  take = remaining;
+              }
+          }
+
           pages.push({
-            items: items.slice(i, i + CHUNK_SIZE),
-            pageNum: pages.length + 1,
-            isLast: i + CHUNK_SIZE >= totalTx
+              items: items.slice(i, i + take),
+              pageNum: pageNum,
+              isLast: false 
           });
-        }
-      } else {
-        pages.push({
-          items: items,
-          pageNum: 1,
-          isLast: true
-        });
+
+          i += take;
+          pageNum++;
       }
-      
+
       if (pages.length === 0) {
-        pages.push({ items: [], pageNum: 1, isLast: true });
+          pages.push({ items: [], pageNum: 1, isLast: true });
+      } else {
+          pages[pages.length - 1].isLast = true;
       }
       
       setPaginatedData(pages);
@@ -196,37 +186,22 @@ const MarriotInvoiceView = ({ invoiceData }) => {
 
     const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
     headStyles.forEach(style => {
-        if (style.parentNode) {
-            style.parentNode.removeChild(style);
-        }
+        if (style.parentNode) style.parentNode.removeChild(style);
     });
 
     try {
-      const images = invoiceRef.current.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => {
-          if (img.complete) return Promise.resolve();
-          return new Promise(resolve => {
-              img.onload = resolve;
-              img.onerror = resolve;
-          });
-      }));
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `Marriott_Invoice_${invoice.confNo || 'Invoice'}.pdf`,
+        filename: `${invoice?.referenceNo}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { 
-            scale: 4, 
+            scale: 3, 
             useCORS: true, 
-            letterRendering: true,
             scrollY: 0,
-            windowWidth: 794 // Exact width of A4 at 96 DPI
+            letterRendering: true 
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // Use CSS page breaks properly instead of avoid-all to prevent height overflow bugs
         pagebreak: { mode: ['css', 'legacy'] } 
       };
       
@@ -236,28 +211,34 @@ const MarriotInvoiceView = ({ invoiceData }) => {
       console.error("PDF Error:", err);
       toast.error("Failed to generate PDF");
     } finally {
-      headStyles.forEach(style => {
-          document.head.appendChild(style);
-      });
+      headStyles.forEach(style => document.head.appendChild(style));
       setPdfLoading(false);
     }
   };
 
   const handlePrint = () => window.print();
 
-  if (loading || !invoice) {
+  if (loading) {
+    return <InvoiceTemplate loading={loading} onBack={() => navigate("/invoices")}><></></InvoiceTemplate>;
+  }
+
+  if (!invoice) {
     return (
-      <InvoiceTemplate loading={loading} error={error} invoice={invoice} onBack={() => navigate("/invoices")}>
-        <></>
-      </InvoiceTemplate>
+        <InvoiceTemplate loading={false} onBack={() => navigate("/invoices")}>
+            <div style={{ padding: '50px', textAlign: 'center', fontFamily: '"Times New Roman", Times, serif' }}>
+                <h2>No Invoice Data Available</h2>
+            </div>
+        </InvoiceTemplate>
     );
   }
 
-  const totalCharges = invoice.grandTotalGbp || 0;
-  const totalCredits = invoice.creditsTotal || 0;
-  const netRevenue = totalCharges / 1.2; 
-  const vatAmount = totalCharges - netRevenue;
+  const totalCharges = invoice.totalAmountPayable || 0;
+  const totalCredits = invoice.items.reduce((sum, item) => sum + (item.rawCredit || 0), 0);
+  const netRevenue = invoice.taxableAmountExclVat || 0; 
+  const vatAmount = invoice.vatAt20Percent || 0;
   const balanceDue = totalCharges - totalCredits;
+
+  const safeStr = (str) => str || "";
 
   return (
     <InvoiceTemplate
@@ -278,172 +259,214 @@ const MarriotInvoiceView = ({ invoiceData }) => {
           }
           
           .marriott-page {
-            width: 794px; /* Exact A4 Width */
-            height: 1122px; /* Exactly 1px shorter than A4 to explicitly prevent extra PDF page */
-            padding: 50px !important;
+            width: 210mm;
+            height: 296mm; 
+            padding: 15px 0px !important; 
             margin: 0 auto;
             background-color: #ffffff;
             position: relative; 
             display: flex;
             flex-direction: column;
             line-height: 1.3;
-            overflow: hidden; /* Prevents invisible pixel overflow */
+            overflow: hidden; 
           }
 
-          /* Force page break for everything except the last page */
           .marriott-page:not(:last-child) {
             page-break-after: always;
           }
           
           @media print {
-            @page { 
-              margin: 0; 
-              size: A4 portrait;
-            }
+            @page { margin: 0; size: A4 portrait; }
             body * { visibility: hidden; }
             .marriott-invoice-wrapper, .marriott-invoice-wrapper * { visibility: visible; }
-            .marriott-invoice-wrapper {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-            }
+            .marriott-invoice-wrapper { position: absolute; left: 0; top: 0; width: 100%; }
             body { background: none; margin: 0; padding: 0; }
             .marriott-page { 
-              padding: 15mm !important; /* Forces strict left/right padding during print */
+              padding: 5mm 3mm !important; 
               margin: 0 !important; 
               box-shadow: none !important; 
-              width: 100% !important;
-              height: 296mm !important; /* 1mm shorter than paper to stop trailing blank page */
+              width: 210mm !important;
+              height: 296mm !important; 
               page-break-after: always;
             }
-            .marriott-page:last-child {
-              page-break-after: avoid !important; /* Absolutely no extra page at end */
-            }
-            /* Adjust footer relative to the physical print padding */
-            .m-footer {
-              bottom: 15mm !important;
-              left: 15mm !important;
-            }
+            .marriott-page:last-child { page-break-after: avoid !important; }
           }
 
-          /* Invoice Table Area */
           .m-invoice-table {
               width: 100%;
               border-collapse: collapse;
-              margin-top: 40px;
-              font-size: 15px;
-              border-top: 1px solid #000;
-              border-bottom: 1px solid #000;
-          }
-          .m-invoice-table th, .m-invoice-table td {
-              padding: 8px 5px;
-              text-align: left;
+              margin-top: 15px; 
+              font-size: 13px;
           }
           .m-invoice-table th {
-              font-weight: bold;
-              padding: 10px 5px;
-              border-bottom: 1px solid #000;
+              font-weight: normal; 
+              padding: 10px 0px; 
+              border-top: 1px solid #000; 
+              border-bottom: 1px solid #000; 
+              text-align: left;
           }
-          .m-invoice-table th.right-align, .m-invoice-table td.right-align { text-align: right; }
+          .m-invoice-table td {
+              padding: 5px 0px; 
+              text-align: left;
+              border: none;
+          }
+          .m-invoice-table th.right-align, .m-invoice-table td.right-align { 
+              text-align: right; 
+          }
+          
+          .table-bottom-border {
+              border-top: 1px solid #000;
+              margin-top: 5px;
+          }
 
-          /* Footer absolute positioned to guarantee bottom placement */
-          .m-footer {
-              position: absolute;
-              bottom: 50px;
-              left: 50px;
-              font-style: italic;
+          .info-table {
+              border-collapse: collapse;
               font-size: 14px;
+          }
+          .info-table td {
+              padding-bottom: 2px;
+              vertical-align: top;
+          }
+          .info-table .label-col {
+              width: 110px; 
+          }
+          .info-table .colon-col {
+              width: 15px; 
+          }
+
+          
+          .info-tableLeft {
+              border-collapse: collapse;
+              font-size: 14px;
+          }
+          .info-tableLeft td {
+              padding-bottom: 4px;
+              vertical-align: top;
+          }
+          .info-tableLeft .label-col {
+              width: 65px; 
+          }
+          .info-tableLeft .colon-col {
+              width: 22px; 
           }
         `}} />
 
         {paginatedData.map((page, idx) => (
           <div key={idx} className="marriott-page">
             
-            {/* Split Top Layout */}
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                
-                {/* Left Column */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 25px' }}>
                 <div style={{ width: '45%' }}>
-                    <div style={{ marginTop: '80px', color: '#000080', fontWeight: 'bold', fontSize: '16px', lineHeight: '1.2' }}>
-                        {invoice.companyNames}<br/>
-                        {invoice.companyAddress && invoice.companyAddress.split('\n').map((line, i) => (
-                            <React.Fragment key={i}>{line}<br/></React.Fragment>
-                        ))}
+                    <img src={logo} alt="marriot park lane logo" style={{padding : "5px 0px 0px 10px" , width: "110px"}}/>
+                    <div style={{ paddingTop: '65px' }}>
+                        <div style={{ color: '#000066', fontSize: '14px', lineHeight: '1.2', fontWeight: 'bold' }}>
+                            <div>{safeStr(invoice.companyName)}</div>
+                            {invoice.address ? invoice.address.split(',').map((line, i) => (
+                                <React.Fragment key={i}>{line.trim()}<br/></React.Fragment>
+                            )) : ""}
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: '85px' }}>
+                        <div style={{ fontSize: '14px', marginBottom: '5px' , fontWeight: '600'}}>INFORMATION INVOICE</div>
+                        <table className="info-tableLeft">
+                            <tbody>
+                                <tr>
+                                    <td className="label-col">Conf. No.</td>
+                                    <td className="colon-col">:</td>
+                                    <td>{safeStr(invoice.confNo)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="label-col">Date</td>
+                                    <td className="colon-col">:</td>
+                                    <td>{safeStr(invoice.formattedInvoiceDate)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="label-col" style={{ fontWeight: '600' }}>Folio No.</td>
+                                    <td className="colon-col" style={{ fontWeight: '600' }}>:</td>
+                                    <td>{safeStr(invoice.folioNo)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style={{ 
+                        marginTop: '13px', 
+                        fontSize: '15px', 
+                        fontFamily: 'Arial, Helvetica, sans-serif',
+                        fontStyle: 'italic',
+                        fontWeight: '600'
+                    }}>
+                        {safeStr(invoice.guestName)}
+                    </div>
+                </div>
+
+                <div style={{ width: '35%' }}>
+                    <div style={{ fontSize: '14px', lineHeight: '1.2' }}>
+                        {safeStr(invoice.hotel)}<br/>
+                        {invoice.hotelAddress ? invoice.hotelAddress.split(',').map((line, i) => (
+                            <React.Fragment key={i}>{line.trim()}<br/></React.Fragment>
+                        )) : (
+                            <React.Fragment>
+                                140 Park Lane<br/>
+                                London W1K 7AA<br/>
+                                Tel: + 44 20 7493 7000<br/>
+                                Fax: + 44 20 7493 8333<br/>
+                                www.LondonMarriottParkLane.co.uk
+                            </React.Fragment>
+                        )}
                     </div>
 
                     <div style={{ marginTop: '60px' }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '15px' }}>INFORMATION INVOICE</div>
-                        <table style={{ borderCollapse: 'collapse', fontSize: '16px' }}>
+                        <table className="info-table">
                             <tbody>
                                 <tr>
-                                    <td style={{ width: '100px', paddingBottom: '4px' }}>Conf. No.</td>
-                                    <td style={{ width: '20px', paddingBottom: '4px' }}>:</td>
-                                    <td style={{ paddingBottom: '4px' }}>{invoice.confNo}</td>
+                                    <td className="label-col">Room No.</td>
+                                    <td className="colon-col">:</td>
+                                    <td>{safeStr(invoice.roomNo)}</td>
                                 </tr>
                                 <tr>
-                                    <td style={{ paddingBottom: '4px' }}>Date</td>
-                                    <td style={{ paddingBottom: '4px' }}>:</td>
-                                    <td style={{ paddingBottom: '4px' }}>{invoice.formattedInvoiceDate}</td>
+                                    <td className="label-col">Arrival</td>
+                                    <td className="colon-col">:</td>
+                                    <td>{safeStr(invoice.formattedArrivalDate)}</td>
                                 </tr>
                                 <tr>
-                                    <td style={{ fontWeight: 'bold' }}>Folio No.</td>
-                                    <td style={{ fontWeight: 'bold' }}>:</td>
-                                    <td style={{ fontWeight: 'bold' }}>{invoice.folioNo}</td>
+                                    <td className="label-col">Departure</td>
+                                    <td className="colon-col">:</td>
+                                    <td>{safeStr(invoice.formattedDepartureDate)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="label-col">Page No.</td>
+                                    <td className="colon-col">:</td>
+                                    <td>{page.pageNum} of {paginatedData.length}</td>
+                                </tr>
+                                <tr>
+                                    <td className="label-col">Cashier No.</td>
+                                    <td className="colon-col">:</td>
+                                    <td>{safeStr(invoice.cashierId || invoice.cashierNo)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="label-col">User ID</td>
+                                    <td className="colon-col">:</td>
+                                    <td>{safeStr(invoice.userId)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="label-col">VAT No.</td>
+                                    <td className="colon-col">:</td>
+                                    <td>{safeStr(invoice.vatNo)}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-
-                    <div style={{ marginTop: '30px', fontWeight: 'bold', fontStyle: 'italic', fontSize: '18px' }}>
-                        {invoice.guestName}
-                    </div>
                 </div>
-
-                {/* Right Column */}
-                <div style={{ width: '45%' }}>
-                    <div style={{ fontSize: '16px', lineHeight: '1.2' }}>
-                        London Marriott Hotel Park Lane<br/>
-                        140 Park Lane<br/>
-                        London W1K 7AA<br/>
-                        Tel: + 44 20 7493 7000<br/>
-                        Fax: + 44 20 7493 8333<br/>
-                        www.LondonMarriottParkLane.co.uk
-                    </div>
-
-                    <div style={{ marginTop: '90px' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '16px' }}>
-                            <tbody>
-                                {[
-                                    { label: 'Room No.', val: invoice.roomNo },
-                                    { label: 'Arrival', val: invoice.formattedArrivalDate },
-                                    { label: 'Departure', val: invoice.formattedDepartureDate },
-                                    { label: 'Page No.', val: `${page.pageNum} of ${paginatedData.length}` },
-                                    { label: 'Cashier No.', val: invoice.cashierNo },
-                                    { label: 'User ID', val: invoice.userId },
-                                    { label: 'VAT No.', val: invoice.vatNo },
-                                ].map((row, i) => (
-                                    <tr key={i}>
-                                        <td style={{ width: '120px', paddingBottom: '4px' }}>{row.label}</td>
-                                        <td style={{ width: '20px', paddingBottom: '4px' }}>:</td>
-                                        <td style={{ paddingBottom: '4px' }}>{row.val}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
             </div>
 
-            {/* Invoice Data Table */}
-            <table className="m-invoice-table">
+            <table className="m-invoice-table" style={{ padding: '0 25px', display: 'table', width: 'calc(100% - 50px)', margin: '15px auto 0' }}>
                 <thead>
                     <tr>
-                        <th style={{ width: '15%' }}>Date</th>
-                        <th style={{ width: '45%' }}>Text</th>
-                        <th className="right-align" style={{ width: '20%' }}>Charges GBP</th>
-                        <th className="right-align" style={{ width: '20%' }}>Credits GBP</th>
+                        <th style={{ width: '10%' , fontWeight:"600"}}>Date</th>
+                        <th style={{ width: '45%' , fontWeight:"600"}}>Text</th>
+                        <th className="right-align" style={{ width: '20%', fontWeight:"600" }}>Charges GBP</th>
+                        <th className="right-align" style={{ width: '15%' , fontWeight:"600"}}>Credits GBP</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -455,69 +478,60 @@ const MarriotInvoiceView = ({ invoiceData }) => {
                             <td className="right-align">{item.creditsGBP}</td>
                         </tr>
                     ))}
-                    {page.items.length === 0 && (
-                        <tr>
-                            <td colSpan="4" style={{ visibility: 'hidden', padding: '10px' }}>Empty</td>
-                        </tr>
-                    )}
                 </tbody>
             </table>
 
-            {/* Totals & Summary - Only on the Last Page */}
+            {/* Calculations precisely at the end of the table rows */}
             {page.isLast && (
-              <>
-                {/* Total Text Aligned with Table Columns -> 60% + 20% + 20% = 100% */}
-                <div style={{ display: 'flex', marginTop: '5px', paddingTop: '5px', paddingBottom: '3px', fontWeight: 'bold', fontSize: '15px' }}>
-                    <div style={{ width: '60%', textAlign: 'right', paddingRight: '20px' }}>Total:</div>
-                    <div style={{ width: '20%', textAlign: 'right', paddingRight: '5px' }}>{formatCurrency(totalCharges)}</div>
-                    <div style={{ width: '20%', textAlign: 'right', paddingRight: '5px' }}>{formatCurrency(totalCredits)}</div>
-                </div>
+              <div style={{ padding: '0 25px', width: '100%' }}>
+                  <div className="table-bottom-border"></div>
 
-                {/* Thick partial bottom border */}
-                <div style={{ display: 'flex' }}>
-                    <div style={{ width: '40%' }}></div>
-                    <div style={{ width: '60%', borderTop: '3px solid #000' }}></div>
-                </div>
+                  <div style={{ display: 'flex', fontWeight: 'bold', padding: '2px 0', fontSize: '13px' }}>
+                      <div style={{ width: '45%' }}></div>
+                      <div style={{ width: '28%', paddingLeft: '35px', textAlign: 'left' }}>Total:</div>
+                      <div style={{ width: '10%', textAlign: 'right' }}>{totalCharges ? formatCurrency(totalCharges) : "0.00"}</div>
+                      <div style={{ width: '16%', textAlign: 'right' }}>{totalCredits ? formatCurrency(totalCredits) : "0.00"}</div>
+                  </div>
 
-                {/* FIXED WIDTH MATH: Exactly 100% (40 + 20 + 20 + 20) */}
-                <div style={{ display: 'flex', width: '100%', marginTop: '10px', fontSize: '13px' }}>
-                    
-                    {/* Block 1 (40%): Balance Due & Tax */}
-                    <div style={{ width: '40%', display: 'flex' }}>
-                        <div style={{ width: '130px', fontWeight: 'bold' }}>
-                            <div style={{ paddingBottom: '4px' }}>Balance Due</div>
-                            <div>TAX VAT @ 20%</div>
-                        </div>
-                        <div style={{ width: '120px', textAlign: 'right', fontWeight: 'bold' }}>
-                            <div style={{ paddingBottom: '4px' }}>
-                                <span style={{ marginRight: '10px' }}>{formatCurrency(balanceDue)}</span> GBP
-                            </div>
-                            <div>
-                                <span style={{ marginRight: '10px' }}>{formatCurrency(vatAmount)}</span> GBP
-                            </div>
-                        </div>
-                    </div>
+                  <div style={{ display: 'flex' }}>
+                      <div style={{ width: '45%' }}></div>
+                      <div style={{ width: '55%', borderTop: '2px solid black' }}></div>
+                  </div>
 
-                    {/* Block 2 (20%): Net Revenue Label */}
-                    <div style={{ width: '52%', textAlign: 'right', paddingRight: '40px', fontWeight: 'bold' }}>
-                        Net Revenue (20% VAT)
-                    </div>
+                  <div style={{ display: 'flex', fontWeight: 'bold', fontSize: '12px', marginTop: '8px' }}>
+                      <div style={{ width: '45%' }}>
+                          <div style={{ display: 'flex', marginBottom: '1px' }}>
+                              <div style={{ width: '185px' }}>Balance Due</div>
+                              <div style={{ width: '80px', textAlign: 'right' }}>{formatCurrency(balanceDue)}</div>
+                              <div style={{ marginLeft: '10px' }}>GBP</div>
+                          </div>
+                          <div style={{ display: 'flex' }}>
+                              <div style={{ width: '185px' }}>TAX VAT @ 20%</div>
+                              <div style={{ width: '80px', textAlign: 'right' }}>{formatCurrency(vatAmount)}</div>
+                              <div style={{ marginLeft: '10px' }}>GBP</div>
+                          </div>
+                      </div>
 
-                    {/* Block 3 (20%): Net Revenue Value (Strictly under "Charges GBP") */}
-                    <div style={{ width: '40%', textAlign: 'right', paddingRight: '5px', fontWeight: 'bold' }}>
-                        <span style={{ marginRight: '5px' }}>{formatCurrency(netRevenue)}</span> GBP
-                    </div>
-
-                    {/* Block 4 (20%): Empty space (Strictly under "Credits GBP") */}
-                    <div style={{ width: '20%' }}></div>
-                </div>
-              </>
+                      <div style={{ width: '55%', display: 'flex', justifyContent: 'center' }}>
+                          <div style={{ display: 'flex', gap: '55px', flex: "1" }}>
+                              <div style={{paddingLeft: "35px"}}>Net Revenue (20% VAT)</div>
+                              <div>{formatCurrency(netRevenue)} GBP</div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
             )}
 
-            {/* Footer pinned strictly to the bottom */}
-            <div className="m-footer">
-                On behalf of {invoice.companyNames || "AZAR TOURISM"}, thank you for choosing London Marriott Hotel Park Lane.
-            </div>
+            {/* Thank You pinned neatly at the bottom footer block */}
+            {page.isLast && (
+              <div style={{ marginTop: 'auto', width: '100%', padding: '0 25px 25px 25px' }}>
+                  <div style={{ fontStyle: 'italic', fontSize: '13px' }}>
+                      {invoice.companyName && invoice.hotel 
+                          ? `On behalf of ${invoice.companyName}, thank you for choosing ${invoice.hotel}.` 
+                          : ""}
+                  </div>
+              </div>
+            )}
 
           </div>
         ))}

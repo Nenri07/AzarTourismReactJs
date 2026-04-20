@@ -35,6 +35,8 @@ import {
   LansonPalaceInvoiceView,
   ParkPlazaInvoiceView,
   GrandHayattInvoiceView,
+  MarriotTunisInvoiceView,
+  DynamicInvoiceFormPageTunisia,
   NotFoundPage
 } from "./pages";
 
@@ -150,41 +152,41 @@ const router = createBrowserRouter([
       
       // SUPER ADMIN & EMPLOYEE - Create Invoice
       {
-        path: "/invoice/create/novotel/:hotelId",
+        path: "/tunisia-invoice/create/novotel/:hotelId",
         element: ( 
           <AuthLayout authentication={true} allowedRoles={["super_admin", "employee"]}>
-            <InvoiceFormPage />
+            <DynamicInvoiceFormPageTunisia />
           </AuthLayout>
         ),
       },
       
       // SUPER ADMIN & EMPLOYEE - Edit Invoice
       {
-        path: "invoice/edit/:id",
+        path: "tunisia-invoice/edit/:id",
         element: (
           <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
-            <InvoiceFormPage />
+            <DynamicInvoiceFormPageTunisia />
           </AuthLayout>
         ),
       },
       {
-        path: "invoices/novotel/duplicate/:id",
+        path: "tunisia-invoice/duplicate/:id",
         element: (
           <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
-            <InvoiceFormPage />
+            <DynamicInvoiceFormPageTunisia />
           </AuthLayout>
         ),
       },
         {
-        path: "invoices/duplicate/:invoiceId",
+        path: "tunisia-invoice/duplicate/:invoiceId",
         element: (
           <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
-            <DynamicInvoiceFormPage />
+            <DynamicInvoiceFormPageTunisia />
           </AuthLayout>
         ),
       },
          {
-        path: "invoices/download-pdf/:invoiceId",
+        path: "tunisia-invoice/download-pdf/:invoiceId",
         element: (
           <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
             <DynamicInvoiceViewPage />
@@ -202,20 +204,20 @@ const router = createBrowserRouter([
       
       // SUPER ADMIN & EMPLOYEE - Create Dynamic Invoice
       {
-        path: "invoice/create/:hotelId",
+        path: "tunisia-invoice/create/:hotelId",
         element: (
           <AuthLayout authentication={true} allowedRoles={["super_admin", "employee"]}>
-            <DynamicInvoiceFormPage />
+            <DynamicInvoiceFormPageTunisia />
           </AuthLayout>
         ),
       },
       
       // SUPER ADMIN & EMPLOYEE - Edit Dynamic Invoice
       {
-        path: "invoices/edit/:invoiceId",
+        path: "tunisia-invoice/edit/:invoiceId",
         element: (
           <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
-            <DynamicInvoiceFormPage />
+            <DynamicInvoiceFormPageTunisia />
           </AuthLayout>
         ),
       },
@@ -409,11 +411,19 @@ const router = createBrowserRouter([
   path: "marriot/view/m",
   element: <MarriotInvoiceView />,
 },
+{
+  path: "marriottunis/view/m",
+  element: <MarriotTunisInvoiceView />,
+},
  {path: "parkplaza/view/p",
   element: <ParkPlazaInvoiceView />,
 },
   {
   path: "turkey-invoice/view/:invoiceId",
+  element: <DynamicInvoiceViewPage />,
+},
+{
+  path: "tunisia-invoice/view/:invoiceId",
   element: <DynamicInvoiceViewPage />,
 },
 {

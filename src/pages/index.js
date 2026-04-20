@@ -32,6 +32,9 @@ import RadissonCollection from "./viewTemplates/RadissonCollection";
 import RadissonHerbyeInvoiceView from "./viewTemplates/RadissonBlueHarbye";
 import RadissonBlueSisli from "./viewTemplates/RadissonBlueSisli";
 import ParkPlazaInvoiceView from "./viewTemplates/ParkPlazaInvoiceView";
+import MandarinInvoiceView from "./viewTemplates/MandarinInvoiceView";
+import MarriotTunisInvoiceView from "./viewTemplates/MarriotTunisInvoiceView";
+import DynamicInvoiceFormPageTunisia from "./DynamicInvoiceFormPageTunisia";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
@@ -56,6 +59,10 @@ export {
     RadissonBlueSisli,
     RadissonCollection,
     ParkPlazaInvoiceView,
-    DynamicInvoiceFormPageUK
+    MandarinInvoiceView,
+    MarriotTunisInvoiceView,
+    DynamicInvoiceFormPageUK,
+    DynamicInvoiceFormPageTunisia
+
 
 };

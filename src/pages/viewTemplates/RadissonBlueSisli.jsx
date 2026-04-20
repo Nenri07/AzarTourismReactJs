@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '../../../public/radisson_blu_turkey-logo.png';
+import logo from '../../../public/radisson_blu_turkey-logo.png'; // ← changed
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PURE HELPERS  
@@ -69,7 +69,7 @@ const mapApiDataToInvoice = (data = {}) => {
         qty:          at.qty,
         netUnitPrice: at.netUnitPrice,
         netAmount:    at.netAmount,
-        tax:          at.tax,
+        tax:          "2%",
         taxAmt:       at.taxAmount,
         debit:        at.debit,
         credit:       at.credit || "",
@@ -95,21 +95,21 @@ const mapApiDataToInvoice = (data = {}) => {
     (a, b) => a.rawDate - b.rawDate
   );
 
-  const taxableRoom     = data.taxableAmount        || 0;   
-  const totalAccTax     = data.totalAccTax          || 0;   
-  const grandTotal      = data.grandTotal           || 0;   
-  const totalVat10      = data.totalVat10           || 0;   
-  const totalVat20      = data.totalVat20           || 0;   
-  const totalSvcGross   = data.totalServicesGross   || 0;   
-  const totalSvcTaxable = data.totalServicesTaxable || 0;   
-  const totalRoomGross  = data.totalRoomAllNights   || 0;   
+  const taxableRoom     = data.taxableAmount        || 0;
+  const totalAccTax     = data.totalAccTax          || 0;
+  const grandTotal      = data.grandTotal           || 0;
+  const totalVat10      = data.totalVat10           || 0;
+  const totalVat20      = data.totalVat20           || 0;
+  const totalSvcGross   = data.totalServicesGross   || 0;
+  const totalSvcTaxable = data.totalServicesTaxable || 0;
+  const totalRoomGross  = data.totalRoomAllNights   || 0;
 
   const taxRows = [];
 
   if (totalAccTax > 0) {
     taxRows.push({
       label:     "Accommodation Tax",
-      taxRate:   "0%",
+      taxRate:   "2%",
       netAmount: totalAccTax,
       taxAmt:    0,
       debit:     totalAccTax,
@@ -140,7 +140,7 @@ const mapApiDataToInvoice = (data = {}) => {
   const taxTotalTaxAmt    = totalVat10 + totalVat20;
 
   return {
-    invoiceNo:    data.invoiceNo       || data.invoiceN || "", 
+    invoiceNo:    data.invoiceNo       || data.invoiceN || "",
     billingDate:  formatDate(data.billingDate  || data.invoiceDate) || "",
     roomNo:       data.roomNo          || "",
     pax:          data.pax             || 1,
@@ -170,16 +170,16 @@ const mapApiDataToInvoice = (data = {}) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PAGINATION (FIXED LOGIC)
+// PAGINATION
 // ─────────────────────────────────────────────────────────────────────────────
 const buildPages = (items = []) => {
   if (items.length === 0) {
     return [{ items: [], showTotals: true, pageNo: 1, totalPages: 1 }];
   }
-  
+
   const pages = [];
-  const MAX_ROWS_NORMAL = 24;
-  const MAX_ROWS_WITH_TOTALS = 14; 
+  const MAX_ROWS_NORMAL      = 24;
+  const MAX_ROWS_WITH_TOTALS = 14;
 
   for (let i = 0; i < items.length;) {
     const remaining = items.length - i;
@@ -191,7 +191,7 @@ const buildPages = (items = []) => {
       isLastPage = true;
     } else if (remaining <= MAX_ROWS_NORMAL && remaining > MAX_ROWS_WITH_TOTALS) {
       take = remaining;
-      isLastPage = false; 
+      isLastPage = false;
     } else {
       take = MAX_ROWS_NORMAL;
     }
@@ -203,10 +203,7 @@ const buildPages = (items = []) => {
     i += take;
 
     if (i >= items.length && !isLastPage) {
-      pages.push({
-        items: [],
-        showTotals: true
-      });
+      pages.push({ items: [], showTotals: true });
       break;
     }
   }
@@ -254,47 +251,45 @@ const RadissonBlueSisli = ({ invoiceData }) => {
   }, [isPdfDownload, invoice, navigate]);
 
   const handleDownloadPDF = async () => {
-  if (!invoiceRef.current) return;
-  setPdfLoading(true);
+    if (!invoiceRef.current) return;
+    setPdfLoading(true);
 
-  // Remove all stylesheets to avoid oklch/Tailwind crash in html2canvas
-  const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
-  headStyles.forEach(style => style.parentNode.removeChild(style));
+    const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
+    headStyles.forEach(style => style.parentNode.removeChild(style));
 
-  try {
-    const images = invoiceRef.current.querySelectorAll('img');
-    await Promise.all(Array.from(images).map(img => {
-      if (img.complete) return Promise.resolve();
-      return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
-    }));
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const images = invoiceRef.current.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+      }));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-    const opt = {
-      margin:    0,
-      filename:  `Radisson_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
-      image:     { type: 'jpeg', quality: 3 },
-      html2canvas: {
-        scale:           4,
-        useCORS:         true,
-        letterRendering: true,
-        scrollY:         0,
-        windowWidth:     794,
-      },
-      jsPDF:     { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['css', 'legacy'] },
-    };
+      const opt = {
+        margin:      0,
+        filename:    `Radisson_Blu_Sisli_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
+        image:       { type: 'jpeg', quality: 3 },
+        html2canvas: {
+          scale:           4,
+          useCORS:         true,
+          letterRendering: true,
+          scrollY:         0,
+          windowWidth:     794,
+        },
+        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:   { mode: ['css', 'legacy'] },
+      };
 
-    await html2pdf().set(opt).from(invoiceRef.current).save();
-    toast.success("PDF Downloaded");
-  } catch (err) {
-    console.error("PDF Error:", err);
-    toast.error("PDF generation failed");
-  } finally {
-    // Restore all stylesheets
-    headStyles.forEach(style => document.head.appendChild(style));
-    setPdfLoading(false);
-  }
-};
+      await html2pdf().set(opt).from(invoiceRef.current).save();
+      toast.success("PDF Downloaded");
+    } catch (err) {
+      console.error("PDF Error:", err);
+      toast.error("PDF generation failed");
+    } finally {
+      headStyles.forEach(style => document.head.appendChild(style));
+      setPdfLoading(false);
+    }
+  };
 
   if (!invoice) return null;
 
@@ -349,7 +344,7 @@ const RadissonBlueSisli = ({ invoiceData }) => {
     .copy-text { font-weight: bold; font-size: 9px; margin-top: 30px; margin-right: 275px; }
 
     table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 4px 2px; vertical-align: top; }
+    th, td { padding: 2px 2px; vertical-align: top; }
     .text-right  { text-align: right  !important; }
     .text-center { text-align: center !important; }
 
@@ -357,9 +352,13 @@ const RadissonBlueSisli = ({ invoiceData }) => {
       text-align: left;
       font-weight: bold;
       font-style: italic;
-      font-size: 8px;
+      font-size: 7px;
     }
-    .guest-table th span { text-decoration: underline; }
+    .guest-table th span {
+      text-decoration: underline;
+      text-decoration-thickness: 1.3px;
+      text-underline-offset: 3px;
+    }
     .guest-table td { padding-bottom: 30px; }
 
     .items-table th {
@@ -368,9 +367,15 @@ const RadissonBlueSisli = ({ invoiceData }) => {
       font-style: italic;
       font-size: 8px;
     }
-    .items-table th span { text-decoration: underline; }
-    .items-table { margin-bottom: 16px; }
-    .items-table tbody tr td { line-height: 1.4; }
+    .items-table th span {
+      text-decoration: underline;
+      text-decoration-thickness: 1.3px;
+      text-underline-offset: 3px;
+    }
+.items-table tbody tr:first-child td { 
+  padding-top: 6px; /* Adjust this value to make the gap larger or smaller */
+}    .items-table { margin-bottom: 16px; }
+    .items-table tbody tr td { line-height: 1.3; }
 
     .summary-wrapper { display: flex; justify-content: flex-end; margin-bottom: 16px; }
     .summary-table { width: 58%; }
@@ -402,9 +407,7 @@ const RadissonBlueSisli = ({ invoiceData }) => {
     .sig-text { margin-right: 105px; }
     .sig-line { border-bottom: 1px solid #000; width: 100px; display: inline-block; }
 
-    .notes-block { margin-bottom: 40px; }
-
-    .bottom-footer { font-size: 8px; line-height: 1.5; color: #000; }
+    .bottom-footer { font-size: 8px; line-height: 1; color: #000; text-align: center; }
     .bottom-footer p { margin: 1px 0; }
 
     @media print {
@@ -426,12 +429,12 @@ const RadissonBlueSisli = ({ invoiceData }) => {
   const PageHeader = ({ page }) => (
     <>
       <div className="logo-container">
-        <img src={logo} alt="Radisson Logo" />
+        <img src={logo} alt="Radisson Blu Sisli Logo" />
       </div>
 
       <div className="top-section">
         <div className="address-block">
-          <p style={{ fontStyle: 'italic', fontWeight: 'bold', textDecoration: 'underline' }}>
+          <p style={{ fontStyle: 'italic', fontWeight: 'bold', textDecoration: 'underline', textDecorationThickness: '1.2px', textUnderlineOffset: '3px' }}>
             Fiscal Information
           </p>
           <p>/</p>
@@ -454,13 +457,13 @@ const RadissonBlueSisli = ({ invoiceData }) => {
       <table className="guest-table">
         <thead>
           <tr>
-            <th><span>Invoice N</span></th>
-            <th><span>Billing Date</span></th>
-            <th><span>Room</span></th>
-            <th><span>PAX</span></th>
-            <th><span>Main Guest Name</span></th>
-            <th><span>Check in Date</span></th>
-            <th><span>Check out Date</span></th>
+            <th width="10%"><span>Invoice N</span></th>
+            <th style={{ width: "17%" }}><span>Billing Date</span></th>
+            <th width="5%"><span>Room</span></th>
+            <th width="8%"><span>PAX</span></th>
+            <th width="26%"><span>Main Guest Name</span></th>
+            <th width="12%"><span>Check in Date</span></th>
+            <th><span style={{fontSize: "6.7px"}}>Check out Date</span></th>
             <th><span>Page</span></th>
           </tr>
         </thead>
@@ -472,7 +475,7 @@ const RadissonBlueSisli = ({ invoiceData }) => {
             <td>{invoice.pax}</td>
             <td style={{ whiteSpace: 'pre-wrap' }}>{invoice.guestName}</td>
             <td>{invoice.checkInDate}</td>
-            <td>{invoice.checkOutDate}</td>
+            <td style={{fontSize: "9.5px"}}>{invoice.checkOutDate}</td>
             <td>{page.pageNo}/{page.totalPages}</td>
           </tr>
         </tbody>
@@ -480,16 +483,16 @@ const RadissonBlueSisli = ({ invoiceData }) => {
     </>
   );
 
+  // ── Sisli-specific footer ─────────────────────────────────────────────────
   const PageFooter = () => (
-    <div className="bottom-footer" style={{ marginTop: 'auto', paddingTop: '10px' }}>
-      <p>Radisson Hotel Istanbul Harbiye</p>
-      <p>Cumhuriyet Caddesi No: 8 Harbiye, 34367 Istanbul, Turkey</p>
-      <p>T: +90 (212) 3686868 | info.harbiye.istanbul@radissonhotels.com</p>
-      <p>https://www.radissonhotels.com/en-us/hotels/radisson-istanbul-harbiye</p>
-      <p>Harbiye Otelcilik ve Turizm A.S. — VD: Mecidiyeköy 8140462491</p>
-      <p>Şekerbank TRY TR12 0005 9020 1013 0201 0050 23</p>
-      <p>Şekerbank EUR TR46 0005 9020 1013 0201 0051 87</p>
-      <p>Şekerbank USD TR73 0005 9020 1013 0201 0051 86</p>
+    <div className="bottom-footer" style={{ marginTop: '165px', paddingTop: '10px', paddingBottom: 'inherit' }}>
+      <p>ABOVE PRICES INCLUDE 10% SERVICE CHARGE, 7% MUNICIPALITY FEES &amp; 5% VAT</p>
+      <p>Radisson Blu Hotel Istanbul, Sisli</p>
+      <p>19 MAYIS CAD. NO: 2, Turkey, Istanbul, İstanbul, 34360 İstanbul, Turkey</p>
+      <p>T: +90 (212) 3750000 | info.sisli.istanbul@radissonblu.com</p>
+      <p>https://www.radissonhotels.com/en-us/hotels/radisson-blu-istanbul-sisli</p>
+      <p>Sisli Ortaklık İşletmeleri AS 19 Mayis Cd. No:21 Sisli İstanbul Mecidiyeköy VD: 8140462491</p>
+      
     </div>
   );
 
@@ -520,11 +523,11 @@ const RadissonBlueSisli = ({ invoiceData }) => {
             <table className="items-table">
               <thead>
                 <tr>
-                  <th style={{ width: '70px' }}></th>
-                  <th><span>Item</span></th>
+                  <th style={{ width: '70px' }}><span>SERV. DATE</span></th>
+                  <th width="37%"><span>Item</span></th>
                   <th className="text-center"><span>Qty</span></th>
-                  <th className="text-right"><span>Net Unit Price</span></th>
-                  <th className="text-right"><span>Net Amount</span></th>
+                  <th className="text-right" width="9%"><span>Net Unit Price</span></th>
+                  <th className="text-right" width="10%"><span>Net Amount</span></th>
                   <th className="text-right"><span>Tax</span></th>
                   <th className="text-right"><span>Tax Amt</span></th>
                   <th className="text-right"><span>Debit</span></th>
@@ -556,10 +559,6 @@ const RadissonBlueSisli = ({ invoiceData }) => {
                       <tr>
                         <td style={{ textAlign: 'left' }}>Subtotal</td>
                         <td className="text-right">{formatCurrency(invoice.summary.subtotal)}</td>
-                      </tr>
-                      <tr>
-                        <td style={{ textAlign: 'left' }}>Accommodation Tax</td>
-                        <td className="text-right">{formatCurrency(invoice.summary.accommodationTax)}</td>
                       </tr>
                       <tr>
                         <td style={{ textAlign: 'left' }}>Total</td>
@@ -599,8 +598,8 @@ const RadissonBlueSisli = ({ invoiceData }) => {
                     </thead>
                     <tbody>
                       {invoice.taxRows.map((row, i) => (
-                        <tr key={i} style={ i === invoice.taxRows.length - 1 ? { paddingBottom: '12px' } : {}}>
-                          <td style={ i === invoice.taxRows.length - 1 ? { paddingBottom: '12px' } : {}}>{row.label}</td>
+                        <tr key={i} style={i === invoice.taxRows.length - 1 ? { paddingBottom: '12px' } : {}}>
+                          <td style={i === invoice.taxRows.length - 1 ? { paddingBottom: '12px' } : {}}>{row.label}</td>
                           <td className="text-center">{row.taxRate}</td>
                           <td className="text-right">{formatCurrency(row.netAmount)}</td>
                           <td className="text-right">{formatCurrency(row.taxAmt)}</td>
@@ -626,10 +625,6 @@ const RadissonBlueSisli = ({ invoiceData }) => {
                 <div className="signature-block" style={{ marginTop: '16px' }}>
                   <span className="sig-text">Signature</span>
                   <span className="sig-line" />
-                </div>
-
-                <div className="notes-block">
-                  ABOVE PRICES INCLUDE 10% VAT &amp; 2% ACCOMMODATION TAX
                 </div>
               </>
             )}
