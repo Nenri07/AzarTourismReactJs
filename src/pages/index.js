@@ -38,6 +38,7 @@ import DynamicInvoiceFormPageTunisia from "./DynamicInvoiceFormPageTunisia";
 import HyattRegencyView from "./viewTemplates/HyattRegencyView";
 import HiltonParkLaneView from "./viewTemplates/HiltonParkLaneView";
 import FourSeasonParkLaneView from "./viewTemplates/FourSeasonParkLaneView";
+import AdamTunisInvoiceView from "./viewTemplates/AdamTunisInvoiceView";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
@@ -68,5 +69,6 @@ export {
     DynamicInvoiceFormPageTunisia,
     HyattRegencyView,
     HiltonParkLaneView,
-    FourSeasonParkLaneView
+    FourSeasonParkLaneView,
+    AdamTunisInvoiceView
 };

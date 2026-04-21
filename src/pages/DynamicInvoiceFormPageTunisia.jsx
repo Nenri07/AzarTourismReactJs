@@ -6,7 +6,7 @@ import { ArrowLeft, Loader2, AlertCircle, Save } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { getHotelConfigById, getHotelConfigs } from "../Api/hotelConfig.api";
-import tunisiainvoiceApi from "../Api/tunisiainvoice.api ";
+import tunisiainvoiceApi from "../Api/tunisiainvoice.api";
 import { DynamicFormSection, SuccessModal } from '../components';
 import TunisiaConditionalSection from '../components/TunisaDynamicComponents/TunisiaConditionalSection';
 import TunisiaSummarySection from '../components/TunisaDynamicComponents/TunisiaSummarySection';

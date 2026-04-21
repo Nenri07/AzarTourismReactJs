@@ -36,13 +36,14 @@ import TrillionSuitesInvoiceView from "./TrillionSuitesInvoiceView";
 import IntercontinentalInvoiceViewMalaysia from "./IntercontinentalInvoiceViewMalaysia";
 import MarmaraInvoiceView from "./MarmaraInvoiceView";
 import HiltonIstanbulInvoiceView from "./HiltonIstanbulInvoiceView";
-import tunisiainvoiceApi from "../../Api/tunisiainvoice.api ";
+import tunisiainvoiceApi from "../../Api/tunisiainvoice.api";
 import { HiltonIstambulInvoiceView, RadissonBlueSisli, RadissonCollection , RadissonHerbyeInvoiceView ,MarriotInvoiceView, MandarinInvoiceView, ParkPlazaInvoiceView, MarriotTunisInvoiceView} from "..";
 import YotelairInvoiceView from "./YotelInvoiceView";
 import CheyaInvoiceView from "./CheyaInvoiceView";
 import HiltonParkLaneView from "./HiltonParkLaneView";
 import HyattRegencyView from "./HyattRegencyView";
 import FourSeasonParkLaneView from "./FourSeasonParkLaneView";
+import AdamTunisInvoiceView from "./AdamTunisInvoiceView";
 
 
 export default function DynamicInvoiceViewPage() {
@@ -137,6 +138,12 @@ export default function DynamicInvoiceViewPage() {
       }
       else if (hotelName.includes("four") && hotelName.includes("season") && hotelName.includes("park lane")) {
         detectedType = "FourSeasonsUK";
+      }
+      else if(hotelName.includes("tunis marriott hotel")){
+        detectedType = "MarriotHotelTunis";
+      }
+      else if(hotelName.includes("adam hotel") || hotelName.includes("adam hotel suites")){
+        detectedType = "AdamHotelTunis";
       }
       else if (hotelName.includes("cvk") || hotelName.includes("cvk hotels") || hotelName.includes("cvk park bosphorus")) {
         detectedType = "CVK";
@@ -250,8 +257,8 @@ export default function DynamicInvoiceViewPage() {
       else if( hotelName.includes("park plaza london waterloo")) {
         detectedType = "ParkPlazaHotelLondonWaterloo";
       }
-      else if(hotelName.includes("tunis marriott hotel")){
-        detectedType = "MarriotHotelTunis";
+      else if (hotelName.includes("cheya")) {
+        detectedType = "Cheya";
       }
 
       console.log("🎯 Detected hotel type:", detectedType);
@@ -405,6 +412,9 @@ else if (hotelType === "HyattUK") {
 }
 else if (hotelType === "FourSeasonsUK") {
   return <FourSeasonParkLaneView invoiceData={invoice} />;
+}
+else if (hotelType === "AdamHotelTunis") {
+  return <AdamTunisInvoiceView invoiceData={invoice} />;
 }
   else {
     // Default fallback

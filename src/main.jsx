@@ -37,6 +37,7 @@ import {
   GrandHayattInvoiceView,
   MarriotTunisInvoiceView,
   DynamicInvoiceFormPageTunisia,
+  NotFoundPage,
   HyattRegencyView,
   HiltonParkLaneView,
   FourSeasonParkLaneView

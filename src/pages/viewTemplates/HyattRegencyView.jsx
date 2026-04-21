@@ -280,7 +280,7 @@ const HyattRegencyView = ({ invoiceData }) => {
             display: flex;
             flex-direction: column;
             line-height: 1.5;
-            font-size: 11.5px;
+            font-size: 12px;
             overflow: hidden; /* Prevents invisible pixel overflow */
           }
 
@@ -320,7 +320,7 @@ const HyattRegencyView = ({ invoiceData }) => {
           .h-invoice-table {
               width: 100%;
               border-collapse: collapse;
-              font-size: 11.5px;
+              font-size: 12px;
           }
           .h-invoice-table th, .h-invoice-table td {
               padding: 6px 6px;
@@ -331,13 +331,13 @@ const HyattRegencyView = ({ invoiceData }) => {
               background-color: #d3d3d3;
               font-weight: normal;
               padding: 8px 6px;
-              font-size: 12px;
+              font-size: 12.5px;
           }
           .h-invoice-table th.right-align, .h-invoice-table td.right-align { text-align: right; }
           .h-invoice-table td.center-align { text-align: center; }
 
           .h-header-left {
-             font-size: 11.5px;
+             font-size: 12px;
              line-height: 1.4;
           }
         `}} />
@@ -349,7 +349,7 @@ const HyattRegencyView = ({ invoiceData }) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '130px', marginBottom: '20px' }}>
                 {/* Left Top - Logo */}
                 <div style={{ width: '50%' }}>
-                    <img src="/hyattregency-logo.png" alt="Hyatt Regency" style={{ width: '150px', height: 'auto', marginTop: '0px', marginLeft: '15px' }} />
+                    <img src="/hyattregency-logo.png" alt="Hyatt Regency" style={{ width: '73px', height: 'auto', marginTop: '3px', marginLeft: '12px' }} />
                 </div>
 
                 {/* Right Top - Address */}
@@ -375,7 +375,7 @@ const HyattRegencyView = ({ invoiceData }) => {
 
                 {/* Right Middle - Invoice Details */}
                 <div style={{ width: '24%' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                         <tbody>
                             {[
                                 { label: 'Room No.', val: invoice.roomNo },
@@ -395,7 +395,7 @@ const HyattRegencyView = ({ invoiceData }) => {
                                 <td colSpan="3" style={{ padding: '8px 0' }}></td>
                             </tr>
                             <tr>
-                                <td style={{ paddingBottom: '2px' }}>VAT Reg No</td>
+                                <td style={{ paddingBottom: '2px', width: '71px' }}>VAT Reg No</td>
                                 <td style={{ paddingBottom: '2px' }}>:</td>
                                 <td style={{ paddingBottom: '2px', textAlign: 'left' }}>{invoice.vatNo}</td>
                             </tr>
@@ -403,7 +403,7 @@ const HyattRegencyView = ({ invoiceData }) => {
                     </table>
 
                     {/* Title */}
-                    <div style={{ textAlign: 'right', marginTop: '20px', marginBottom: '4px', fontSize: '11.5px' }}>
+                    <div style={{ textAlign: 'right', marginTop: '20px', marginBottom: '4px', fontSize: '12px' }}>
                         INFORMATION INVOICE
                     </div>
                 </div>
@@ -450,9 +450,9 @@ const HyattRegencyView = ({ invoiceData }) => {
                   <div style={{ width: '34%' , marginLeft: '10px'}}>
                     <div style={{ backgroundColor: '#e0e0e0', padding: '2px 0px', fontWeight: 'normal' }}>World of Hyatt Summary</div>
                   </div>
-                  <div style={{ width: '38%', textAlign: 'center', paddingRight: '25px' }}>Total</div>
-                  <div style={{ width: '16%', textAlign: 'right', padding: '4px 6px' }}>{formatCurrency(totalCharges)}</div>
-                  <div style={{ width: '10%', textAlign: 'right', padding: '4px 0px' }}>{formatCurrency(totalCredits)}</div>
+                  <div style={{ width: '38%', textAlign: 'center', paddingRight: '25px', fontSize: '12.5px' }}>Total</div>
+                  <div style={{ width: '16%', textAlign: 'right', padding: '4px 6px', fontSize: '12.5px' }}>{formatCurrency(totalCharges)}</div>
+                  <div style={{ width: '10%', textAlign: 'right', padding: '4px 0px', fontSize: '12.5px' }}>{formatCurrency(totalCredits)}</div>
                 </div>
 
                 <div style={{ display: 'flex', width: '100%', marginTop: '10px' }}>
@@ -462,7 +462,7 @@ const HyattRegencyView = ({ invoiceData }) => {
 
                 <div style={{ display: 'flex', width: '100%', marginTop: '2px' }}>
                   {/* Left Bottom Section - Membership & Bank */}
-                  <div style={{ width: '40%', fontSize: '11.5px', lineHeight: '1.4' }}>
+                  <div style={{ width: '40%', fontSize: '12px', lineHeight: '1.4' }}>
                      <div style={{ marginBottom: '50px', marginTop: '7px', marginLeft: '6px' }}>
                          <div>No Membership to be credited.</div>
                          <div style={{ marginTop: '15px' }}>Join World of Hyatt today and start earning points for</div>
@@ -480,7 +480,7 @@ const HyattRegencyView = ({ invoiceData }) => {
                   </div>
 
                   {/* Right Bottom Section - VAT Breakdown & Balance */}
-                  <div style={{ width: '60%' }}>
+                  <div style={{ width: '60%', fontSize: '12px' }}>
                     
                     <div style={{ display: 'flex', width: '100%' }}>
                        <div style={{ width: '60%', paddingLeft: '85px' }}>Net @ 20.0%</div>
@@ -552,13 +552,13 @@ const HyattRegencyView = ({ invoiceData }) => {
                 </div>
 
                 {/* Footer Agreement Text */}
-                <div style={{ marginTop: '12px', fontSize: '11.5px', lineHeight: '1.4', paddingLeft: '6px' }}>
+                <div style={{ marginTop: '12px', fontSize: '12px', lineHeight: '1.4', paddingLeft: '6px' }}>
                    The undersigned agrees that his liability for this bill is not waived and agrees to be held personally liable in the event that the indicated<br/>
                    person, company or association fails to pay for any part or the full amount of these charges. Please refer to privacy.hyatt.com for the Hyatt<br/>
                    Global Privacy Policy.
                 </div>
                 
-                <div style={{ marginTop: '15px', marginLeft: '6px', fontSize: '11.5px' }}>
+                <div style={{ marginTop: '15px', marginLeft: '6px', fontSize: '12px' }}>
                    Signature: _________________________________
                 </div>
               </div>
