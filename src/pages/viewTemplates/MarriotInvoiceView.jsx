@@ -300,7 +300,7 @@ const MarriotInvoiceView = ({ invoiceData }) => {
           }
           .m-invoice-table th {
               font-weight: normal; 
-              padding: 10px 0px; 
+              padding: 13px 0px; 
               border-top: 1px solid #000; 
               border-bottom: 1px solid #000; 
               text-align: left;
@@ -356,7 +356,7 @@ const MarriotInvoiceView = ({ invoiceData }) => {
             
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 25px' }}>
                 <div style={{ width: '45%' }}>
-                    <img src={logo} alt="marriot park lane logo" style={{padding : "5px 0px 0px 10px" , width: "110px"}}/>
+                    <img src={logo} alt="marriot park lane logo" style={{padding : "5px 0px 0px 10px" , width: "125px"}}/>
                     <div style={{ paddingTop: '65px' }}>
                         <div style={{ color: '#000066', fontSize: '14px', lineHeight: '1.2', fontWeight: 'bold' }}>
                             <div>{safeStr(invoice.companyName)}</div>
@@ -489,7 +489,7 @@ const MarriotInvoiceView = ({ invoiceData }) => {
                   <div style={{ display: 'flex', fontWeight: 'bold', padding: '2px 0', fontSize: '13px' }}>
                       <div style={{ width: '45%' }}></div>
                       <div style={{ width: '28%', paddingLeft: '35px', textAlign: 'left' }}>Total:</div>
-                      <div style={{ width: '10%', textAlign: 'right' }}>{totalCharges ? formatCurrency(totalCharges) : "0.00"}</div>
+                      <div style={{ width: '10%', textAlign: 'right', paddingRight: '15px' }}>{totalCharges ? formatCurrency(totalCharges) : "0.00"}</div>
                       <div style={{ width: '16%', textAlign: 'right' }}>{totalCredits ? formatCurrency(totalCredits) : "0.00"}</div>
                   </div>
 
@@ -514,8 +514,8 @@ const MarriotInvoiceView = ({ invoiceData }) => {
 
                       <div style={{ width: '55%', display: 'flex', justifyContent: 'center' }}>
                           <div style={{ display: 'flex', gap: '55px', flex: "1" }}>
-                              <div style={{paddingLeft: "35px"}}>Net Revenue (20% VAT)</div>
-                              <div>{formatCurrency(netRevenue)} GBP</div>
+                              <div style={{paddingLeft: "50px"}}>Net Revenue (20% VAT)</div>
+                              <div style={{paddingLeft: '15px'}}>{formatCurrency(netRevenue)} GBP</div>
                           </div>
                       </div>
                   </div>

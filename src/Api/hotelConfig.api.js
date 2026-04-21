@@ -166,6 +166,17 @@ apiClient.interceptors.response.use(
     throw new Error(errorMessage);
   }
 );
+// Paginated - no country filter
+export const getHotelConfigsPaginated = async (page = 1, limit = 10) => {
+  return await apiClient.get(`/hotel-info/paginated?page=${page}&limit=${limit}`);
+};
+
+// Paginated + country filter
+export const getHotelsByCountryPaginated = async (country, page = 1, limit = 10) => {
+  return await apiClient.get(
+    `/hotel-info/by-country?country=${encodeURIComponent(country)}&page=${page}&limit=${limit}`
+  );
+};
 
 export const getHotelConfigs = async () => {
   return await apiClient.get('/hotel-info/');
@@ -213,6 +224,8 @@ export default {
   getHotelConfigById,
   getCountries,
   getHotelsByCountry,
+  getHotelConfigsPaginated,
+  getHotelsByCountryPaginated,
   createHotelConfig,
   updateHotelConfig,
   deleteHotelConfig,

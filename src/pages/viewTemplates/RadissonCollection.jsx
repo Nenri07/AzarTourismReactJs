@@ -256,6 +256,7 @@ const RadissonCollection = ({ invoiceData }) => {
 
     const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
     headStyles.forEach(style => style.parentNode.removeChild(style));
+    invoiceRef.current.classList.add('pdf-export-mode');
 
     try {
       const images = invoiceRef.current.querySelectorAll('img');
@@ -287,6 +288,7 @@ const RadissonCollection = ({ invoiceData }) => {
       toast.error("PDF generation failed");
     } finally {
       headStyles.forEach(style => document.head.appendChild(style));
+      invoiceRef.current.classList.remove('pdf-export-mode');
       setPdfLoading(false);
     }
   };
@@ -408,6 +410,32 @@ const RadissonCollection = ({ invoiceData }) => {
 
     .bottom-footer { font-size: 8px; line-height: 1; color: #000; text-align: center; }
     .bottom-footer p { margin: 1px 0; }
+    /* Base style for Fiscal Information (matches your original inline style) */
+    .fiscal-info-text {
+      text-decoration: underline;
+      text-decoration-thickness: 1.2px;
+      text-underline-offset: 3px;
+    }
+
+    /* -----------------------------------------------------------
+       PDF EXPORT OVERRIDES
+       These only apply during the exact moment the PDF is created
+       ----------------------------------------------------------- */
+    
+    /* 1. Force html2canvas to use border-bottom with 3px padding instead of text-decoration */
+    .pdf-export-mode .guest-table th span,
+    .pdf-export-mode .items-table th span,
+    .pdf-export-mode .fiscal-info-text {
+      text-decoration: none !important;
+      border-bottom: 1.4px solid #000 !important;
+      padding-bottom: 3px !important;
+      display: inline-block !important;
+    }
+
+    /* 2. Add 2px more padding to the Tax info headers in PDF */
+    .pdf-export-mode .tax-table th {
+      padding-bottom: 2px !important; 
+    }
 
     @media print {
       .invoice-box { background: none !important; }
@@ -433,9 +461,11 @@ const RadissonCollection = ({ invoiceData }) => {
 
       <div className="top-section">
         <div className="address-block">
-          <p style={{ fontStyle: 'italic', fontWeight: 'bold', textDecoration: 'underline', textDecorationThickness: '1.2px', textUnderlineOffset: '3px' }}>
-            Fiscal Information
-          </p>
+         <p style={{ fontStyle: 'italic', fontWeight: 'bold', margin: 0 }}>
+  <span className="fiscal-info-text">
+    Fiscal Information
+  </span>
+</p>
           <p>/</p>
           <p>AZAR TOURISM</p>
           <p>ALGERIA SQUARE BUILDING NUMBER 12 FIRST FLOOR 12/1</p>

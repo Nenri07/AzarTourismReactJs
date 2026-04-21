@@ -256,6 +256,9 @@ const RadissonBlueSisli = ({ invoiceData }) => {
 
     const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
     headStyles.forEach(style => style.parentNode.removeChild(style));
+          invoiceRef.current.classList.add('pdf-export-mode');
+
+    
 
     try {
       const images = invoiceRef.current.querySelectorAll('img');
@@ -287,6 +290,7 @@ const RadissonBlueSisli = ({ invoiceData }) => {
       toast.error("PDF generation failed");
     } finally {
       headStyles.forEach(style => document.head.appendChild(style));
+      invoiceRef.current.classList.remove('pdf-export-mode');
       setPdfLoading(false);
     }
   };
@@ -331,7 +335,29 @@ const RadissonBlueSisli = ({ invoiceData }) => {
       margin-bottom: 20px;
     }
     .logo-container img { max-width: 190px; margin-bottom: 37px; }
+/* Base style for Fiscal Information */
+    .fiscal-info-text {
+      border-bottom: 1.3px solid #000;
+      padding-bottom: 1px;
+      display: inline-block;
+    }
 
+    /* -----------------------------------------------------------
+       PDF EXPORT OVERRIDES
+       These only apply during the exact moment the PDF is created
+       ----------------------------------------------------------- */
+    
+    /* 1. Change underline padding from 1px to 3px in PDF */
+    .pdf-export-mode .guest-table th span,
+    .pdf-export-mode .items-table th span,
+    .pdf-export-mode .fiscal-info-text {
+      padding-bottom: 3px !important;
+    }
+
+    /* 2. Add 2px more padding to the Tax info headers in PDF */
+    .pdf-export-mode .tax-table th {
+      padding-bottom: 2px !important; 
+    }
     .top-section {
       display: flex;
       justify-content: space-between;
@@ -354,10 +380,11 @@ const RadissonBlueSisli = ({ invoiceData }) => {
       font-style: italic;
       font-size: 7px;
     }
-    .guest-table th span {
-      text-decoration: underline;
-      text-decoration-thickness: 1.3px;
-      text-underline-offset: 3px;
+  .guest-table th span {
+      text-decoration: none;
+      border-bottom: 1.7px solid #000;
+      padding-bottom: 1px;
+      display: inline-block;
     }
     .guest-table td { padding-bottom: 30px; }
 
@@ -367,10 +394,11 @@ const RadissonBlueSisli = ({ invoiceData }) => {
       font-style: italic;
       font-size: 8px;
     }
-    .items-table th span {
-      text-decoration: underline;
-      text-decoration-thickness: 1.3px;
-      text-underline-offset: 3px;
+   .items-table th span {
+      text-decoration: none;
+      border-bottom: 1.7px solid #000;
+      padding-bottom: 0px;
+      display: inline-block;
     }
 .items-table tbody tr:first-child td { 
   padding-top: 6px; /* Adjust this value to make the gap larger or smaller */
@@ -434,9 +462,11 @@ const RadissonBlueSisli = ({ invoiceData }) => {
 
       <div className="top-section">
         <div className="address-block">
-          <p style={{ fontStyle: 'italic', fontWeight: 'bold', textDecoration: 'underline', textDecorationThickness: '1.2px', textUnderlineOffset: '3px' }}>
-            Fiscal Information
-          </p>
+     <p style={{ fontStyle: 'italic', fontWeight: 'bold', margin: 0 }}>
+  <span className="fiscal-info-text">
+    Fiscal Information
+  </span>
+</p>
           <p>/</p>
           <p>AZAR TOURISM</p>
           <p>ALGERIA SQUARE BUILDING NUMBER 12 FIRST FLOOR 12/1</p>
