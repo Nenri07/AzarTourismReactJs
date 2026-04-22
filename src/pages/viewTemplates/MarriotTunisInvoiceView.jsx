@@ -3,9 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-
-// Update the path to your actual logo
-import logo from '../../../public/marriot_tunis-logo.png';
+import logo from '/marriot_tunis-logo.png';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PURE HELPERS

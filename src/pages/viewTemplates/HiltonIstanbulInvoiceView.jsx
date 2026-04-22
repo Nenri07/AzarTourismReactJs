@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
 import cairoInvoiceApi from "../../Api/cairoInvoice.api";
-import logo from "/hilton_bosphorus-logo.png"; // Make sure to use the correct Hilton logo path
+import logo from "/hilton_bosphorus-logo.png?url"; // Make sure to use the correct Hilton logo path
 
 const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
   const { invoiceId } = useParams();

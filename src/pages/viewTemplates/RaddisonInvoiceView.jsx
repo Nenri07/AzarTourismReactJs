@@ -4,7 +4,7 @@ import cairoInvoiceApi from "../../Api/cairoInvoice.api";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '/raddison-logo.png'; 
+import logo from '/raddison-logo.png?url'; 
 
 const RaddisonInvoiceView = ({ invoiceData }) => {
   const { invoiceId } = useParams();

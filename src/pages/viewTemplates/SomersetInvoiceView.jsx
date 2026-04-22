@@ -5,7 +5,7 @@ import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
 
 // Try to load somerset logo if it exists, otherwise use a generic placeholder or standard src
-import logo from '/somerset-logo.png';
+import logo from '/somerset-logo.png?url';
 
 const formatDateSomerset = (dateStr) => {
   if (!dateStr) return "";

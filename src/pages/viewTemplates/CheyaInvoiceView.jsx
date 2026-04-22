@@ -3,7 +3,7 @@
 // import toast from "react-hot-toast";
 // import html2pdf from 'html2pdf.js';
 // import { InvoiceTemplate } from "../../components";
-// import logo from '/cheya-logo.png';
+// import logo from '/cheya-logo.png?url';
 
 // // ─────────────────────────────────────────────────────────────────────────────
 // // PURE HELPERS  
@@ -631,7 +631,7 @@
 // import toast from "react-hot-toast";
 // import html2pdf from 'html2pdf.js';
 // import { InvoiceTemplate } from "../../components";
-// import logo from '/cheya-logo.png';
+// import logo from '/cheya-logo.png?url';
 
 // // ─────────────────────────────────────────────────────────────────────────────
 // // PURE HELPERS  
@@ -1294,7 +1294,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '/cheya-logo.png';
+import logo from '/cheya-logo.png?url';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PURE HELPERS  

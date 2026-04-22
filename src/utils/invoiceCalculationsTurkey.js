@@ -515,7 +515,6 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       cashierId:      formData.cashier_id      || '',
       frequentFlyer:  formData.frequent_flyer  || '',
       hiltonHonors:   formData.hilton_honors   || '',
-        invoiceTime:    formData.invoice_time    || '',
      accommodationRefId: formData.accommodation_ref_id || [...Array(5)].map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''),
 servicesRefId: formData.services_ref_id || [...Array(5)].map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''),
 startingRefNo: formData.starting_ref_no || Math.floor(1000000 + Math.random() * 9000000),

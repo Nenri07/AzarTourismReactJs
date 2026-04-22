@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate,useLocation } from "react-router-dom";
-import logo from '/TRYP-Logo.png';
+import logo from '/TRYP-Logo.png?url';
 import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import toast from "react-hot-toast";
 import { InvoiceTemplate } from "../../components";

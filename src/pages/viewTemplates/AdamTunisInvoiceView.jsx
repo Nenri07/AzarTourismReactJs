@@ -3,9 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-
-// Use the existing jpeg as requested by user context
-import logo from '../../../public/adam-logo.jpeg'; 
+import logo from '/adam-logo.jpeg'; 
 import { upperCase } from 'lodash';
 
 // ─────────────────────────────────────────────────────────────────────────────

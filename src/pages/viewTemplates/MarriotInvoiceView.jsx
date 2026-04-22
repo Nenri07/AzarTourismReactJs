@@ -4,7 +4,7 @@ import invoiceApi from "../../Api/invoice.api";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from "/marriot_london-logo.jfif";
+import logo from "/marriot_london-logo.jfif?url";
 
 const MarriotInvoiceView = ({ invoiceData }) => {
   const { invoiceId } = useParams();

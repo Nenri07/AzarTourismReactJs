@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { InvoiceTemplate } from "../../components";
-import logo from "/park_plaza-logo.jpg";
+import logo from "/park_plaza-logo.jpg?url";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIGURATION

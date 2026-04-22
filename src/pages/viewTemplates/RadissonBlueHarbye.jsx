@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '../../../public/radisson_sisli-logo.jpeg';
+import logo from '/radisson_sisli-logo.jpeg?url';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PURE HELPERS  

@@ -322,7 +322,7 @@ export default function DynamicInvoiceFormTurkey() {
       arrival_date:  data.arrivalDate || "",
       departure_date:data.departureDate || "",
       invoice_date:  data.invoiceDate || "",
-      invoice_time: data.invoicetime ||"",
+      invoice_time:  data.invoiceTime || data.invoicetime || "",
       room_number:   data.roomNo      || "",
       adults:        String(data.paxAdult || 1),
       children:      String(data.paxChild || 0),
@@ -367,7 +367,6 @@ export default function DynamicInvoiceFormTurkey() {
       cashier_id:      data.cashierId      || "",
       frequent_flyer:  data.frequentFlyer  || "",
       hilton_honors:   data.hiltonHonors   || "",
-      invoice_time:      data.invoiceTime     || "",
 
       // ── Yotelair extra fields ─────────────────────────────────────────────
       invoice_number:      data.invoiceNumber      || "",
