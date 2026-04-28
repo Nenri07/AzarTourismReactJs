@@ -39,7 +39,7 @@ import HyattRegencyView from "./viewTemplates/HyattRegencyView";
 import HiltonParkLaneView from "./viewTemplates/HiltonParkLaneView";
 import FourSeasonParkLaneView from "./viewTemplates/FourSeasonParkLaneView";
 import AdamTunisInvoiceView from "./viewTemplates/AdamTunisInvoiceView";
-import FourSeasonTunisInvoiceView from "./viewTemplates/FourSeasonTunisInvoiceView";
+import FourSeasonTunisInvoiceView from "./viewTemplates/FourSeasonTunisInvoiceView.jsx";
 import ConsordeTunisInvoiceView from "./viewTemplates/ConsordeTunisInvoiceView";
 import NovotelInvoiceView from "./viewTemplates/NovoTelInvoiceView";
 export {
