@@ -386,7 +386,7 @@ export default function InvoiceViewPage() {
     padding: 12px 15px 35mm 15px; 
     background: white;
     color: #000;
-    min-height: 296mm;
+    height: 297mm;
     page-break-after: always;
     font-size: 11px;
     box-sizing: border-box;

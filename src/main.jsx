@@ -165,7 +165,7 @@ const router = createBrowserRouter([
       
       // SUPER ADMIN & EMPLOYEE - Edit Invoice
       {
-        path: "tunisia-invoice/edit/:id",
+        path: "tunisia-invoice/edit/:invoiceId",
         element: (
           <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
             <DynamicInvoiceFormPageTunisia />
@@ -173,14 +173,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "tunisia-invoice/duplicate/:id",
-        element: (
-          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
-            <DynamicInvoiceFormPageTunisia />
-          </AuthLayout>
-        ),
-      },
-        {
         path: "tunisia-invoice/duplicate/:invoiceId",
         element: (
           <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
@@ -406,8 +398,41 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
-   
-    
+      // ==========================================
+      // GENERIC / DEFAULT INVOICES
+      // ==========================================
+      {
+        path: "invoice/create/:hotelId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["super_admin", "employee"]}>
+            <DynamicInvoiceFormPage />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "invoices/edit/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPage />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "invoices/duplicate/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPage />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "invoices/download-pdf/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceViewPage />
+          </AuthLayout>
+        ),
+      },
     ],
   },
   {

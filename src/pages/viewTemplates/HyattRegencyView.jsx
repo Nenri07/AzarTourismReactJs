@@ -326,6 +326,7 @@ const HyattRegencyView = ({ invoiceData }) => {
               padding: 6px 6px;
               text-align: left;
               vertical-align: top;
+              font-size: 13px !important;
           }
           .h-invoice-table th {
               background-color: #d3d3d3;

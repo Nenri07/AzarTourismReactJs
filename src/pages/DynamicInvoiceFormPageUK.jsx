@@ -209,6 +209,7 @@ export default function DynamicInvoiceFormPageUK() {
 
     return {
       // Hotel / Property Information
+      reference_no: data.referenceNo || "",
       hotel_name: data.hotel_name || data.hotel || hotelConfig?.hotel_name || "",
       vat_no: data.vatNo || data.vat_no || "",
       company_reg_no: data.companyRegNo || data.company_reg_no || "",

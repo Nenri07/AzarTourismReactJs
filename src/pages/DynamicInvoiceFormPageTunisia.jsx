@@ -130,7 +130,7 @@ export default function DynamicInvoiceFormPageTunisia() {
     const hCfg = HOTEL_CONFIGS_TUNISIA[hotelType] || HOTEL_CONFIGS_TUNISIA.OTHER_TUNISIA;
 
     return {
-     reference_no:      data.referenceNo || '',
+     reference_no:      data.refferenceNo || data.referenceNo || '',
       hotel_name:        data.hotel || cfg.hotel_name || '',
       currency:          'TND',
       invoice_no:        data.invoiceNo || '',
@@ -139,8 +139,8 @@ export default function DynamicInvoiceFormPageTunisia() {
       guest_name:        data.guestName || '',
       room_number:       data.roomNo || '',
       nb_persons:        String(data.nbPersons || 1),
-      nb_adults:         String(data.nbAdults || 1),
-      nb_children:       String(data.nbChildren || 0),
+      nb_adults:         String(data.adults || 1),
+      nb_children:       String(data.children || 0),
       arrangement_rate:  data.arrangementRate || '',
       ar_account:        data.arAccount || '',
       tax_id:            data.taxId || '',

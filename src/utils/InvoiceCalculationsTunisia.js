@@ -80,7 +80,7 @@ export const HOTEL_CONFIGS_TUNISIA = {
       debitTnd: parseNum(roomAmountTnd),
       creditTnd: 0,
     }),
-    showPerNightTax: false,
+    showPerNightTax: true,
     balanceCurrencies: ['USD'],
   },
 
@@ -450,8 +450,8 @@ export const mapToBackendSchemaTunisia = (formData, hotelConfig) => {
       guestName:        cap(formData.guest_name) || 'Guest',
       roomNo:           formData.room_number || '',
       nbPersons:        parseInt(formData.nb_persons || 1),
-      nbAdults:         parseInt(formData.nb_adults || 1),
-      nbChildren:       parseInt(formData.nb_children || 0),
+      adults:           parseInt(formData.nb_adults),
+      children:         parseInt(formData.nb_children),
       arrangementRate:  formData.arrangement_rate || '',  // e.g. "CORP_C_BB"
 
       // ── Company / billing ──

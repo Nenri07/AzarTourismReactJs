@@ -262,6 +262,7 @@ export default function DynamicInvoiceFormPage() {
     return {
       hotel_name: data.hotel || hotelConfig?.hotel_name || '',
       currency: hotelConfig?.currency || 'TRY',
+      reference_no: data.referenceNo || data.reference_no || '',
       company_name: data.referenceNo || data.company_name || '',
       guest_name: data.guestName || '',
       arrival_date: data.arrivalDate || '',

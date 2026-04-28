@@ -329,7 +329,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
       voucherNo: formData.voucher_no || '', // Voucher No
       passportNo: formData.passport_no || '',
       confirmation: formData.passport_no || '',
-      referenceNo: formData.company_name || `INV-${Date.now()}`,
+      referenceNo: formData.reference_no || formData.company_name || `INV-${Date.now()}`,
       userId: formData.user_code || '',
       batchNo: formData.cash_no || '', // cash_no for Grand Aras
       invoiceDate: formatDate(formData.invoice_date),

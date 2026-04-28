@@ -26,3 +26,6 @@ dist-ssr
 *.sln
 *.sw?
 
+# Tunis Invoice Views
+src/pages/viewTemplates/*Tunis*InvoiceView.jsx
+

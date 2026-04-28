@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { InvoiceTemplate } from "../../components";
 import InvoiceApi from "../../Api/invoice.api";
+import tunisiaInvoiceApi from "../../Api/tunisiainvoice.api";
 import html2pdf from "html2pdf.js";
 
 export default function NovotelInvoiceView({ invoiceData }) {
@@ -22,9 +23,15 @@ export default function NovotelInvoiceView({ invoiceData }) {
 
     useEffect(() => {
         if (invoiceData) {
-            const transformed = transformApiData(invoiceData);
-            setInvoice(transformed);
-            setLoading(false);
+            try {
+                const transformed = transformApiData(invoiceData);
+                setInvoice(transformed);
+            } catch (err) {
+                console.error("Error transforming invoice data:", err);
+                setError(err.message || "Failed to parse invoice data");
+            } finally {
+                setLoading(false);
+            }
         } else if (invoiceId) {
             fetchInvoiceData();
         } else {
@@ -38,7 +45,7 @@ export default function NovotelInvoiceView({ invoiceData }) {
             setLoading(true);
             setError(null);
 
-            const response = await InvoiceApi.getCompleteInvoice(invoiceId);
+            const response = await tunisiaInvoiceApi.getInvoiceById(invoiceId);
             const data = response.data || response;
 
             const transformedData = transformApiData(data);
@@ -52,129 +59,76 @@ export default function NovotelInvoiceView({ invoiceData }) {
     };
 
     const transformApiData = (data) => {
-        const inv = data.invoice || {};
+        if (!data) return null;
+
+        const formatDate = (dateStr) => {
+            if (!dateStr) return "";
+            try {
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr;
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const yy = String(d.getFullYear()).slice(-2);
+                return `${dd}/${mm}/${yy}`;
+            } catch { return dateStr; }
+        };
+
         const lines = [];
 
-        const firstNightDate =
-            data.accommodation_details?.[0]?.date ||
-            inv.invoice_date ||
-            inv.arrival_date;
-        const stampTaxAmount = parseFloat(inv.stamp_tax_total) || 0;
-
-        const itemsByDate = {};
-
-        // Process accommodation details
-        data.accommodation_details?.forEach((d) => {
-            const date = d.date || inv.arrival_date;
-            if (!itemsByDate[date]) itemsByDate[date] = [];
-
-            itemsByDate[date].push({
-                date: formatDate(date),
-                description: d.description || "Hébergement",
-                debit: parseFloat(d.rate) || 0,
-                credit: 0,
-                order: 1,
-            });
-        });
-
-        // Process city tax details
-        data.city_tax_details?.forEach((d) => {
-            const date = d.date || inv.arrival_date;
-            if (!itemsByDate[date]) itemsByDate[date] = [];
-
-            itemsByDate[date].push({
-                date: formatDate(date),
-                description: d.description || "Taxe de séjour",
-                debit: parseFloat(d.amount) || 0,
-                credit: 0,
-                order: 2,
-            });
-        });
-
-        // Add stamp tax ONLY on the first night's date
-        if (stampTaxAmount > 0 && firstNightDate) {
-            if (!itemsByDate[firstNightDate]) itemsByDate[firstNightDate] = [];
-
-            itemsByDate[firstNightDate].push({
-                date: formatDate(firstNightDate),
-                description: "Droit de timbre",
-                debit: stampTaxAmount,
-                credit: 0,
-                order: 3,
+        if (data.accommodationDetails && data.accommodationDetails.length > 0) {
+            data.accommodationDetails.forEach((acc) => {
+                const dateStr = formatDate(acc.date);
+                lines.push({ 
+                    date: dateStr, 
+                    description: acc.description || "Package", 
+                    debit: parseFloat(acc.debitTnd) || 0, 
+                    credit: parseFloat(acc.creditTnd) || 0 
+                });
+                if (data.showPerNightTax && data.cityTaxPerNight) {
+                    lines.push({ 
+                        date: dateStr, 
+                        description: "City tax", 
+                        debit: parseFloat(data.cityTaxPerNight) || 0, 
+                        credit: 0 
+                    });
+                }
             });
         }
 
-        // Process other services
-        data.other_services?.forEach((s) => {
-            const serviceDate = s.date || inv.invoice_date;
-            if (!itemsByDate[serviceDate]) itemsByDate[serviceDate] = [];
-
-            itemsByDate[serviceDate].push({
-                date: formatDate(serviceDate),
-                description: s.name || "Service",
-                debit: parseFloat(s.amount) || 0,
-                credit: 0,
-                order: 4,
+        if (data.stampTaxTotal) {
+            lines.push({ 
+                date: formatDate(data.invoiceDate), 
+                description: "Stamp Tax", 
+                debit: parseFloat(data.stampTaxTotal) || 0, 
+                credit: 0 
             });
-        });
+        }
 
-        // Flatten and sort
-        Object.keys(itemsByDate).forEach((date) => {
-            const dateItems = itemsByDate[date];
-            dateItems.sort((a, b) => a.order - b.order);
-            lines.push(...dateItems);
-        });
-
-        lines.sort((a, b) => {
-            if (!a.date || !b.date) return 0;
-            const convertDate = (dateStr) => {
-                const parts = dateStr.split("/");
-                if (parts.length !== 3) return 0;
-                return parseInt(parts[2] + parts[1] + parts[0]);
-            };
-            return convertDate(a.date) - convertDate(b.date);
-        });
-
-        const accommodationTotal =
-            data.accommodation_details?.reduce(
-                (sum, d) => sum + (parseFloat(d.rate) || 0),
-                0,
-            ) || 0;
-        const otherServicesTotal =
-            data.other_services?.reduce(
-                (sum, s) => sum + (parseFloat(s.amount) || 0),
-                0,
-            ) || 0;
-        const totalFromForm = accommodationTotal + otherServicesTotal;
+        const finalBalance = Number((data.grandTotalTnd || 0) + (data.cityTaxTotal || 0) + (data.stampTaxTotal || 0));
 
         const invoiceData = {
-            guestName: inv.guest_name || "Guest",
-            persons: (inv.pax_adult || 0) + (inv.pax_child || 0),
-            roomNo: inv.room_no || "N/A",
-            referenceNo: inv.reference_no,
-            arrival: formatDate(inv.arrival_date),
-            departure: formatDate(inv.departure_date),
-            issueDate: formatDate(inv.invoice_date),
-            companyName: inv.vd || "Azar Tourism Services",
-            companyAddress: "Algeria Square Building Number 12 First Floor, Tripoli, Libya.",
-            accountNo: inv.voucher_no || "ARZ2022TOU",
-            vatNo: inv.confirmation || "",
-            invoiceNo: inv.batch_no || "NOVO-13",
-            cashier: inv.passport_no || "8250",
+            guestName: data.guestName,
+            persons: `Adults: ${data.adults} / Child: ${data.children}`,
+            roomNo: data.roomNo,
+            referenceNo: data.invoiceNo,
+            arrival: formatDate(data.arrivalDate),
+            departure: formatDate(data.departureDate),
+            issueDate: formatDate(data.invoiceDate || data.created_at),
+            companyName: data.companyName || "AZAR TOURISM SERVICES",
+            companyAddress: data.companyAddress || "Algeria Square Building Tripoli Libyan",
+            accountNo: data.accountNo,
+            vatNo: data.vatNo,
+            invoiceNo: data.invoiceNo,
+            cashier: data.cashier,
             currency: "TND",
-            exchangeRate: parseFloat(inv.exchange_rate) || 2.85,
+            exchangeRate: 2.85,
             lines: lines,
-            netTaxable: parseFloat(inv.sub_total || totalFromForm) || 0,
-            fdsct: parseFloat(inv.vat1_10 || 0),
-            vat7Total: parseFloat(inv.vat7 || 0),
-            cityTaxTotal: parseFloat(inv.city_tax_total) || 0,
-            stampTaxTotal: stampTaxAmount,
-            grossTotal: parseFloat(inv.grand_total || inv.grossTotal || 0),
-            subTotal: totalFromForm || 0,
-            vat1_10: parseFloat(inv.vat1_10 || 0),
-            vat7: parseFloat(inv.vat7 || 0),
-            vat20: 0,
-            grandTotal: parseFloat(inv.grand_total || inv.grossTotal || 0),
+            netTaxable: parseFloat(data.totalHorsTaxes || 0),
+            fdsct: parseFloat(data.fdcst1Pct || 0),
+            vat7Total: parseFloat(data.vat7Pct || 0),
+            cityTaxTotal: parseFloat(data.cityTaxTotal || 0),
+            stampTaxTotal: parseFloat(data.stampTaxTotal || 1.000),
+            grossTotal: finalBalance,
         };
 
         return invoiceData;
@@ -218,25 +172,19 @@ export default function NovotelInvoiceView({ invoiceData }) {
 
     const handleDownloadPDF = async () => {
         if (!invoiceRef.current) return;
+        setPdfLoading(true);
+
+        const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
+        headStyles.forEach(style => {
+            if (style.parentNode) {
+                style.parentNode.removeChild(style);
+            }
+        });
 
         const element = invoiceRef.current;
-        const originalStyles = [];
-        const head = document.head;
-        const styleLinks = head.querySelectorAll('link[rel="stylesheet"], style');
+        element.classList.add('pdf-export-mode');
 
         try {
-            setPdfLoading(true);
-
-            // 1. Style Guard (Tailwind v4 Bypass)
-            styleLinks.forEach((link) => {
-                originalStyles.push({
-                    parent: head,
-                    element: link,
-                    nextSibling: link.nextSibling,
-                });
-                link.remove();
-            });
-
             // 2. Image Loading Verification
             const images = element.querySelectorAll("img");
             await Promise.all(
@@ -249,16 +197,20 @@ export default function NovotelInvoiceView({ invoiceData }) {
                 }),
             );
 
+            // Small delay to ensure layout is settled
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             // 3. Smart Pagination (PDF Options)
             const opt = {
                 margin: 0,
-                filename: `${invoice.referenceNo || "Invoice"}.pdf`,
-                image: { type: "jpeg", quality: 3 },
+                filename: `Novotel_invoice_${invoice.invoiceNo || invoice.referenceNo || "N/A"}.pdf`,
+                image: { type: "jpeg", quality: 1 },
                 html2canvas: {
                     scale: 4,
                     useCORS: true,
                     letterRendering: true,
-                    backgroundColor: "#ffffff",
+                    scrollY: 0,
+                    windowWidth: 794
                 },
                 jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
                 pagebreak: { mode: ["css", "legacy"] },
@@ -269,10 +221,8 @@ export default function NovotelInvoiceView({ invoiceData }) {
             console.error("❌ PDF Error:", error.message);
             alert("Failed to generate PDF");
         } finally {
-            // 4. Instant Recovery (Styles Restore)
-            originalStyles.forEach((item) => {
-                item.parent.insertBefore(item.element, item.nextSibling);
-            });
+            element.classList.remove('pdf-export-mode');
+            headStyles.forEach(style => document.head.appendChild(style));
             setPdfLoading(false);
         }
     };
@@ -323,6 +273,17 @@ export default function NovotelInvoiceView({ invoiceData }) {
           font-family: Arial, sans-serif;
         }
 
+        .pdf-export-mode {
+          background: #fff !important;
+          padding: 0 !important;
+          width: 210mm !important;
+          margin: 0 auto !important;
+        }
+
+        .pdf-export-mode * {
+          box-sizing: border-box;
+        }
+
         .invoice-page {
           position: relative;
           padding: 12px 15px 35mm 15px;
@@ -337,6 +298,14 @@ export default function NovotelInvoiceView({ invoiceData }) {
           overflow: hidden;
         }
 
+        .pdf-export-mode .invoice-page {
+          margin: 0 auto !important;
+          box-shadow: none !important;
+          border: none !important;
+          height: 296.5mm !important;
+          max-height: 296.5mm !important;
+        }
+
         .invoice-page:last-child {
           page-break-after: avoid;
         }
@@ -348,6 +317,21 @@ export default function NovotelInvoiceView({ invoiceData }) {
           width: 110px;
           z-index: 100;
         }
+
+        /* Essential Layout classes for PDF export */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .flex-col { flex-direction: column; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .w-full { width: 100%; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .border-b { border-bottom: 1px solid #000; }
+        .pb-1 { padding-bottom: 0.25rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
 
         @media print {
           body {
@@ -383,7 +367,7 @@ export default function NovotelInvoiceView({ invoiceData }) {
 
                         {/* Header - Two columns */}
                         <div
-                            className="grid grid-cols-2 gap-4 mb-4"
+                            className="grid-2 mb-4"
                             style={{ fontSize: "11px", lineHeight: "1.4" }}
                         >
                             <div>
@@ -396,8 +380,9 @@ export default function NovotelInvoiceView({ invoiceData }) {
                                 <div>The {invoice.issueDate}</div>
                             </div>
                             <div>
-                                <div>Company : {invoice.companyName}</div>
+                                <div style={{textTransform: 'uppercase'}}>Company : {invoice.companyName}</div>
                                 <div>Address : {invoice.companyAddress}</div>
+                                <div style={{height: '8px'}}></div>
                                 <div className="mt-1">Account NO : {invoice.accountNo}</div>
                                 <div>VAT No : {invoice.vatNo}</div>
                                 <div>Invoice No: {invoice.invoiceNo}</div>
@@ -413,7 +398,7 @@ export default function NovotelInvoiceView({ invoiceData }) {
                             className="w-full"
                             style={{ borderCollapse: "collapse", fontSize: "11px" }}
                         >
-                            <thead>
+                            <thead style={{lineHeight: '1.5'}}>
                                 <tr
                                     style={{
                                         backgroundColor: "#ebebeb",
@@ -443,12 +428,12 @@ export default function NovotelInvoiceView({ invoiceData }) {
                                 {pageData.lines.length > 0 ? (
                                     pageData.lines.map((line, i) => (
                                         <tr key={i}>
-                                            <td className="p-1">{line.date}</td>
-                                            <td className="p-1">{line.description}</td>
-                                            <td className="text-right p-1">
+                                            <td className="p-1" style={{lineHeight: '1.8'}}>{line.date}</td>
+                                            <td className="p-1" style={{lineHeight: '1.8'}}>{line.description}</td>
+                                            <td className="text-right p-1" style={{lineHeight: '1.8'}}>
                                                 {Number(line.debit).toFixed(3)}
                                             </td>
-                                            <td className="text-right p-1">
+                                            <td className="text-right p-1" style={{lineHeight: '1.8'}}>
                                                 {Number(line.credit).toFixed(3)}
                                             </td>
                                         </tr>
@@ -467,12 +452,11 @@ export default function NovotelInvoiceView({ invoiceData }) {
                         {pageData.isLastPage && (
                             <div className="mt-6" style={{ fontSize: "10px" }}>
                                 <div style={{ borderTop: "1px solid #000", paddingTop: "8px" }}>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid-2">
                                         {/* Left - USD */}
                                         <div
+                                            className="flex flex-col"
                                             style={{
-                                                display: "flex",
-                                                flexDirection: "column",
                                                 justifyContent: "end",
                                             }}
                                         >

@@ -120,6 +120,8 @@ export default function InvoicePage() {
     if (invoice.invoiceType === "malaysia") return "malaysia";
     if (invoice.invoiceType === "egypt")    return "egypt";
     if (invoice.invoiceType === "tunisia")  return "tunisia";
+    if (invoice.invoiceType === "turkey")   return "turkey";
+    if (invoice.invoiceType === "turkey2")  return "turkey2";
 
     const hotelConfig = hotels.find((h) => h.name === invoice.hotelName);
     const country  = (hotelConfig?.country  || "").toLowerCase();
@@ -234,8 +236,8 @@ export default function InvoicePage() {
             if (d.data && typeof d.data === "object") d = d.data;
             invoicesList.push({
               id: invoice.id || invoice._id || `tunisia-${index}`,
-              invoiceNumber: d.invoiceNo || d.folioNo || d.confirmationNo || `TUN-${(invoice.id||"").substring(0,8)}`,
-              reference: d.invoiceNo || d.folioNo || "",
+              invoiceNumber: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || d.confirmationNo || `TUN-${(invoice.id||"").substring(0,8)}`,
+              reference: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || "",
               hotelName: d.hotel || "Unknown Hotel", guestName: d.guestName || "Guest",
               roomNumber: d.roomNo || "N/A",
               arrivalDate: d.arrivalDate || new Date().toISOString(),
@@ -252,20 +254,21 @@ export default function InvoicePage() {
           response.data.turkey_hotels.records.forEach((invoice, index) => {
             let d = invoice.data || {};
             if (d.data && typeof d.data === "object") d = d.data;
-            invoicesList.push({
-              id: invoice.id || invoice._id || `turkey-${index}`,
-              invoiceNumber: d.referenceNo || d.voucherNo || d.reference_no || `INV-${(invoice.id||invoice._id||"").substring(0,8)}`,
-              reference: d.referenceNo || d.voucherNo || d.reference_no || `REF-${(invoice.id||invoice._id||"").substring(0,8)}`,
-              hotelName: d.hotel || d.hotelName || "Unknown Hotel", guestName: d.guestName || "Guest",
-              roomNumber: d.roomNo || d.room_number || "N/A",
-              arrivalDate: d.arrivalDate || d.arrival_date || new Date().toISOString(),
-              departureDate: d.departureDate || d.departure_date || new Date().toISOString(),
-              nights: d.nights || 0, grandTotal: parseFloat(d.grandTotal || d.total || 0),
-              currency: d.currency || "TRY", status: d.status || "ready",
-              pdfPath: d.pdfPath || null,
-              createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
-              rawData: invoice, invoiceType: null,
-            });
+              const hotelName = d.hotel || d.hotelName || "Unknown Hotel";
+              invoicesList.push({
+                id: invoice.id || invoice._id || `turkey-${index}`,
+                invoiceNumber: d.referenceNo || d.voucherNo || d.reference_no || `INV-${(invoice.id||invoice._id||"").substring(0,8)}`,
+                reference: d.referenceNo || d.voucherNo || d.reference_no || `REF-${(invoice.id||invoice._id||"").substring(0,8)}`,
+                hotelName: hotelName, guestName: d.guestName || "Guest",
+                roomNumber: d.roomNo || d.room_number || "N/A",
+                arrivalDate: d.arrivalDate || d.arrival_date || new Date().toISOString(),
+                departureDate: d.departureDate || d.departure_date || new Date().toISOString(),
+                nights: d.nights || 0, grandTotal: parseFloat(d.grandTotal || d.total || 0),
+                currency: d.currency || "TRY", status: d.status || "ready",
+                pdfPath: d.pdfPath || null,
+                createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
+                rawData: invoice, invoiceType: isTurkey2Invoice(hotelName) ? "turkey2" : "turkey",
+              });
           });
         }
         // 4. Egypt
@@ -318,7 +321,7 @@ export default function InvoicePage() {
             if (d.data && typeof d.data === "object") d = d.data;
             invoicesList.push({
               id: invoice.id || invoice._id || `uk-${index}`,
-              invoiceNumber: d.vatInvoiceNo || d.invoiceNo || d.referenceNo || `INV-${(invoice.id||invoice._id||"").substring(0,8)}`,
+              invoiceNumber: d.referenceNo || d.vatInvoiceNo || d.invoiceNo || `INV-${(invoice.id||invoice._id||"").substring(0,8)}`,
               reference: d.referenceNo || d.vatInvoiceNo || d.invoiceNo || "",
               hotelName: d.hotel || d.hotelName || "Unknown Hotel", guestName: d.guestName || "Guest",
               roomNumber: d.roomNo || d.room_number || "N/A",
@@ -349,8 +352,8 @@ export default function InvoicePage() {
 
               invoicesList.push({
                 id: invId || `tounis-${index}`,
-                invoiceNumber: d.invoiceNo || d.folioNo || d.confirmationNo || `TUN-${(String(invId)||"").substring(0,8)}`,
-                reference: d.invoiceNo || d.folioNo || "",
+                invoiceNumber: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || d.confirmationNo || `TUN-${(String(invId)||"").substring(0,8)}`,
+                reference: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || "",
                 hotelName: d.hotel || d.hotelName || "Unknown Hotel", 
                 guestName: d.guestName || "Guest",
                 roomNumber: d.roomNo || "N/A",
@@ -533,7 +536,7 @@ export default function InvoicePage() {
       else if (type === "malaysia") await malaysiaInvoiceApi.deleteInvoice(invoiceToDelete.id);
       else if (type === "egypt")    await cairoInvoiceApi.deleteInvoice(invoiceToDelete.id);
       else if (type === "tunisia")  await tunisiainvoiceApi.deleteInvoice(invoiceToDelete.id);
-      else if (type === "turkey2")  await turkeyInvoiceApi.deleteInvoice(invoiceToDelete.id);
+      else if (type === "turkey2" || type === "turkey")  await turkeyInvoiceApi.deleteInvoice(invoiceToDelete.id);
       else                          await invoiceApi.deleteInvoice(invoiceToDelete.id);
       setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceToDelete.id));
       toast.success(`Invoice ${invoiceToDelete.invoiceNumber} deleted successfully!`);

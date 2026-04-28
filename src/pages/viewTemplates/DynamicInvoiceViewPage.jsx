@@ -37,14 +37,15 @@ import IntercontinentalInvoiceViewMalaysia from "./IntercontinentalInvoiceViewMa
 import MarmaraInvoiceView from "./MarmaraInvoiceView";
 import HiltonIstanbulInvoiceView from "./HiltonIstanbulInvoiceView";
 import tunisiainvoiceApi from "../../Api/tunisiainvoice.api";
-import { HiltonIstambulInvoiceView, RadissonBlueSisli, RadissonCollection , RadissonHerbyeInvoiceView ,MarriotInvoiceView, MandarinInvoiceView, ParkPlazaInvoiceView, MarriotTunisInvoiceView} from "..";
+import { HiltonIstambulInvoiceView, RadissonBlueSisli, RadissonCollection , RadissonHerbyeInvoiceView ,MarriotInvoiceView, MandarinInvoiceView, ParkPlazaInvoiceView, MarriotTunisInvoiceView, NovotelInvoiceView} from "..";
 import YotelairInvoiceView from "./YotelInvoiceView";
 import CheyaInvoiceView from "./CheyaInvoiceView";
 import HiltonParkLaneView from "./HiltonParkLaneView";
 import HyattRegencyView from "./HyattRegencyView";
 import FourSeasonParkLaneView from "./FourSeasonParkLaneView";
 import AdamTunisInvoiceView from "./AdamTunisInvoiceView";
-
+import FourSeasonTunisInvoiceView from "./FourSeasonTunisInvoiceView";
+import ConsordeTunisInvoiceView from "./ConsordeTunisInvoiceView";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -139,6 +140,12 @@ export default function DynamicInvoiceViewPage() {
       else if (hotelName.includes("four") && hotelName.includes("season") && hotelName.includes("park lane")) {
         detectedType = "FourSeasonsUK";
       }
+      else if (hotelName.includes("four") && hotelName.includes("season") && isTunisiaRoute) {
+        detectedType = "FourSeasonsTunis";
+      }
+      else if ((hotelName.includes("concorde") || hotelName.includes("consorde")) && isTunisiaRoute) {
+        detectedType = "ConsordeTunis";
+      }
       else if(hotelName.includes("tunis marriott hotel")){
         detectedType = "MarriotHotelTunis";
       }
@@ -149,6 +156,8 @@ export default function DynamicInvoiceViewPage() {
         detectedType = "CVK";
       } else if (hotelName.includes("tryp")) {
         detectedType = "TRYP";
+      } else if (hotelName.includes("novotel") && isTunisiaRoute) {
+        detectedType = "NovotelTunis";
       } else if (hotelName.includes("novotel")) {
         detectedType = "Novotel";
       } else if (hotelName.includes("staybridge") ) {
@@ -315,6 +324,8 @@ export default function DynamicInvoiceViewPage() {
     return <CVKInvoiceView invoiceData={invoice} />;
   } else if (hotelType === "TRYP") {
     return <TRYPInvoiceView invoiceData={invoice} />;
+  } else if (hotelType === "NovotelTunis") {
+    return <NovotelInvoiceView invoiceData={invoice} />;
   } else if (hotelType === "Novotel") {
     return <InvoiceViewPage />;
   } else if (hotelType === "Staybridge") {
@@ -415,6 +426,12 @@ else if (hotelType === "FourSeasonsUK") {
 }
 else if (hotelType === "AdamHotelTunis") {
   return <AdamTunisInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "FourSeasonsTunis") {
+  return <FourSeasonTunisInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "ConsordeTunis") {
+  return <ConsordeTunisInvoiceView invoiceData={invoice} />;
 }
   else {
     // Default fallback
