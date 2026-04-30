@@ -41,6 +41,7 @@ import FourSeasonParkLaneView from "./viewTemplates/FourSeasonParkLaneView";
 import AdamTunisInvoiceView from "./viewTemplates/AdamTunisInvoiceView";
 import FourSeasonTunisInvoiceView from "./viewTemplates/FourSeasonTunisInvoiceView.jsx";
 import ConsordeTunisInvoiceView from "./viewTemplates/ConsordeTunisInvoiceView";
+import SheratonTunisInvoiceView from "./viewTemplates/SheratonTunisInvoiceView";
 import NovotelInvoiceView from "./viewTemplates/NovoTelInvoiceView";
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
@@ -76,5 +77,6 @@ export {
     AdamTunisInvoiceView,
     FourSeasonTunisInvoiceView,
     NovotelInvoiceView,
-    ConsordeTunisInvoiceView
+    ConsordeTunisInvoiceView,
+    SheratonTunisInvoiceView
 };

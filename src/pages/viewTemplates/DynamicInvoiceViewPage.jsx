@@ -46,6 +46,7 @@ import FourSeasonParkLaneView from "./FourSeasonParkLaneView";
 import AdamTunisInvoiceView from "./AdamTunisInvoiceView";
 import FourSeasonTunisInvoiceView from "./FourSeasonTunisInvoiceView";
 import ConsordeTunisInvoiceView from "./ConsordeTunisInvoiceView";
+import SheratonTunisInvoiceView from "./SheratonTunisInvoiceView";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -151,6 +152,9 @@ export default function DynamicInvoiceViewPage() {
       }
       else if(hotelName.includes("adam hotel") || hotelName.includes("adam hotel suites")){
         detectedType = "AdamHotelTunis";
+      }
+      else if(hotelName.includes("sheraton") && isTunisiaRoute){
+        detectedType = "SheratonTunis";
       }
       else if (hotelName.includes("cvk") || hotelName.includes("cvk hotels") || hotelName.includes("cvk park bosphorus")) {
         detectedType = "CVK";
@@ -432,6 +436,9 @@ else if (hotelType === "FourSeasonsTunis") {
 }
 else if (hotelType === "ConsordeTunis") {
   return <ConsordeTunisInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "SheratonTunis") {
+  return <SheratonTunisInvoiceView invoiceData={invoice} />;
 }
   else {
     // Default fallback
