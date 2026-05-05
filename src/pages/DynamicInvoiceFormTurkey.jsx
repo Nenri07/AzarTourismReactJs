@@ -375,6 +375,9 @@ export default function DynamicInvoiceFormTurkey() {
       number_of_guests:    data.numberOfGuests      || data.adults || 1,
 
       // ── Sections ──────────────────────────────────────────────────────────
+      accommodation_ref_id: data.accommodationRefId || '',
+      services_ref_id: data.servicesRefId || '',
+      starting_ref_no: data.startingRefNo || '',
       accommodation_details: accommodationDetails,
       other_services:        otherServices,
     };
