@@ -92,7 +92,7 @@ const LansonPalaceInvoiceView = ({ invoiceData }) => {
   const [paginatedData, setPaginatedData] = useState([]);
 
   const invoiceRef = useRef(null);
-  const ROWS_PER_PAGE = 30;
+  const ROWS_PER_PAGE = 27;
   const isPdfDownload = location.pathname.includes("/download-pdf");
 
   const dummyData = {
