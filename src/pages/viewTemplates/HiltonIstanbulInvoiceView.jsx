@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
 import cairoInvoiceApi from "../../Api/cairoInvoice.api";
-import logo from "/hilton_bosphorus-logo.png?url"; // Make sure to use the correct Hilton logo path
+import logo from "/hilton_bosphorus-logo.png"; // Make sure to use the correct Hilton logo path
 
 const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
   const { invoiceId } = useParams();
@@ -149,10 +149,14 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
     const balance = totalDebit - totalCredit;
     const balancceInEuro = formatCurrency(data.totalInEur || 0)
 
-    const baseExcludingVat = balance / 1.12; 
-    const tourismTax = baseExcludingVat * 0.02;
-    const vatAmount = baseExcludingVat * 0.10;
-
+    const tourismBase = data.taxableAmount || 0;
+    const tourismTax = data.accommodationTax || 0;
+    
+    const vat10Base = data.taxableAmount || 0;
+    const vat10Amount = data.totalVat10 || 0;
+    
+    const vat20Base = data.totalServicesTaxable || 0;
+    const vat20Amount = data.totalVat20 || 0;
     return {
       hotelContact: {
         name: data.hotel || 'HILTON ISTANBUL BOSPHORUS',
@@ -190,13 +194,21 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
         totalCredit: formatCurrency(totalCredit),
         balance: formatCurrency(balance),
         totalEur: balancceInEuro,
-        taxDetails: {
-          tourismBase: formatCurrency(baseExcludingVat),
+     taxDetails: {
+          // Tourism Tax (2%)
+          tourismBase: formatCurrency(tourismBase),
           tourismVat: formatCurrency(tourismTax),
-          tourismTotal: formatCurrency(baseExcludingVat + tourismTax),
-          vatBase: formatCurrency(baseExcludingVat),
-          vatAmount: formatCurrency(vatAmount),
-          vatTotal: formatCurrency(baseExcludingVat + vatAmount),
+          tourismTotal: formatCurrency(tourismBase + tourismTax),
+          
+          // VAT (10%)
+          vat10Base: formatCurrency(vat10Base),
+          vat10Amount: formatCurrency(vat10Amount),
+          vat10Total: formatCurrency(vat10Base + vat10Amount),
+          
+          // VAT (20%) - Other Services
+          vat20Base: formatCurrency(vat20Base),
+          vat20Amount: formatCurrency(vat20Amount),
+          vat20Total: formatCurrency(vat20Base + vat20Amount),
         }
       },
       charges: allRows,
@@ -652,9 +664,15 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
                     </tr>
                     <tr>
                       <td className='change2'>VAT at 10%</td>
-                      <td className='change'>{invoice.totals.taxDetails.vatBase}</td>
-                      <td>{invoice.totals.taxDetails.vatAmount}</td>
-                      <td>{invoice.totals.taxDetails.vatTotal} TL</td>
+                      <td className='change'>{invoice.totals.taxDetails.vat10Base}</td>
+                      <td>{invoice.totals.taxDetails.vat10Amount}</td>
+                      <td>{invoice.totals.taxDetails.vat10Total} TL</td>
+                    </tr>
+                    <tr>
+                      <td className='change2'>VAT at 20%</td>
+                      <td className='change'>{invoice.totals.taxDetails.vat20Base}</td>
+                      <td>{invoice.totals.taxDetails.vat20Amount}</td>
+                      <td>{invoice.totals.taxDetails.vat20Total} TL</td>
                     </tr>
                     <tr>
                       <td className='change2'>Non Taxable Amount</td>
