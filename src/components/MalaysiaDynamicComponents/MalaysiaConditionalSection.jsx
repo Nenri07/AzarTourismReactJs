@@ -87,10 +87,25 @@ const updates = {
     setFormData
   ]);
 
-  const handleEntryFieldChange = (index, fieldId, value) => {
+ const handleEntryFieldChange = (index, fieldId, value) => {
     setFormData(prev => {
       const newEntries = [...(prev[sectionKey] || [])];
-      newEntries[index] = { ...newEntries[index], [fieldId]: value };
+      let updatedEntry = { ...newEntries[index], [fieldId]: value };
+
+      // NEW LOGIC: Auto-calculate SST for Other Services
+   if (sectionKey === 'other_services' && fieldId === 'gross_amount') {
+  const grossAmt = parseFloat(value || 0);
+
+  if (grossAmt > 0 && hotelType === 'LANSON_PLACE') {
+    const baseAmt = grossAmt / 1.08;
+    const sstAmt = baseAmt * 0.08;
+    updatedEntry['service_sst_myr'] = sstAmt.toFixed(2);
+  } else {
+    updatedEntry['service_sst_myr'] = "0.00";
+  }
+}
+
+      newEntries[index] = updatedEntry;
       return { ...prev, [sectionKey]: newEntries };
     });
   };
