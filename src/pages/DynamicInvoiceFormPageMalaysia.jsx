@@ -144,21 +144,64 @@ export default function DynamicInvoiceFormPageMalaysia() {
       });
     }
 
-    const otherServices = [];
+const otherServices = [];
     if (servicesConfig?.fields && Array.isArray(data.otherServices)) {
-      data.otherServices.forEach(service => {
-        const mappedService = { id: Date.now() + Math.random() };
+      let i = 0;
+      
+      while (i < data.otherServices.length) {
+        const currentService = data.otherServices[i];
+        
+        // Safety check: skip if it's an orphaned SST row
+        if (currentService.name && currentService.name.endsWith(' - SST')) {
+          i++;
+          continue; 
+        }
+
+        let baseAmount = parseFloat(currentService.amount || 0);
+        let sstAmount = 0;
+
+        // Check if the NEXT item in the array is the matching SST row
+        const nextService = data.otherServices[i + 1];
+        if (nextService && nextService.name === `${currentService.name} - SST`) {
+          sstAmount = parseFloat(nextService.amount || 0);
+          i += 2; // Consume both rows, jump ahead by 2
+        } else {
+          i += 1; // Normal row, jump ahead by 1
+        }
+
+        const grossAmount = (baseAmount + sstAmount).toFixed(2);
+        
+        // Initialize with ID and the calculated SST
+        const mappedService = { 
+          id: Date.now() + Math.random(),
+          service_sst_myr: sstAmount.toFixed(2)
+        };
+
+        // Use your original dynamic mapping to ensure the config matches perfectly
         servicesConfig.fields.forEach(field => {
           const fieldId = field.field_id;
-          if (fieldId === 'service_name') mappedService[fieldId] = service.name || '';
-          else if (fieldId === 'service_date') mappedService[fieldId] = service.date || '';
-          else if (fieldId === 'gross_amount') mappedService[fieldId] = service.amount || '';
-          else mappedService[fieldId] = service[fieldId] || '';
+          
+          // Map Name/Description
+          if (fieldId === 'service_name' || fieldId === 'description') {
+            mappedService[fieldId] = currentService.name || currentService.description || '';
+          } 
+          // Map Date
+          else if (fieldId === 'service_date') {
+            mappedService[fieldId] = currentService.date || '';
+          } 
+          // Map our newly calculated combined Gross Amount
+          else if (fieldId === 'gross_amount') {
+            mappedService[fieldId] = grossAmount;
+          } 
+          // Catch any other fields dynamically, skipping the SST we already set
+          else if (fieldId !== 'service_sst_myr') {
+            mappedService[fieldId] = currentService[fieldId] || '';
+          }
         });
-        otherServices.push(mappedService);
-      });
-    }
 
+        otherServices.push(mappedService);
+      }
+    }
 return {
       // -----------------------------------------------------
       // REPLACED: ALL MALAYSIAN HOTEL FIELDS MAPPED HERE
