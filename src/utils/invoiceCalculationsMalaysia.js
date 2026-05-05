@@ -363,6 +363,13 @@ export const calculateFinalSummary = (formData, hotelType) => {
   };
 };
 
+  const capitalizeWords = (str) => {
+    if (!str) return '';
+    return str.trim().replace(/\s+/g, ' ').split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MAP TO BACKEND SCHEMA
 // ─────────────────────────────────────────────────────────────────────────────
@@ -373,18 +380,43 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
   const accCalc = calculateAccommodation(formData, hotelType);
   const servicesCalc = calculateServices(formData.other_services);
   const summary = calculateFinalSummary(formData, hotelType);
+  // ---> PUT THE CODE HERE <---
+  const rawServices = formData.other_services || [];
+  const mappedOtherServices = [];
+
+  rawServices.forEach(service => {
+    const grossAmt = parseFloat(service.gross_amount || 0);
+    
+    if (grossAmt > 0) {
+      const baseAmt = Number((grossAmt / 1.08).toFixed(2));
+      const sstAmt = Number((baseAmt * 0.08).toFixed(2));
+      
+      const serviceName = capitalizeWords(service.description || service.service_name || "Service");
+      const serviceDate = service.service_date || formData.invoice_date || "";
+
+      // Push Base
+      mappedOtherServices.push({
+        name: serviceName,
+        date: serviceDate,
+        amount: baseAmt
+      });
+
+      // Push SST
+      if (sstAmt > 0 && hotelType === 'LANSON_PLACE') {
+        mappedOtherServices.push({
+          name: `${serviceName} - SST`,
+          date: serviceDate,
+          amount: sstAmt
+        });
+      }
+    }
+  });
 
   const formatDate = (dateStr) => {
     if (!dateStr) return new Date().toISOString().split('T')[0];
     return dateStr.split('T')[0];
   };
 
-  const capitalizeWords = (str) => {
-    if (!str) return '';
-    return str.trim().replace(/\s+/g, ' ').split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
 
   // Build rows dynamically based on the hotel's configuration
   const accommodationDetailsArray = [];
@@ -507,7 +539,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
 
       // 9. Tables
       accommodationDetails: accommodationDetailsArray,
-      otherServices: otherServicesArray,
+      otherServices: mappedOtherServices,
     },
   };
 };
