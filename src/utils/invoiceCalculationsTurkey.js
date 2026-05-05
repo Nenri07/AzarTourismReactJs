@@ -94,7 +94,7 @@ export const HOTEL_CONFIGS = {
 
  // ── 1. HILTON ISTANBUL BOSPHORUS ─────────────────────────────────────────
  // ── 1. HILTON ISTANBUL BOSPHORUS ─────────────────────────────────────────
-  HILTON_BOSPHORUS: {
+HILTON_BOSPHORUS: {
     detect: (name) =>
       name.includes('hilton') &&
       (name.includes('bosphorus') || name.includes('istanbul bosphorus')),
@@ -105,25 +105,29 @@ export const HOTEL_CONFIGS = {
       // Gross EUR * Exchange Rate = Gross TRY
       // Gross TRY / 1.12 = Net TRY (Room Amount)
       const grossTry = eurAmount * exchangeRate;
-      const netTry = grossTry / 1.12;
+      const netTry = grossTry
       return { roomAmountTry: netTry };
     },
     buildRow: ({ date, roomAmountTry, eurAmount, exchangeRate }) => {
       // Calculate the Net EUR amount to display in the description
+
+      const calulatedTL= parseNum(roomAmountTry /1.12);
       const netEur = parseNum(roomAmountTry / exchangeRate);
       
+
       // TAX is 12% of the Net Room Amount
-      const taxAmount = parseNum(roomAmountTry * 0.12); 
+      const taxAmount = parseNum(calulatedTL * 0.12); 
 
       return {
         date,
         description: `GUEST ROOM ( ${netEur.toFixed(2)} EUR * ${exchangeRate} )`,
         rateLabel: `${netEur.toFixed(2)} EUR * ${exchangeRate}`,
-        rate: parseNum(roomAmountTry),
+        rate: parseNum(calulatedTL),
         taxAmount: taxAmount,
       };
     },
   },
+
 
   // ── 2. RADISSON HOTEL ISTANBUL HARBIYE ───────────────────────────────────
   // TWO rows per night — Hotel Expenses (10%) + Accommodation Tax (0%, per PAX)
