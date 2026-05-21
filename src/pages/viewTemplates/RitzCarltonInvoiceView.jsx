@@ -462,7 +462,7 @@ const RitzCarltonInvoiceView = ({ invoiceData }) => {
                     <td>{item.date}</td>
                     <td>{item.text}</td>
                     <td className="text-center">{item.detail}</td>
-                    <td className="text-center">{item.debitsEGP}</td>
+                    <td className="text-right" style={{paddingRight: "30px"}}>{item.debitsEGP}</td>
                     <td className="text-right">{item.creditsEGP}</td>
                   </tr>
                 ))}
