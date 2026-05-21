@@ -66,8 +66,7 @@ const WaldorfAstoriaInvoiceView = ({ invoiceData }) => {
 
     const transactions = [];
     
-    let lastRefNumber = Math.floor(1000000 + Math.random() * 9000000); // Generate a random 7 digit start
-
+    let lastRefNumber = data.startingRefNo
     if (data.accommodationDetails && Array.isArray(data.accommodationDetails)) {
         data.accommodationDetails.forEach(item => {
             const extRate = data.exchangeRate ? data.exchangeRate.toFixed(2) : "0.00";
@@ -170,6 +169,11 @@ const WaldorfAstoriaInvoiceView = ({ invoiceData }) => {
     return {
       ...data,
       transactions,
+      checkinTime:data.checkInTime,
+            checkOutTime:data.checkOutTime,
+                  invoiceTime:data.invoiceTime,
+
+
       formattedInvoiceDate: formatDate(data.invoiceDate),
       formattedArrivalDate: formatDate(data.arrivalDate),
       formattedDepartureDate: formatDate(data.departureDate),
@@ -186,6 +190,7 @@ const WaldorfAstoriaInvoiceView = ({ invoiceData }) => {
         const yy = String(d.getFullYear());
         
         if (includeTime) {
+          
             const hh = String(d.getHours()).padStart(2, '0');
             const mns = String(d.getMinutes()).padStart(2, '0');
             const ss = String(d.getSeconds()).padStart(2, '0');
@@ -415,7 +420,7 @@ const WaldorfAstoriaInvoiceView = ({ invoiceData }) => {
                 <div>Floor, Tripoli 1254 Tripoli</div>
                 <div>Libya</div>
                 <div style={{ fontSize: '9pt', marginTop: '63px', textTransform: 'uppercase' }}>
-                WALDORF ASTORIA CAIRO {formatDate(invoice.invoiceDate, true)}</div>
+                WALDORF ASTORIA CAIRO {formatDate(invoice.invoiceDate, false)} <span>&nbsp;{invoice.invoiceTime} </span></div>
                </div>
             </div>
 
@@ -427,8 +432,8 @@ const WaldorfAstoriaInvoiceView = ({ invoiceData }) => {
 
               <div style={{ width: '45%', lineHeight: '1.4' }}>
                 <div style={{ display: 'flex' }}><span style={{ width: '195px' }}>Room No:</span> <span>{invoice.roomNo}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '195px' }}>Arrival Date:</span> <span>{formatDate(invoice.arrivalDate, true)}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '195px' }}>Departure Date:</span> <span>{formatDate(invoice.departureDate, true)}</span></div>
+                <div style={{ display: 'flex' }}><span style={{ width: '195px' }}>Arrival Date:</span> <span>{formatDate(invoice.arrivalDate, false)}</span><span>&nbsp;{invoice.checkInTime} </span></div>
+                <div style={{ display: 'flex' }}><span style={{ width: '195px' }}>Departure Date:</span> <span>{formatDate(invoice.departureDate, false)}</span><span>&nbsp;{invoice.checkOutTime} </span></div>
                 <div style={{ display: 'flex' }}><span style={{ width: '195px' }}>Adult/Child:</span> <span>{invoice.paxAdult} / {invoice.paxChild}</span></div>
                 <div style={{ display: 'flex' }}><span style={{ width: '195px' }}>ID:</span> <span>{invoice.userId}</span></div>
                 <div style={{ display: 'flex' }}><span style={{ width: '195px' }}>VAT #:</span> <span>{invoice.vatNo || ""}</span></div>
