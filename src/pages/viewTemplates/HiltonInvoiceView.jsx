@@ -120,7 +120,7 @@ const HiltonInvoiceViewPage = ({ invoiceData }) => {
           _sortOrder:  1, // services after accommodation on same day
           id:          `srv_${index}`,
           date:        formatDate(service.date),
-          description: service.name || 'Service',
+          description: service.name.toUpperCase() || 'Service',
           rate:        '',
           exchangeRate: '',
           refId:       data.servicesRefId, // <-- Uses the random 5-letter ID generated above
