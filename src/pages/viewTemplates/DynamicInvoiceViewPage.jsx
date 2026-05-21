@@ -162,7 +162,7 @@ export default function DynamicInvoiceViewPage() {
         detectedType = "Novotel";
       } else if (hotelName.includes("staybridge") ) {
         detectedType = "Staybridge"; 
-      } else if (hotelName.includes(" radisson residences") || hotelName.includes(" radisson residence") || hotelName.includes(" radisson residance") || hotelName.includes(" radisson residencies")) {
+      } else if (hotelName.includes("radisson residences cairo heliopolis") || hotelName.includes("radisson residence") || hotelName.includes("radisson residance") || hotelName.includes("radisson residencies")) {
         detectedType = "Raddison1";
       }
       else if (hotelName.includes("intercontinental kuala lumpur") || (hotelName.includes("intercontinental") && isMalaysiaRoute)) {
