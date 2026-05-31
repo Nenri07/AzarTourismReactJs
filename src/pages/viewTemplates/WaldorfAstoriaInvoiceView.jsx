@@ -75,7 +75,7 @@ const WaldorfAstoriaInvoiceView = ({ invoiceData }) => {
             const currentRefNumber = (lastRefNumber++).toString();
 
             if (item.baseRate !== undefined && item.serviceCharge !== undefined) {
-                const usdRateString = data.exchangeRate && data.exchangeRate > 0 ? (item.baseRate / data.exchangeRate).toFixed(2) : "0.00";
+                const usdRateString = data.exchangeRate && data.exchangeRate > 0 ? (data.usdAmount).toFixed(2) : "0.00";
                 
                 transactions.push({
                     date: formatDate(item.date),
