@@ -347,7 +347,7 @@ export const calculateFinalSummaryTunisia = (formData, hotelType) => {
     accommodationGross = accCalc.totalRoomAllNights;
   }
 
-  const grandTotal = accommodationGross + servicesCalc.totalServicesGross;
+  const grandTotal = accommodationGross + servicesCalc.totalServicesGross + cityTaxTotal + stampTax;
 
   let base = 0, fdcst = 0, d = 0, vat7 = 0, balanceUsd = 0, balanceEur = 0;
 
