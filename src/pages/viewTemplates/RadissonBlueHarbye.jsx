@@ -465,8 +465,8 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
             <th width="5%"><span>Room</span></th>
             <th width="8%"><span>PAX</span></th>
             <th width="26%"><span>Main Guest Name</span></th>
-            <th width="12%"><span>Check in Date</span></th>
-            <th><span>Check out Date</span></th>
+             <th width="12%"  style={{fontSize: "6.7px"}}><span>Check in Date</span></th>
+            <th><span style={{fontSize: "6.5px"}}>Check out Date</span></th>
             <th><span>Page</span></th>
           </tr>
         </thead>
