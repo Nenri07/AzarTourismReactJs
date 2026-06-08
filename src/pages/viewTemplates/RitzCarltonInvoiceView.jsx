@@ -409,7 +409,7 @@ const RitzCarltonInvoiceView = ({ invoiceData }) => {
                 <table className="ritz-info-table">
                   <tbody>
                     <tr><td className="ritz-label-left
-                    ">C/O Time</td><td className="ritz-colon">:</td><td>{invoice.invoiceTime}</td></tr>
+                    ">C/O Time</td><td className="ritz-colon">:</td><td>{invoice.checkOutTime}</td></tr>
                     <tr><td className="ritz-label-left
                     ">A/R Number</td><td className="ritz-colon">:</td><td>{invoice.arNumber || ""}</td></tr>
                     <tr><td className="ritz-label-left">Membership No</td><td className="ritz-colon">:</td>{invoice.membershipNo ? invoice.membershipNo : ""}<td></td></tr>
