@@ -344,7 +344,7 @@ const FourSeasonsInvoiceView = ({ invoiceData }) => {
                     <tr><td className="label-cell">Folio No.:</td><td>{invoice.folioNo}</td></tr>
                     <tr><td className="label-cell">Invoice No.:</td><td>{invoice.invoiceNo}</td></tr>
                     <tr><td className="label-cell">Cashier:</td><td>{invoice.cashierName || invoice.cashierId}</td></tr>
-                    <tr><td className="label-cell">Check Out Time:</td><td>{invoice.invoiceTime}</td></tr>
+                    <tr><td className="label-cell">Check Out Time:</td><td>{invoice.checkOutTime}</td></tr>
                     <tr><td className="label-cell">Date:</td><td>{invoice.formattedInvoiceDate}</td></tr>
                     <tr><td className="label-cell">Page No.:</td><td>{page.pageNum} of {paginatedData.length}</td></tr>
                   </tbody>
