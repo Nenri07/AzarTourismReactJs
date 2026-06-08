@@ -421,7 +421,7 @@ const RaddisonInvoiceView = ({ invoiceData }) => {
                   <div>Room No.</div><div>:</div><div>{invoice.roomNo || ""}</div>
                   <div>Arrival</div><div>:</div><div>{invoice.formattedArrivalDate}</div>
                   
-                  <div>Departure</div><div>:</div><div>{invoice.formattedDepartureDate} Time: {invoice.invoiceTime ? invoice.invoiceTime : ""}</div>
+                  <div>Departure</div><div>:</div><div>{invoice.formattedDepartureDate} Time: {invoice.checkOutTime ? invoice.checkOutTime : ""}</div>
                   
                   <div>Page No.</div><div>:</div><div>{page.pageNo} of {page.totalPages}</div>
                   <div>Folio No</div><div>:</div><div>{invoice.folioNo || ""}</div>
