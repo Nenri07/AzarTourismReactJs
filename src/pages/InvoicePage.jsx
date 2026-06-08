@@ -107,7 +107,7 @@ export default function InvoicePage() {
     if (c === "tunisia" || c === "tunis" || cur === "TND") return true;
     return (
       name.includes("novotel tunis") || name.includes("adam hotel") ||
-      name.includes("radisson blu tunis") || name.includes("concorde") ||
+      name.includes("radisson blu hotel & convention center tunis") || name.includes("concorde") ||
       name.includes("movenpick") || name.includes("mövenpick") ||
       name.includes("le corail") || name.includes("four seasons tunis") ||
       name.includes("sheraton tunis") || name.includes("tunis marriott hotel")

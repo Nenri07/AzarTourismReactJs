@@ -46,6 +46,11 @@ import FourSeasonParkLaneView from "./FourSeasonParkLaneView";
 import AdamTunisInvoiceView from "./AdamTunisInvoiceView";
 import FourSeasonTunisInvoiceView from "./FourSeasonTunisInvoiceView";
 import ConsordeTunisInvoiceView from "./ConsordeTunisInvoiceView";
+import RadissonTunisInvoiceView from "./RaddisonTunisInvoiceView";
+import MovenpickInvoiceView from "./MovenPickInvoiceView";
+import LeCorailInvoiceView from "./LeCorailInvoiceView";
+import SheratonInvoiceView from "./SheratonInvoiceView";
+
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -133,6 +138,13 @@ export default function DynamicInvoiceViewPage() {
       
       if (hotelName.includes("hilton") && hotelName.includes("park lane")) {
         detectedType = "HiltonParkLane";
+      }
+
+        else if (hotelName.includes("radisson blu hotel & convention center tunis")) {
+        detectedType = "Radisson_Tunis";
+      }
+        else if (hotelName.includes("sheraton tunis hotel")) {
+        detectedType = "Sheraton_Tunis";
       }
       else if (hotelName.includes("hyatt") && (hotelName.includes("churchill") || hotelName.includes("regency"))) {
         detectedType = "HyattUK";
@@ -242,7 +254,7 @@ export default function DynamicInvoiceViewPage() {
       else if (hotelName.includes("somerset") || hotelName.includes("ampang")) {
         detectedType = "Somerset";
       }
-      else if (hotelName.includes("trillion") || hotelName.includes("suites")) {
+      else if (hotelName.includes("trillion") ) {
         detectedType = "TrillionSuites";
       }
       else if (hotelName.includes("malaysia")) {
@@ -268,6 +280,13 @@ export default function DynamicInvoiceViewPage() {
       }
       else if (hotelName.includes("cheya")) {
         detectedType = "Cheya";
+      }
+     
+       else if (hotelName.includes("mövenpick hotel du lac tunis")) {
+        detectedType = "Mövenpick_Tunis";
+      }
+      else if (hotelName.includes("le corail suites hôtel tunis")) {
+        detectedType = "LECROIL";
       }
 
       console.log("🎯 Detected hotel type:", detectedType);
@@ -430,8 +449,20 @@ else if (hotelType === "AdamHotelTunis") {
 else if (hotelType === "FourSeasonsTunis") {
   return <FourSeasonTunisInvoiceView invoiceData={invoice} />;
 }
+else if (hotelType === "Mövenpick_Tunis") {
+  return <MovenpickInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "Radisson_Tunis") {
+  return <RadissonTunisInvoiceView invoiceData={invoice} />;
+}
 else if (hotelType === "ConsordeTunis") {
   return <ConsordeTunisInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "Sheraton_Tunis") {
+  return <SheratonInvoiceView invoiceData={invoice} />;
+}
+else if (hotelType === "LECROIL") {
+  return <LeCorailInvoiceView invoiceData={invoice} />;
 }
   else {
     // Default fallback
