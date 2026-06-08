@@ -160,7 +160,7 @@ export default function DynamicInvoiceFormPageEgypt() {
     return {
       hotel_name: data.hotel || hotelConfig?.hotel_name || '',
       currency: hotelConfig?.currency || 'EGP',
-      company_name: data.companyName || data.referenceNo || '',
+      company_name: data.companyName  || '',
       guest_name: data.guestName || '',
       invoice_no: data.invoiceNo || '',
       ar_number: data.arNumber || '',
