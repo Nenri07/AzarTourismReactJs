@@ -5,7 +5,7 @@ import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components"; // Adjust path as needed
 
 // Update the path to your actual logo
-const logo =  '/Movenpick-Logo.jpeg'; 
+const logo =  '/Movenpick-Logo.png'; 
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PURE HELPERS  
