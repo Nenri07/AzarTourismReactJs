@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '/InterContinental-logo.jpeg?url';
+import logo from '/InterContinentalM-logo.png?url';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // UTILITIES
@@ -521,7 +521,7 @@ if (divs[1]) {
                         <div className="user-info-row">
                             <div>Room No: {invoice.roomNo}</div>
                             <div>User: {invoice.userId}</div>
-                            <div>Cashier No: &nbsp; {invoice.cashierId}</div>
+                            <div>Cashier No: &nbsp; {invoice.cashierName}</div>
                         </div>
 
                         {/* ── MAIN TABLE ── */}

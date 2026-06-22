@@ -224,7 +224,7 @@ export const HOTEL_CONFIGS = {
         nightlySst: parseNum(nightlySst)
       };
     },
-    buildRows: ({ date, nightlyRoomPackage }) => {
+    buildRows: ({ date, nightlyTotalMyr}) => {
       return [
         { date, description: 'Adhoc 20 Off Igbbb', amount: parseNum(nightlyTotalMyr) },
       ];
