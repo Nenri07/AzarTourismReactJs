@@ -226,7 +226,7 @@ export const HOTEL_CONFIGS = {
     },
     buildRows: ({ date, nightlyRoomPackage }) => {
       return [
-        { date, description: 'Adhoc 20 Off Igbbb', amount: parseNum(nightlyRoomPackage) },
+        { date, description: 'Adhoc 20 Off Igbbb', amount: parseNum(nightlyTotalMyr) },
       ];
     }
   },
@@ -388,7 +388,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
     const grossAmt = parseFloat(service.gross_amount || 0);
     
     if (grossAmt > 0) {
-      const baseAmt = Number((grossAmt / 1.08).toFixed(2));
+      const baseAmt = Number((grossAmt).toFixed(2));
       const sstAmt = Number((baseAmt * 0.08).toFixed(2));
       
       const serviceName = capitalizeWords(service.description || service.service_name || "Service");

@@ -54,7 +54,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
       rawDate: parseDateForSort(item.date),
       date: formatDate(item.date),
       desc: item.description || "Room Charge",
-      ref: item.reference || "",
+      ref:  "",
       debit: item.amount,
       credit: ""
     }));
@@ -64,7 +64,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
       type: 'ser',
       rawDate: parseDateForSort(item.date),
       date: formatDate(item.date),
-      desc: item.description,
+      desc: item.name,
       ref: item.reference || "",
       debit: item.amount,
       credit: ""
@@ -236,6 +236,9 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
             .a4-page:not(:last-child) { page-break-after: always !important; }
             .no-print { display: none !important; }
           }
+            body{
+            color: black;
+            }
 
           .pullman-invoice-wrapper {
             padding: 0;
@@ -251,6 +254,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
           }
 
           .a4-page {
+          
             background: #fff;
             width: 210mm;
             height: 296mm;

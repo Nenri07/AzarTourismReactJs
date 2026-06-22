@@ -68,7 +68,7 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
             id: `ser_${index}`,
             rawDate: parseDateForSort(item.date),
             date: item.date,
-            desc: item.description,
+            desc: item.name,
             ref: item.reference || "",
             amount: item.amount
         }));
@@ -86,7 +86,8 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
             membershipNo:  data.membershipNo  || "",
             companyName:   data.companyName   || "",
             sstNo:         data.sstRegNo      || "",
-            cashierName:   data.cashierName   || "",
+            cashierName:   data.cashierId   || "",
+            userId: data.uuid,
             items: allItems,
             summary: {
                 excludedTax: data.baseTaxableAmount || 0,
@@ -519,8 +520,8 @@ if (divs[1]) {
                         {/* ── USER INFO ROW ── */}
                         <div className="user-info-row">
                             <div>Room No: {invoice.roomNo}</div>
-                            <div>User: {invoice.cashierName}</div>
-                            <div>Cashier No: &nbsp; {invoice.cashierName}</div>
+                            <div>User: {invoice.userId}</div>
+                            <div>Cashier No: &nbsp; {invoice.cashierId}</div>
                         </div>
 
                         {/* ── MAIN TABLE ── */}

@@ -64,7 +64,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
       id: `ser_${index}`,
       rawDate: parseDateForSort(item.date),
       date: formatDate(item.date),
-      desc: item.description,
+      desc: item.name,
       charges: item.amount,
       credits: ""
     }));
@@ -99,6 +99,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
       items: allItems,
       summary: {
         beforeTax: data.baseTaxableAmount || 0,
+        totalInUsd: data.balanceUsd,
         nonTaxable: 0.00,
         sst6: 0.00,
         sst8: data.totalSst8Percent || 0,
@@ -424,6 +425,10 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                             <td className="text-left">Total Amount With Taxes &nbsp;&nbsp; RM</td>
                             <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.grandTotal)}</td>
                           </tr>
+                          <tr>
+                        <td  className="text-left">Total Amount USD</td>
+                        <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.totalInUsd)}</td>
+                      </tr>
                         </tbody>
                       </table>
                     </div>

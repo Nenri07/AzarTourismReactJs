@@ -117,7 +117,7 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
           id: `srv_${index}`,
           date: formattedDate,
           rawDate: rawD,
-          desc: service.description || "Other Service",
+          desc: service.name || "Other Service",
           reference: service.reference || "",
           debit: service.amount || 0,
           credit: "",
