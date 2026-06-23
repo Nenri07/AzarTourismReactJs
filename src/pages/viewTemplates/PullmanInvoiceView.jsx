@@ -144,7 +144,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
 
     const tx = invoice.items;
     const pages = [];
-    const MAX_ROWS = 15; 
+    const MAX_ROWS = 24; 
 
     if (tx.length === 0) {
       pages.push({ items: [], showTotals: true });
