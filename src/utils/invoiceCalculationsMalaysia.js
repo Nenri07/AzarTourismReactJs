@@ -224,9 +224,9 @@ export const HOTEL_CONFIGS = {
         nightlySst: parseNum(nightlySst)
       };
     },
-    buildRows: ({ date, nightlyRoomPackage }) => {
+    buildRows: ({ date, nightlyTotalMyr}) => {
       return [
-        { date, description: 'Adhoc 20 Off Igbbb', amount: parseNum(nightlyRoomPackage) },
+        { date, description: 'Adhoc 20 Off Igbbb', amount: parseNum(nightlyTotalMyr) },
       ];
     }
   },
@@ -312,16 +312,36 @@ export const calculateAccommodation = (formData, hotelType) => {
 // SERVICES CALCULATION (e.g., Laundry)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const calculateServices = (services = []) => {
+// export const calculateServices = (services = []) => {
+//   if (!Array.isArray(services) || services.length === 0) {
+//     return { services: [], totalServicesGrossMyr: 0 };
+//   }
+//   const totalServicesGrossMyr = services.reduce((sum, service) => {
+//     return sum + parseFloat(service.gross_amount || 0);
+//   }, 0);
+
+//   return { services, totalServicesGrossMyr };
+// };
+
+export const calculateServices = (services = [], hotelType = '') => {
   if (!Array.isArray(services) || services.length === 0) {
     return { services: [], totalServicesGrossMyr: 0 };
   }
 
-  const totalServicesGrossMyr = services.reduce((sum, service) => {
-    return sum + parseFloat(service.gross_amount || 0);
-  }, 0);
+  let totalServicesGrossMyr = 0;
 
-  return { services, totalServicesGrossMyr };
+  services.forEach(service => {
+    const grossAmt = parseFloat(service.gross_amount || 0);
+    if (grossAmt > 0) {
+      totalServicesGrossMyr += grossAmt;
+      // For Lanson Place, the SST row is a real charge — include it in the total
+      if (hotelType === 'LANSON_PLACE') {
+        totalServicesGrossMyr += Number((grossAmt * 0.08).toFixed(2));
+      }
+    }
+  });
+
+  return { services, totalServicesGrossMyr: parseNum(totalServicesGrossMyr) };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -330,7 +350,7 @@ export const calculateServices = (services = []) => {
 
 export const calculateFinalSummary = (formData, hotelType) => {
   const accCalc = calculateAccommodation(formData, hotelType);
-  const servicesCalc = calculateServices(formData.other_services);
+  const servicesCalc = calculateServices(formData.other_services, hotelType);
 
   // 1. Total MYR including rooms AND all extra services (Combined Gross)
   const grandTotalMyr = accCalc.totalRoomAllNightsMyr + servicesCalc.totalServicesGrossMyr;
@@ -378,7 +398,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
   const hotelType = detectHotelType(hotelConfig);
   const hotelCfg = HOTEL_CONFIGS[hotelType] || HOTEL_CONFIGS.OTHER_MALAYSIA;
   const accCalc = calculateAccommodation(formData, hotelType);
-  const servicesCalc = calculateServices(formData.other_services);
+  const servicesCalc = calculateServices(formData.other_services, hotelType);
   const summary = calculateFinalSummary(formData, hotelType);
   // ---> PUT THE CODE HERE <---
   const rawServices = formData.other_services || [];
@@ -388,7 +408,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
     const grossAmt = parseFloat(service.gross_amount || 0);
     
     if (grossAmt > 0) {
-      const baseAmt = Number((grossAmt / 1.08).toFixed(2));
+      const baseAmt = Number((grossAmt).toFixed(2));
       const sstAmt = Number((baseAmt * 0.08).toFixed(2));
       
       const serviceName = capitalizeWords(service.description || service.service_name || "Service");

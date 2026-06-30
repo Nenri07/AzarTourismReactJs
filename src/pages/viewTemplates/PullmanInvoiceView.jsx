@@ -54,7 +54,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
       rawDate: parseDateForSort(item.date),
       date: formatDate(item.date),
       desc: item.description || "Room Charge",
-      ref: item.reference || "",
+      ref:  "",
       debit: item.amount,
       credit: ""
     }));
@@ -64,7 +64,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
       type: 'ser',
       rawDate: parseDateForSort(item.date),
       date: formatDate(item.date),
-      desc: item.description,
+      desc: item.name,
       ref: item.reference || "",
       debit: item.amount,
       credit: ""
@@ -94,6 +94,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
         arNumber: data.arNumber
       },
       meta: {
+        refferenceNo: data.referenceNo,
         title: "COPY OF INVOICE",
         date: formatDate(data.invoiceDate) + " / " + (data.invoiceTime),
         membershipNo: data.membershipNo,
@@ -144,7 +145,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
 
     const tx = invoice.items;
     const pages = [];
-    const MAX_ROWS = 15; 
+    const MAX_ROWS = 24; 
 
     if (tx.length === 0) {
       pages.push({ items: [], showTotals: true });
@@ -189,7 +190,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `PULLMAN_${invoice.meta.invoiceNo || 'Invoice'}.pdf`,
+        filename: `${invoice.refferenceNo || 'Invoice'}.pdf`,
         image: { type: 'jpeg', quality: 3 },
         html2canvas: {
           scale: 4,
@@ -236,6 +237,9 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
             .a4-page:not(:last-child) { page-break-after: always !important; }
             .no-print { display: none !important; }
           }
+            body{
+            color: black;
+            }
 
           .pullman-invoice-wrapper {
             padding: 0;
@@ -251,6 +255,7 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
           }
 
           .a4-page {
+          
             background: #fff;
             width: 210mm;
             height: 296mm;

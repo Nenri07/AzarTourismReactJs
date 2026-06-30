@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -20,6 +23,20 @@ const formatDate = (dateStr) => {
   } catch { return dateStr; }
 };
 
+const parseTimeString = (timeStr) => {
+  if (!timeStr) return null;
+  
+  // Check if it's a direct time string like "00:02" or "14:30:15"
+  if (typeof timeStr === 'string' && timeStr.includes(':')) {
+    const parts = timeStr.split(':');
+    const hh = parts[0] ? parts[0].padStart(2, '0') : '00';
+    const mm = parts[1] ? parts[1].padStart(2, '0') : '00';
+    const ss = parts[2] ? parts[2].padStart(2, '0') : '00'; // Auto-adds seconds if missing
+    return `${hh}:${mm}:${ss}`;
+  }
+  
+  return null;
+};
 const formatTime = (dateStr) => {
   if (!dateStr) return "";
   try {
@@ -213,7 +230,7 @@ const mapApiDataToInvoice = (data = {}) => {
 
   const taxableBase = taxableRoom + totalSvcTaxable;
   let exRate = data.exchangeRate || 50.0676;
-
+const resolvedTime = parseTimeString(data.invoiceTime) || formatTime(data.invoiceTime) || "13:35:32";
   const dObj = data.billingDate || data.invoiceDate || new Date();
   const fullInvoiceDate = `${formatDate(dObj)} ${formatTime(dObj)}`;
 
@@ -221,9 +238,10 @@ const mapApiDataToInvoice = (data = {}) => {
   allItems.forEach(i => calculatedCredits += Number(i.credit) || 0);
 
   return {
+    refferenceNo: data.referenceNo,
     invoiceNo:    data.invoice_number || data.invoiceNumber || data.invoiceNo || data.invoice_no || "", 
     billingDate:  formatDate(data.billingDate  || data.invoiceDate) || "",
-    fullInvoiceDate: `${formatDate(dObj)} ${formatTime(dObj) || "13:35:32"}`,
+    fullInvoiceDate: `${formatDate(dObj)} ${resolvedTime || "13:35:32"}`,
     roomNo:       data.roomNo          || "",
     pax:          data.pax             || 1,
     nights:       data.nights          || 1,
@@ -360,7 +378,7 @@ const YotelInvoiceView = ({ invoiceData }) => {
 
       const opt = {
         margin:    0,
-        filename:  `Yotel_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
+        filename:  `${invoice.refferenceNo || 'Invoice'}.pdf`,
         image:     { type: 'jpeg', quality: 1 },
         html2canvas: {
           scale:           4,
@@ -506,6 +524,14 @@ const YotelInvoiceView = ({ invoiceData }) => {
     }
 
     @media print {
+      /* Specifically hide buttons and typical UI header wrappers injected by InvoiceTemplate */
+      button, nav, header { 
+        display: none !important; 
+      }
+      .no-print { 
+        display: none !important; 
+      }
+
       .invoice-box { background: none !important; }
       .inv-page {
         box-shadow: none !important;

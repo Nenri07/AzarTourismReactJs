@@ -1,15 +1,12 @@
 
 
-
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
 import cairoInvoiceApi from "../../Api/cairoInvoice.api";
-import logo from "/hilton_bosphorus-logo.png"; // Make sure to use the correct Hilton logo path
+import logo from "/hilton_bosphorus-logo.png";
 
 const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
   const { invoiceId } = useParams();
@@ -74,11 +71,9 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
 
     const allRows = [];
     
-    // Parse the starting reference/transaction ID from the backend using startingRefNo
     let currentTransactionId = parseInt(data.startingRefNo || '10000000', 10);
     if (isNaN(currentTransactionId)) currentTransactionId = 10000000;
 
-    // 1. Gather Accommodation Rows
     if (data.accommodationDetails && Array.isArray(data.accommodationDetails)) {
       data.accommodationDetails.forEach((item, index) => {
         const amount = item.rate || item.guestCharge || item.chargesEgp || 0;
@@ -117,7 +112,6 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
       });
     }
 
-    // 2. Gather Services Rows
     if (data.otherServices && Array.isArray(data.otherServices)) {
       data.otherServices.forEach((service, index) => {
         const srvCashierId = data.servicesRefId || service.cashierId || data.cashierId || 'ADMO';
@@ -138,7 +132,6 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
       });
     }
 
-    // 3. Sort chronologically
     allRows.sort((a, b) => {
       if (a._rawDate !== b._rawDate) return a._rawDate - b._rawDate;
       return a._sortOrder - b._sortOrder;
@@ -147,17 +140,17 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
     const totalDebit = allRows.reduce((sum, row) => sum + parseFloat(row.debit.replace(/,/g, '') || 0), 0);
     const totalCredit = allRows.reduce((sum, row) => sum + parseFloat(row.credit.replace(/,/g, '') || 0), 0);
     const balance = totalDebit - totalCredit;
-    const balancceInEuro = formatCurrency(data.totalInEur || 0)
+    const balancceInEuro = formatCurrency(data.totalInEur || 0);
 
     const tourismBase = data.taxableAmount || 0;
     const tourismTax = data.accommodationTax || 0;
-    
     const vat10Base = data.taxableAmount || 0;
     const vat10Amount = data.totalVat10 || 0;
-    
     const vat20Base = data.totalServicesTaxable || 0;
     const vat20Amount = data.totalVat20 || 0;
+
     return {
+      refferenceNo: data.referenceNo,
       hotelContact: {
         name: data.hotel || 'HILTON ISTANBUL BOSPHORUS',
         addressLine1: 'CUMHURIYET CADDESI,HARBIYE',
@@ -194,18 +187,13 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
         totalCredit: formatCurrency(totalCredit),
         balance: formatCurrency(balance),
         totalEur: balancceInEuro,
-     taxDetails: {
-          // Tourism Tax (2%)
+        taxDetails: {
           tourismBase: formatCurrency(tourismBase),
           tourismVat: formatCurrency(tourismTax),
           tourismTotal: formatCurrency(tourismBase + tourismTax),
-          
-          // VAT (10%)
           vat10Base: formatCurrency(vat10Base),
           vat10Amount: formatCurrency(vat10Amount),
           vat10Total: formatCurrency(vat10Base + vat10Amount),
-          
-          // VAT (20%) - Other Services
           vat20Base: formatCurrency(vat20Base),
           vat20Amount: formatCurrency(vat20Amount),
           vat20Total: formatCurrency(vat20Base + vat20Amount),
@@ -264,17 +252,16 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
   }, [invoice]);
 
   // ── PDF DOWNLOAD ──────────────────────────────────────────────────────────
-// ── PDF DOWNLOAD ──────────────────────────────────────────────────────────
   const handleDownloadPDF = async () => {
     if (!invoiceRef.current) return;
     setPdfLoading(true);
 
-    // Temporarily remove stylesheets that might cause print-media interference
     const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
     headStyles.forEach(style => { style.parentNode?.removeChild(style); });
 
+    invoiceRef.current.classList.add('pdf-export-mode');
+
     try {
-      // Ensure all images (like the Hilton logo) are fully loaded before capturing
       const images = invoiceRef.current.querySelectorAll('img');
       await Promise.all(Array.from(images).map(img => {
         if (img.complete) return Promise.resolve();
@@ -285,7 +272,7 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
 
       const opt = {
         margin: 0, 
-        filename: `Hilton_Istanbul_${invoice.guestInfo.confirmationNumber || 'Invoice'}.pdf`,
+        filename: `${invoice.refferenceNo || 'Invoice'}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: {
           scale: 2, 
@@ -294,28 +281,6 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
           scrollX: 0,
           scrollY: 0,
           windowWidth: 794,
-          onclone: (clonedDoc) => {
-            // 🔥 The magic fix: Force exact dimensions and padding on the cloned DOM
-            // This prevents html2canvas from squeezing the layout or dropping margins
-            
-            const pages = clonedDoc.querySelectorAll('.invoice-page');
-            pages.forEach(page => {
-              page.style.width = '794px';
-              page.style.minHeight = '1123px';
-              page.style.margin = '0 auto';
-              page.style.padding = '40px'; // Restores the exact whitespace you want
-              page.style.boxSizing = 'border-box';
-              page.style.background = '#fff';
-              page.style.boxShadow = 'none';
-            });
-
-            // Ensure main container formatting doesn't restrict width
-            if (clonedDoc.body) {
-                clonedDoc.body.style.width = '794px';
-                clonedDoc.body.style.margin = '0';
-                clonedDoc.body.style.padding = '0';
-            }
-          }
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
         pagebreak: { mode: ['css', 'legacy'] },
@@ -327,7 +292,7 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
       console.error("❌ PDF Error:", err);
       toast.error("Failed to generate PDF");
     } finally {
-      // Restore the stylesheets for the web view
+      invoiceRef.current?.classList.remove('pdf-export-mode');
       headStyles.forEach(style => { 
         if (!style.parentNode) document.head.appendChild(style); 
       });
@@ -356,12 +321,47 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
       onPrint={handlePrint}
       onBack={() => navigate("/invoices")}
     >
+      {/* FULL-SCREEN SOLID BACKDROP FOR CLEAN TRANSITION */}
+      {pdfLoading && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: '#ffffff',
+          zIndex: 999999,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          fontFamily: 'Arial, sans-serif'
+        }}>
+          <div style={{
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #111111',
+            borderRadius: '50%',
+            width: '35px',
+            height: '35px',
+            animation: 'spin 0.8s linear infinite'
+          }} />
+          <p style={{ marginTop: '16px', fontSize: '13px', color: '#111', fontWeight: '500' }}>
+            Preparing your PDF download...
+          </p>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      )}
+
       <div ref={invoiceRef}>
         <style>{`
-          /* 🔥 EXACT PRINT & PDF RESET 🔥 */
           @page { 
             size: A4 portrait; 
-            margin: 0 !important; /* Forces browsers to REMOVE default print headers (Dates, URLs, Jargon) */
+            margin: 0 !important;
           }
           
           body { 
@@ -371,30 +371,39 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
             print-color-adjust: exact !important;
           }
           
-        .invoice-page {
-  font-family: Arial, sans-serif;
-  font-size: 10px;
-  color: #000;
-  background-color: #fff;
-  width: 794px;
-  min-height: 1123px;
-  margin: 0 auto;
-  padding: 40px;
-  box-sizing: border-box;
-  position: relative;
-  page-break-inside: avoid;
-  page-break-after: always;
-}
+          .invoice-page {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            color: #000;
+            background-color: #fff;
+            width: 794px;
+            height: 1123px;
+            margin: 0 auto;
+            padding: 40px;
+            box-sizing: border-box;
+            position: relative;
+            page-break-inside: avoid;
+            page-break-after: always;
+          }
 
           .invoice-page:last-child {
             page-break-after: auto;
           }
-            .change{
+
+          .pdf-export-mode .invoice-page {
+            height: 1112px !important;
+            max-height: 1112px !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+          }
+
+          .change{
             padding-right: 40px !important ;
-            }
-            .change2{
+          }
+          .change2{
             padding: 2px 10px !important ;
-            }
+          }
 
           .header-container {
             display: flex;
@@ -432,7 +441,6 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
             margin-top: 2px;
           }
           
-        
           .main-table thead th { 
             border: 1.5px solid #000; 
             padding: 2px 4px; 
@@ -490,14 +498,12 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
             align-items: center;
           }
 
-          /* Explicit Print Media Queries to block browser interference */
           @media print {
             body { background-color: #fff; }
             .invoice-page {
                box-shadow: none !important; 
                width: 794px !important;
-               min-height: 1123px !important;
-              //  padding: 20px !important;
+               height: 1123px !important;
             }
             .no-print { display: none !important; }
           }
@@ -533,7 +539,7 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
                 <div style={{ marginTop: '13px' }}>AZAR TOURISM SERVICES</div>
                 <div style={{ marginTop: '16px' }}>ALGERIA SQUARE BUILDING NUMBER 12 </div>
                 <div style={{ marginTop: '15px' }}>FIRST FLOOR</div>
-                                <div> TRIPOLI</div>
+                <div> TRIPOLI</div>
                 <div> LIBIYA.</div>
 
                 <div style={{ marginTop: '16px' }}>*** INFORMATION BILL ***</div>
@@ -562,8 +568,6 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
                 </table>
               </div>
             </div>
-
-            
 
             <div style={{ marginBottom: '2px' }}>
               {invoice.guestInfo.invoiceDateStr}
@@ -618,7 +622,7 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
 
                   <tr>
                     <td colSpan="3" style={{ paddingTop: '6px' }}></td>
-                    <td style={{ textAlign: 'right', paddingRight: '13px', verticleAlign: 'middle' , paddingTop: "3px"}}>
+                    <td style={{ textAlign: 'right', paddingRight: '13px', verticalAlign: 'middle' , paddingTop: "3px"}}>
                       Balance
                     </td>
                   
@@ -629,9 +633,9 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
                   
                   </tr>
 
-                    <tr>
+                  <tr>
                     <td colSpan="3" ></td>
-                  <td  colSpan="3"style={{ textAlign: 'left', paddingLeft: '23px', fontWeight: '600'}}>
+                    <td colSpan="3" style={{ textAlign: 'left', paddingLeft: '23px', fontWeight: '600'}}>
                        Estimated Currency Total
                     </td>
                   
@@ -695,7 +699,7 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
               </div>
             )}
 
-            {/* FOOTER (Restructured to prevent absolute positioning overlap) */}
+            {/* FOOTER */}
             <div className="footer-section">
               <div style={{ flex: 1, textAlign: 'left', fontSize: "9px" }}>
                 Hotel VAT No., {invoice.hotelContact.vat},

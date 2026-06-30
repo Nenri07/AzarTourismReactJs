@@ -64,7 +64,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
       id: `ser_${index}`,
       rawDate: parseDateForSort(item.date),
       date: formatDate(item.date),
-      desc: item.description,
+      desc: item.name,
       charges: item.amount,
       credits: ""
     }));
@@ -99,6 +99,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
       items: allItems,
       summary: {
         beforeTax: data.baseTaxableAmount || 0,
+        totalInUsd: data.balanceUsd,
         nonTaxable: 0.00,
         sst6: 0.00,
         sst8: data.totalSst8Percent || 0,
@@ -199,8 +200,26 @@ const OasiaInvoiceView = ({ invoiceData }) => {
         pagebreak: { mode: ['css', 'legacy'], avoid: ['.page:last-child'] }
       };
 
-      await html2pdf().set(opt).from(element).save();
-      toast.success("PDF Downloaded");
+await html2pdf()
+        .set(opt)
+        .from(element)
+        .toPdf()
+        .get('pdf')
+        .then((pdf) => {
+          // How many pages html2pdf accidentally created
+          const generatedPages = pdf.internal.getNumberOfPages();
+          // How many pages your React state actually built
+          const expectedPages = paginatedData.length;
+
+          // If a ghost page snuck in, delete it
+          if (generatedPages > expectedPages) {
+            for (let i = generatedPages; i > expectedPages; i--) {
+              pdf.deletePage(i);
+            }
+          }
+        })
+        .save();
+              toast.success("PDF Downloaded");
     } catch (err) {
       console.error("❌ PDF Error:", err);
       toast.error("PDF Error");
@@ -235,7 +254,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
               page-break-after: always; break-after: page;
           }
           .page:last-child {
-              page-break-after: avoid; break-after: avoid;
+              page-break-after: avoid; break-after: avoid; margin-bottom: 0;
           }
           .oasia-logo-section { text-align: center; margin-bottom: 30px; display : flex; justify-content: center;}
           .oasia-logo-section img { width: 120px; height: auto; }
@@ -424,6 +443,10 @@ const OasiaInvoiceView = ({ invoiceData }) => {
                             <td className="text-left">Total Amount With Taxes &nbsp;&nbsp; RM</td>
                             <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.grandTotal)}</td>
                           </tr>
+                          <tr>
+                        <td  className="text-left">Total Amount USD</td>
+                        <td className="text-right" style={{ fontWeight: 'bold' }}>{formatCurrency(invoice.summary.totalInUsd)}</td>
+                      </tr>
                         </tbody>
                       </table>
                     </div>

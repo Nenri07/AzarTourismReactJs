@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '/radisson_collection-logo.jpeg';
+import logo from '/radisson_collection-logo.png';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PURE HELPERS  
@@ -69,7 +69,7 @@ const mapApiDataToInvoice = (data = {}) => {
         qty:          at.qty,
         netUnitPrice: at.netUnitPrice,
         netAmount:    at.netAmount,
-        tax:          "2%",
+        tax:          "0%",
         taxAmt:       at.taxAmount,
         debit:        at.debit,
         credit:       at.credit || "",
@@ -108,8 +108,8 @@ const mapApiDataToInvoice = (data = {}) => {
 
   if (totalAccTax > 0) {
     taxRows.push({
-      label:     "Accommodation Tax",
-      taxRate:   "2%",
+      label:     "VAT",
+      taxRate:   "0%",
       netAmount: totalAccTax,
       taxAmt:    0,
       debit:     totalAccTax,
@@ -140,6 +140,7 @@ const mapApiDataToInvoice = (data = {}) => {
   const taxTotalTaxAmt    = totalVat10 + totalVat20;
 
   return {
+    refferenceNo: data.referenceNo,
     invoiceNo:    data.invoiceNo       || data.invoiceN || "",
     billingDate:  formatDate(data.billingDate  || data.invoiceDate) || "",
     roomNo:       data.roomNo          || "",
@@ -156,6 +157,8 @@ const mapApiDataToInvoice = (data = {}) => {
     items: allItems,
 
     summary: {
+      totalInEur: data.totalInEur,
+      exchangeRate: data.exchangeRate,
       subtotal:         totalRoomGross,
       accommodationTax: totalAccTax,
       grandTotal:       grandTotal,
@@ -268,7 +271,7 @@ const RadissonCollection = ({ invoiceData }) => {
 
       const opt = {
         margin:      0,
-        filename:    `Radisson_Collection_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
+        filename:    `${invoice.refferenceNo || 'Invoice'}.pdf`,
         image:       { type: 'jpeg', quality: 3 },
         html2canvas: {
           scale:           4,
@@ -309,11 +312,16 @@ const RadissonCollection = ({ invoiceData }) => {
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
+      /* 3. Strip margins to prevent extra blank pages at the end */
+    .pdf-export-mode .inv-page {
+      margin-bottom: 0 !important;
+      box-shadow: none !important;
+    }
 
     .inv-page {
       width: 100%;
       max-width: 794px;
-      padding: 8mm 10mm 6mm 10mm;
+padding: 8mm 10mm 5mm 10mm; /* Reduced bottom padding to 10mm */
       margin: 0 auto 24px auto;
       background: #fff;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -408,8 +416,15 @@ const RadissonCollection = ({ invoiceData }) => {
     .sig-text { margin-right: 105px; }
     .sig-line { border-bottom: 1px solid #000; width: 100px; display: inline-block; }
 
-    .bottom-footer { font-size: 8px; line-height: 1; color: #000; text-align: center; }
-    .bottom-footer p { margin: 1px 0; }
+.bottom-footer { 
+      margin-top: auto; /* Forces the footer to the bottom of the flex container */
+      width: 100%;
+      font-size: 8px; 
+      line-height: 1.2; 
+      color: #000; 
+      text-align: center; 
+    }
+          .bottom-footer p { margin: 1px 0; }
     /* Base style for Fiscal Information (matches your original inline style) */
     .fiscal-info-text {
       text-decoration: underline;
@@ -514,7 +529,7 @@ const RadissonCollection = ({ invoiceData }) => {
 
   // ── Collection-specific footer ────────────────────────────────────────────
   const PageFooter = () => (
-    <div className="bottom-footer" style={{ marginTop: '165px', paddingTop: '10px', paddingBottom: 'inherit' }}>
+    <div className="bottom-footer" style={{ paddingTop: '10px' }}>
       <p>Radisson Collection Hotel, Vadistanbul</p>
       <p>Ayazaga Mahallesi Cendere Caddesi 1A Apt. No. 109A, 34485 Istanbul</p>
       <p>T: +90 212 341 0000 | sales.vadistanbul@radissoncollection.com</p>
@@ -541,7 +556,7 @@ const RadissonCollection = ({ invoiceData }) => {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              minHeight: '277mm',
+              minHeight: '296mm',
             }}
           >
             <PageHeader page={page} />
@@ -582,13 +597,21 @@ const RadissonCollection = ({ invoiceData }) => {
                 <div className="summary-wrapper">
                   <table className="summary-table">
                     <tbody>
-                      <tr>
-                        <td style={{ textAlign: 'left' }}>Subtotal</td>
-                        <td className="text-right">{formatCurrency(invoice.summary.subtotal)}</td>
-                      </tr>
-                      <tr>
+                       <tr>
                         <td style={{ textAlign: 'left' }}>Total</td>
                         <td className="text-right">{formatCurrency(invoice.summary.grandTotal)}</td>
+                      </tr>
+                      {/* <tr>
+                        <td style={{ textAlign: 'left' }}>Accommodation Tax</td>
+                        <td className="text-right">{formatCurrency(invoice.summary.accommodationTax)}</td>
+                      </tr> */}
+                      <tr>
+                        <td style={{ textAlign: 'left' }}>Total In EUR</td>
+                        <td className="text-right">{formatCurrency(invoice.summary.totalInEur)}</td>
+                      </tr>
+                      <tr>
+                        <td style={{ textAlign: 'left' }}>Exchange Rate</td>
+                        <td className="text-right">{formatCurrency(invoice.summary.exchangeRate)}</td>
                       </tr>
                     </tbody>
                   </table>
