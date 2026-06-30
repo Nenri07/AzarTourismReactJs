@@ -139,6 +139,7 @@ const mapApiDataToInvoice = (data = {}) => {
   const taxableBase = taxableRoom + totalSvcTaxable;
 
   return {
+    refferenceNo: data.referenceNo,
     invoiceNo:    data.invoiceNo       || data.invoiceN || "", 
     billingDate:  formatDate(data.billingDate  || data.invoiceDate) || "",
     roomNo:       data.roomNo          || "",
@@ -162,6 +163,7 @@ const mapApiDataToInvoice = (data = {}) => {
 
     items:        allItems,
     summary: {
+      TotalInEur: data.totalInEur,
       subtotal:         totalRoomGross,
       accommodationTax: totalAccTax,
       grandTotal:       grandTotal,
@@ -277,7 +279,7 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
 
       const opt = {
         margin:    0,
-        filename:  `Marmara_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
+        filename:  `${invoice.refferenceNo || 'Invoice'}.pdf`,
         image:     { type: 'jpeg', quality: 1 },
         html2canvas: {
           scale:           4,
@@ -412,6 +414,9 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
         page-break-after: always !important;
         break-after: page !important;
       }
+        button, .no-print {
+        display: none !important;
+      }
       .inv-page:last-child {
         page-break-after: avoid !important;
         break-after: avoid !important;
@@ -502,8 +507,11 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
                    <tr key={i}>
                      <td>{item.date}</td>
                      <td>{item.desc}</td>
-                     <td className="text-right" style={{ paddingRight: '30px', paddingTop: "20px" }}>{item.exchange}</td>
-                     <td className="text-center">{item.debit != null && item.debit !== "" && Number(item.debit) !== 0 ? formatCurrency(item.debit) : ""}</td>
+<td className="text-right" style={{ paddingRight: '30px', paddingTop: "20px" }}>
+  {item.exchange !== "" && item.exchange !== null && item.exchange !== undefined 
+    ? Number(item.exchange).toFixed(2) 
+    : ""}
+</td>                     <td className="text-center">{item.debit != null && item.debit !== "" && Number(item.debit) !== 0 ? formatCurrency(item.debit) : ""}</td>
                      <td className="text-center">{item.credit != null && item.credit !== "" && Number(item.credit) !== 0 ? formatCurrency(item.credit) : ""}</td>
                      <td className="text-center">{item.debit != null && item.debit !== "" && Number(item.debit) !== 0 ? formatCurrency(item.debit) : ""}</td>
                      <td className="text-center">{item.credit != null && item.credit !== "" && Number(item.credit) !== 0 ? formatCurrency(item.credit) : "0.00"}</td>
@@ -535,6 +543,10 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
                    <span></span>
                    <span></span>
 
+                   <span>Total in Euro</span>
+                   <span className="text-right">{formatCurrency(invoice.summary.TotalInEur)} EUR</span>
+                   <span></span>
+                   <span></span>
                    <span>Total incl. vat</span>
                    <span className="text-right">{formatCurrency(invoice.summary.grandTotal)} TRY</span>
                    <span></span>

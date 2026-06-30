@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -69,7 +71,7 @@ const mapApiDataToInvoice = (data = {}) => {
         qty:          at.qty,
         netUnitPrice: at.netUnitPrice,
         netAmount:    at.netAmount,
-        tax:          "2%",
+        tax:          "0%",
         taxAmt:       at.taxAmount,
         debit:        at.debit,
         credit:       at.credit || "",
@@ -108,8 +110,8 @@ const mapApiDataToInvoice = (data = {}) => {
 
   if (totalAccTax > 0) {
     taxRows.push({
-      label:     "Accommodation Tax",
-      taxRate:   "2%",
+      label:     "VAT",
+      taxRate:   "0%",
       netAmount: totalAccTax,
       taxAmt:    0,
       debit:     totalAccTax,
@@ -140,6 +142,7 @@ const mapApiDataToInvoice = (data = {}) => {
   const taxTotalTaxAmt    = totalVat10 + totalVat20;
 
   return {
+    refferenceNo: data.referenceNo,
     invoiceNo:    data.invoiceNo       || data.invoiceN || "", 
     billingDate:  formatDate(data.billingDate  || data.invoiceDate) || "",
     roomNo:       data.roomNo          || "",
@@ -156,7 +159,9 @@ const mapApiDataToInvoice = (data = {}) => {
     items: allItems,
 
     summary: {
+      exchangeRate: data.exchangeRate,
       subtotal:         totalRoomGross,
+      totalInEur:        data.totalInEur,
       accommodationTax: totalAccTax,
       grandTotal:       grandTotal,
       balance:          data.balance || 0,
@@ -271,7 +276,7 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
 
     const opt = {
       margin:    0,
-      filename:  `Radisson_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
+      filename:  `${invoice.refferenceNo || 'Invoice'}.pdf`,
       image:     { type: 'jpeg', quality: 3 },
       html2canvas: {
         scale:           4,
@@ -487,9 +492,8 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
   );
 
   const PageFooter = () => (
-    <div className="bottom-footer" style={{ marginTop: '165px', paddingTop: '10px',paddingBottom: 'inherit' }}>
+    <div className="bottom-footer" style={{ marginTop: 'auto', paddingTop: '10px', paddingBottom: 'inherit', transform: 'translateY(20px)' }}>
       <p>Radisson Hotel Istanbul Harbiye, Karadeniz Örme San. ve Dış Tic. A.Ş Harbiye Mah. Cumhuriyet Cad. No:46 ŞİŞLİ/ İSTANBUL Tel: 0090 212 2611783 E-mail:<br></br>  muhasebe.harbiye@radisson.com</p>
-     
     </div>
   );
 
@@ -513,6 +517,8 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
               display: 'flex',
               flexDirection: 'column',
               minHeight: '277mm',
+              pageBreakAfter: pageIdx === paginatedData.length - 1 ? 'avoid' : 'always',
+              breakAfter: pageIdx === paginatedData.length - 1 ? 'avoid' : 'page',
             }}
           >
             <PageHeader page={page} />
@@ -554,16 +560,20 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
                   <table className="summary-table">
                     <tbody>
                       <tr>
-                        <td style={{ textAlign: 'left' }}>Subtotal</td>
-                        <td className="text-right">{formatCurrency(invoice.summary.subtotal)}</td>
+                        <td style={{ textAlign: 'left' }}>Total</td>
+                        <td className="text-right">{formatCurrency(invoice.summary.grandTotal)}</td>
                       </tr>
                       {/* <tr>
                         <td style={{ textAlign: 'left' }}>Accommodation Tax</td>
                         <td className="text-right">{formatCurrency(invoice.summary.accommodationTax)}</td>
                       </tr> */}
                       <tr>
-                        <td style={{ textAlign: 'left' }}>Total</td>
-                        <td className="text-right">{formatCurrency(invoice.summary.grandTotal)}</td>
+                        <td style={{ textAlign: 'left' }}>Total In EUR</td>
+                        <td className="text-right">{formatCurrency(invoice.summary.totalInEur)}</td>
+                      </tr>
+                      <tr>
+                        <td style={{ textAlign: 'left' }}>Exchange Rate</td>
+                        <td className="text-right">{formatCurrency(invoice.summary.exchangeRate)}</td>
                       </tr>
                     </tbody>
                   </table>

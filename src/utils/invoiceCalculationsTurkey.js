@@ -113,6 +113,7 @@ HILTON_BOSPHORUS: {
 
       const calulatedTL= parseNum(roomAmountTry /1.12);
       const netEur = parseNum(roomAmountTry / exchangeRate);
+    
       
 
       // TAX is 12% of the Net Room Amount
@@ -120,8 +121,8 @@ HILTON_BOSPHORUS: {
 
       return {
         date,
-        description: `GUEST ROOM ( ${netEur.toFixed(2)} EUR * ${exchangeRate} )`,
-        rateLabel: `${netEur.toFixed(2)} EUR * ${exchangeRate}`,
+        description: `GUEST ROOM ( ${netEur.toFixed(2)} EUR * ${exchangeRate.toFixed(2)} )`,
+        rateLabel: `${netEur.toFixed(2)} EUR * ${exchangeRate.toFixed(2)}`,
         rate: parseNum(calulatedTL),
         taxAmount: taxAmount,
       };

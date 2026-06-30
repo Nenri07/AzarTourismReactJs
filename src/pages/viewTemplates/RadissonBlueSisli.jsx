@@ -69,7 +69,7 @@ const mapApiDataToInvoice = (data = {}) => {
         qty:          at.qty,
         netUnitPrice: at.netUnitPrice,
         netAmount:    at.netAmount,
-        tax:          "2%",
+        tax:          "0%",
         taxAmt:       at.taxAmount,
         debit:        at.debit,
         credit:       at.credit || "",
@@ -108,8 +108,8 @@ const mapApiDataToInvoice = (data = {}) => {
 
   if (totalAccTax > 0) {
     taxRows.push({
-      label:     "Accommodation Tax",
-      taxRate:   "2%",
+      label:     "VAT",
+      taxRate:   "0%",
       netAmount: totalAccTax,
       taxAmt:    0,
       debit:     totalAccTax,
@@ -152,10 +152,13 @@ const mapApiDataToInvoice = (data = {}) => {
     branch:      data.branch      || "",
     reservation: data.reservation || "",
     voucher:     data.voucherNo   || data.reservation || "",
+    refferenceNo: data.referenceNo,
 
     items: allItems,
 
     summary: {
+      totalInEur: data.totalInEur,
+      exchangeRate: data.exchangeRate,
       subtotal:         totalRoomGross,
       accommodationTax: totalAccTax,
       grandTotal:       grandTotal,
@@ -270,7 +273,7 @@ const RadissonBlueSisli = ({ invoiceData }) => {
 
       const opt = {
         margin:      0,
-        filename:    `Radisson_Blu_Sisli_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
+        filename:    `${invoice.refferenceNo|| 'Invoice'}.pdf`,
         image:       { type: 'jpeg', quality: 3 },
         html2canvas: {
           scale:           4,
@@ -515,7 +518,7 @@ const RadissonBlueSisli = ({ invoiceData }) => {
 
   // ── Sisli-specific footer ─────────────────────────────────────────────────
   const PageFooter = () => (
-    <div className="bottom-footer" style={{ marginTop: '165px', paddingTop: '10px', paddingBottom: 'inherit' }}>
+    <div className="bottom-footer" style={{ marginTop: 'auto', paddingTop: '10px' }}>
       <p>ABOVE PRICES INCLUDE 10% SERVICE CHARGE, 7% MUNICIPALITY FEES &amp; 5% VAT</p>
       <p>Radisson Blu Hotel Istanbul, Sisli</p>
       <p>19 MAYIS CAD. NO: 2, Turkey, Istanbul, İstanbul, 34360 İstanbul, Turkey</p>
@@ -545,7 +548,7 @@ const RadissonBlueSisli = ({ invoiceData }) => {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              minHeight: '277mm',
+              minHeight: '296mm',
             }}
           >
             <PageHeader page={page} />
@@ -587,12 +590,20 @@ const RadissonBlueSisli = ({ invoiceData }) => {
                   <table className="summary-table">
                     <tbody>
                       <tr>
-                        <td style={{ textAlign: 'left' }}>Subtotal</td>
-                        <td className="text-right">{formatCurrency(invoice.summary.subtotal)}</td>
-                      </tr>
-                      <tr>
                         <td style={{ textAlign: 'left' }}>Total</td>
                         <td className="text-right">{formatCurrency(invoice.summary.grandTotal)}</td>
+                      </tr>
+                      {/* <tr>
+                        <td style={{ textAlign: 'left' }}>Accommodation Tax</td>
+                        <td className="text-right">{formatCurrency(invoice.summary.accommodationTax)}</td>
+                      </tr> */}
+                      <tr>
+                        <td style={{ textAlign: 'left' }}>Total In EUR</td>
+                        <td className="text-right">{formatCurrency(invoice.summary.totalInEur)}</td>
+                      </tr>
+                      <tr>
+                        <td style={{ textAlign: 'left' }}>Exchange Rate</td>
+                        <td className="text-right">{formatCurrency(invoice.summary.exchangeRate)}</td>
                       </tr>
                     </tbody>
                   </table>
