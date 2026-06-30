@@ -36,6 +36,7 @@ import TrillionSuitesInvoiceView from "./TrillionSuitesInvoiceView";
 import IntercontinentalInvoiceViewMalaysia from "./IntercontinentalInvoiceViewMalaysia";
 import MarmaraInvoiceView from "./MarmaraInvoiceView";
 import HiltonIstanbulInvoiceView from "./HiltonIstanbulInvoiceView";
+import RafflesInvoiceViewPage from "./RafflesInvoiceViewPage";
 import tunisiainvoiceApi from "../../Api/tunisiainvoice.api";
 import { HiltonIstambulInvoiceView, RadissonBlueSisli, RadissonCollection , RadissonHerbyeInvoiceView ,MarriotInvoiceView, MandarinInvoiceView, ParkPlazaInvoiceView, MarriotTunisInvoiceView, NovotelInvoiceView} from "..";
 import YotelairInvoiceView from "./YotelInvoiceView";
@@ -50,7 +51,7 @@ import RadissonTunisInvoiceView from "./RaddisonTunisInvoiceView";
 import MovenpickInvoiceView from "./MovenPickInvoiceView";
 import LeCorailInvoiceView from "./LeCorailInvoiceView";
 import SheratonInvoiceView from "./SheratonInvoiceView";
-
+import NovotelInvoiceViewEgypt from "./NovotelInvoiceViewEgypt";
 
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
@@ -170,12 +171,15 @@ export default function DynamicInvoiceViewPage() {
         detectedType = "TRYP";
       } else if (hotelName.includes("novotel") && isTunisiaRoute) {
         detectedType = "NovotelTunis";
-      } else if (hotelName.includes("novotel")) {
-        detectedType = "Novotel";
+      } else if (hotelName.includes("novotel cairo airport")) {
+        detectedType = "NovotelCairo";
       } else if (hotelName.includes("staybridge") ) {
         detectedType = "Staybridge"; 
       } else if (hotelName.includes("radisson residences cairo heliopolis") || hotelName.includes("radisson residence") || hotelName.includes("radisson residance") || hotelName.includes("radisson residencies")) {
         detectedType = "Raddison1";
+      }
+      else if(hotelName.includes("raffles")){
+        detectedType = "Raffles"
       }
       else if (hotelName.includes("intercontinental kuala lumpur") || (hotelName.includes("intercontinental") && isMalaysiaRoute)) {
         detectedType = "IntercontinentalMalaysia";
@@ -463,6 +467,12 @@ else if (hotelType === "Sheraton_Tunis") {
 }
 else if (hotelType === "LECROIL") {
   return <LeCorailInvoiceView invoiceData={invoice} />;
+}
+else if(hotelType=="Raffles"){
+  return <RafflesInvoiceViewPage invoiceData={invoice}/>
+}
+else if(hotelType=="NovotelCairo"){
+ return <NovotelInvoiceViewEgypt invoiceData={invoice} />
 }
   else {
     // Default fallback
