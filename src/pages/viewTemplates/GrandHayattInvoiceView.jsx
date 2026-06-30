@@ -187,7 +187,7 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
     const pages = [];
 
     const MAX_ROWS_NORMAL_PAGE = 30; 
-    const MAX_ROWS_WITH_FOOTER = 18; 
+    const MAX_ROWS_WITH_FOOTER = 15; 
 
     if (tx.length === 0) {
       pages.push({ items: [], showTotals: true });
@@ -221,7 +221,37 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
     setPaginatedData(pages);
   }, [invoice]);
 
-  const handleDownloadPDF = async () => {
+ const applyPdfClonePatches = (clonedDoc) => {
+    // 1. Remove wrapper padding/backgrounds that offset coordinates
+    const wrapper = clonedDoc.querySelector('.grand-hyatt-invoice-wrapper');
+    if (wrapper) {
+      wrapper.style.padding = '0';
+      wrapper.style.margin = '0';
+      wrapper.style.background = '#fff';
+    }
+
+    // 2. Force exact pixel dimensions on every page and remove visual gaps
+    const pages = clonedDoc.querySelectorAll('.page');
+    pages.forEach((p, idx) => {
+      p.style.margin = '0';
+      p.style.width = '794px';
+      p.style.height = '1122px'; // Exact 96 DPI A4 Height
+      p.style.maxHeight = '1122px';
+      p.style.overflow = 'hidden'; // Clip any sub-pixel overflow
+      p.style.boxShadow = 'none';
+
+      // Strict page breaks
+      if (idx === pages.length - 1) {
+        p.style.pageBreakAfter = 'avoid';
+        p.style.breakAfter = 'avoid';
+      } else {
+        p.style.pageBreakAfter = 'always';
+        p.style.breakAfter = 'page';
+      }
+    });
+  };
+
+ const handleDownloadPDF = async () => {
     if (!invoiceRef.current) return;
     setPdfLoading(true);
 
@@ -242,25 +272,46 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
           });
       }));
 
+      // Give layout a moment to settle
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `${invoice.referenceNo  }.pdf`,
-        image: { type: 'jpeg', quality: 3 },
+        filename: `${invoice.invoiceNo || invoice.folioNo || 'Invoice'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
-            scale: 4, 
+            scale: 2, // Keeps file size low while maintaining crisp text
             useCORS: true, 
             letterRendering: true,
             scrollY: 0,
-            windowWidth: 794 
+            windowWidth: 794,
+            onclone: applyPdfClonePatches 
         },
+        // FIX 1: Set format back to standard A4 in millimeters
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all'] }
+        pagebreak: { mode: ['css', 'legacy'] }
       };
       
-      await html2pdf().set(opt).from(element).save();
+      // FIX 2: Intercept the PDF to strip any sub-pixel ghost pages
+      await html2pdf()
+        .set(opt)
+        .from(element)
+        .toPdf()
+        .get('pdf')
+        .then((pdf) => {
+          const generatedPages = pdf.internal.getNumberOfPages();
+          const expectedPages = paginatedData.length;
+
+          // If html2pdf generated a blank trailing page, delete it
+          if (generatedPages > expectedPages) {
+            for (let i = generatedPages; i > expectedPages; i--) {
+              pdf.deletePage(i);
+            }
+          }
+        })
+        .save();
+
       toast.success("PDF Downloaded Successfully");
     } catch (err) {
       console.error("PDF Error:", err);
@@ -272,7 +323,6 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
       setPdfLoading(false);
     }
   };
-
   const handlePrint = () => window.print();
 
   if (!invoice) {
@@ -310,18 +360,24 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
               color: #000;
               box-sizing: border-box;
           }
-          .page {
-              width: 800px;
-              padding: 20px 25px; 
-              margin: 0 auto 20px auto;
-              background-color: #fff;
-              font-size: 11px;
-              line-height: 1.3;
-              box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-              position: relative;
-              page-break-after: always;
-              break-after: page;
-          }
+       .page {
+    width: 100%;
+    max-width: 794px;
+    padding: 20px 25px; 
+    margin: 0 auto 20px auto; /* Safe to keep this gap for the screen */
+    background-color: #fff;
+    font-size: 11px;
+    line-height: 1.3;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    position: relative;
+    box-sizing: border-box; 
+}
+/* CRITICAL: Stops the 20px margin from creating a blank page at the end */
+.page:last-child {
+    margin-bottom: 0;
+    page-break-after: avoid;
+    break-after: avoid;
+}
           
           .flex-row {
               display: flex;

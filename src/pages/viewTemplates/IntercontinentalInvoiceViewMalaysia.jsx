@@ -1,9 +1,635 @@
-import React, { useState, useEffect, useRef } from 'react';
+// import React, { useState, useEffect, useRef } from 'react';
+// import { useParams, useNavigate, useLocation } from "react-router-dom";
+// import toast from "react-hot-toast";
+// import html2pdf from 'html2pdf.js';
+// import { InvoiceTemplate } from "../../components";
+// import logo from '/InterContinentalM-logo.png?url';
+
+// // ─────────────────────────────────────────────────────────────────────────────
+// // UTILITIES
+// // ─────────────────────────────────────────────────────────────────────────────
+// const formatDate = (dateStr) => {
+//     if (!dateStr) return "";
+//     try {
+//         const d = new Date(dateStr);
+//         if (isNaN(d.getTime())) return dateStr;
+//         const dd = String(d.getDate()).padStart(2, '0');
+//         const mm = String(d.getMonth() + 1).padStart(2, '0');
+//         const yy = String(d.getFullYear()).slice(-2);
+//         return `${dd}/${mm}/${yy}`;
+//     } catch { 
+//         return dateStr; 
+//     }
+// };
+
+// const formatCurrency = (val) => {
+//     if (val === null || val === undefined || val === "") return "0.00";
+//     return parseFloat(val).toLocaleString('en-US', {
+//         minimumFractionDigits: 2,
+//         maximumFractionDigits: 2
+//     });
+// };
+
+// const parseDateForSort = (dateStr) => {
+//     if (!dateStr) return 0;
+//     const d = new Date(dateStr);
+//     return isNaN(d.getTime()) ? 0 : d.getTime();
+// };
+
+// const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
+//     const { invoiceId } = useParams();
+//     const location = useLocation();
+//     const navigate = useNavigate();
+//     const invoiceRef = useRef(null);
+
+//     const [invoice, setInvoice] = useState(null);
+//     const [loading, setLoading] = useState(true);
+//     const [pdfLoading, setPdfLoading] = useState(false);
+//     const [paginatedData, setPaginatedData] = useState([]);
+
+//     const isPdfDownload = location.pathname.includes("/download-pdf");
+
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     // MAPPING API DATA
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     const mapApiDataToInvoice = (data) => {
+//         if (!data) return null;
+
+//         const accommodationItems = (data.accommodationDetails || []).map((item, index) => ({
+//             id: `acc_${index}`,
+//             rawDate: parseDateForSort(item.date),
+//             date: item.date,
+//             desc: item.description,
+//             ref: item.reference || "",
+//             amount: item.amount
+//         }));
+
+//         const serviceItems = (data.otherServices || []).map((item, index) => ({
+//             id: `ser_${index}`,
+//             rawDate: parseDateForSort(item.date),
+//             date: item.date,
+//             desc: item.name,
+//             ref: item.reference || "",
+//             amount: item.amount
+//         }));
+
+//         const allItems = [...accommodationItems, ...serviceItems].sort((a, b) => a.rawDate - b.rawDate);
+
+//         return {
+//             guestName:     data.guestName     || "",
+//             address:       data.address       || "",
+//             country:       data.nationality   || "",
+//             invoiceNo:     data.invoiceNo     || "",
+//             roomNo:        data.roomNo        || "",
+//             arrivalDate:   data.arrivalDate,
+//             departureDate: data.departureDate,
+//             membershipNo:  data.membershipNo  || "",
+//             companyName:   data.companyName   || "",
+//             sstNo:         data.sstRegNo      || "",
+//             cashierName:   data.cashierId   || "",
+//             userId: data.uuid,
+//             items: allItems,
+//             summary: {
+//                 excludedTax: data.baseTaxableAmount || 0,
+//                 serviceTax:  data.totalSst8Percent  || 0,
+//                 tourismTax:  data.totalTourismTax   || 0,
+//                 totalAmount: data.grandTotalMyr     || 0,
+//                 totalAmountUsd: data.balanceUsd     || 0,
+//                 balance:     0.00
+//             }
+//         };
+//     };
+
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     // LOAD INVOICE DATA — only from prop (like Oasia), no dummy fallback
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     useEffect(() => {
+//         if (invoiceData) {
+//             setInvoice(mapApiDataToInvoice(invoiceData));
+//             setLoading(false);
+//         }
+//     }, [invoiceData]);
+
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     // AUTOMATED PDF DOWNLOAD HOOK
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     useEffect(() => {
+//         if (isPdfDownload && invoice && invoiceRef.current) {
+//             const timer = setTimeout(async () => {
+//                 await handleDownloadPDF();
+//                 navigate("/invoices", { replace: true });
+//             }, 1000);
+//             return () => clearTimeout(timer);
+//         }
+//     }, [isPdfDownload, invoice, navigate]);
+
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     // PAGINATION LOGIC
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     useEffect(() => {
+//         if (!invoice?.items) return;
+
+//         const tx = invoice.items;
+//         const pages = [];
+//         const MAX_ROWS_NORMAL_PAGE = 25;
+
+//         if (tx.length === 0) {
+//             pages.push({ items: [], showTotals: true });
+//         } else {
+//             for (let i = 0; i < tx.length; i += MAX_ROWS_NORMAL_PAGE) {
+//                 const chunk = tx.slice(i, i + MAX_ROWS_NORMAL_PAGE);
+//                 const isLastChunk = i + MAX_ROWS_NORMAL_PAGE >= tx.length;
+//                 pages.push({ items: chunk, showTotals: isLastChunk });
+//             }
+//         }
+
+//         const totalPages = pages.length;
+//         pages.forEach((p, idx) => {
+//             p.pageNo = idx + 1;
+//             p.totalPages = totalPages;
+//             p.isLastPage = p.showTotals;
+//         });
+
+//         setPaginatedData(pages);
+//     }, [invoice]);
+
+// const handleDownloadPDF = async () => {
+//     if (!invoiceRef.current) return;
+//     setPdfLoading(true);
+
+//     const headStyles = Array.from(
+//         document.head.querySelectorAll('link[rel="stylesheet"], style')
+//     );
+//     headStyles.forEach(s => s.parentNode?.removeChild(s));
+
+//     try {
+//         const images = invoiceRef.current.querySelectorAll('img');
+//         await Promise.all(
+//             Array.from(images).map(img => {
+//                 if (img.complete) return Promise.resolve();
+//                 return new Promise(resolve => {
+//                     img.onload = resolve;
+//                     img.onerror = resolve;
+//                 });
+//             })
+//         );
+
+//         await new Promise(resolve => setTimeout(resolve, 400));
+
+//         const opt = {
+//             margin: 0,
+//             filename: `IC_KualaLumpur_${invoice.invoiceNo || 'Invoice'}.pdf`,
+//             image: { type: 'jpeg', quality: 0.98 },
+//             html2canvas: {
+//                 scale: 2,
+//                 useCORS: true,
+//                 letterRendering: true,
+//                 scrollX: 0,
+//                 scrollY: 0,
+//                 windowWidth: 794,
+//                 onclone: (clonedDoc) => {
+//                     // 1. Fix wrapper
+//                     const wrapper = clonedDoc.querySelector('.ic-main-wrapper');
+//                     if (wrapper) {
+//                         wrapper.style.width = '794px';
+//                         wrapper.style.margin = '0';
+//                         wrapper.style.padding = '0';
+//                         wrapper.style.background = '#fff';
+//                     }
+
+//                     // 2. Fix sheets
+//                     const sheets = clonedDoc.querySelectorAll('.ic-sheet');
+//                     sheets.forEach(s => {
+//                         s.style.width = '794px';
+//                         s.style.minHeight = '1100px';
+//                         s.style.margin = '0';
+//                         s.style.padding = '30px 25px';
+//                         s.style.boxSizing = 'border-box';
+//                         s.style.display = 'flex';
+//                         s.style.flexDirection = 'column';
+//                     });
+
+//                     // 3. Spacer — pushes totals to bottom without overflow
+//                     clonedDoc.querySelectorAll('.ic-spacer').forEach(s => {
+//                         s.style.display = 'block';
+//                         s.style.flexGrow = '1';
+//                         s.style.minHeight = '20px';
+//                         s.style.maxHeight = '400px';
+//                     });
+
+//                     // 4. Fix stray black line on details
+//                     clonedDoc.querySelectorAll('.details-container, .left-details-wrapper, .right-details-wrapper, .details-table, .details-table td, .details-table2, .details-table2 td').forEach(el => {
+//                         el.style.border = 'none';
+//                         el.style.borderBottom = 'none';
+//                         el.style.boxShadow = 'none';
+//                         el.style.outline = 'none';
+//                     });
+
+//                  // 5. Left details — nudge down to align with right side
+// clonedDoc.querySelectorAll('.left-details-wrapper').forEach(el => {
+//     el.style.marginTop = '18px'; // Increased to push the bottom line down
+// });
+
+//                     // 6. Fix user-info-row alignment
+//                     clonedDoc.querySelectorAll('.user-info-row').forEach(row => {
+//                         row.style.display = 'flex';
+//                         row.style.justifyContent = 'space-between';
+//                         row.style.marginBottom = '10px';
+//                         row.style.fontSize = '12px';
+
+//                         const divs = row.querySelectorAll('div');
+
+//                         // Room No
+//                         if (divs[0]) {
+//                             divs[0].style.flex = '1';
+//                             divs[0].style.marginLeft = '8%';
+//                             divs[0].style.textAlign = 'left';
+//                         }
+
+//                         // User
+//                        // User
+// if (divs[1]) {
+//     divs[1].style.flex = '1';
+//     divs[1].style.textAlign = 'right'; 
+//     divs[1].style.paddingRight = '15%'; // Pushes it exactly to the spot you drew
+//     divs[1].style.marginRight = '0';
+//     divs[1].style.marginLeft = '0';
+// }
+
+//                         // Cashier No
+//                         if (divs[2]) {
+//                             divs[2].style.flex = '1';
+//                             divs[2].style.textAlign = 'right';
+//                             divs[2].style.marginRight = '12%';
+//                         }
+//                     });
+
+//                     // 7. Fix main table layout
+//                     clonedDoc.querySelectorAll('.main-table').forEach(table => {
+//                         table.style.tableLayout = 'fixed';
+//                         table.style.width = '100%';
+//                         table.style.borderCollapse = 'collapse';
+//                     });
+
+//                     // 8. Fix th widths and alignment
+//                     const thConfigs = [
+//                         { width: '12%', textAlign: 'left',  padding: '6px 10px' },
+//                         { width: '43%', textAlign: 'left',  padding: '6px 0px 6px 10px' },
+//                         { width: '35%', textAlign: 'left',  padding: '6px 0' },
+//                         { width: '10%', textAlign: 'right', padding: '6px 48px 6px 10px' },
+//                     ];
+//                     clonedDoc.querySelectorAll('.main-table thead tr').forEach(row => {
+//                         row.querySelectorAll('th').forEach((th, i) => {
+//                             if (thConfigs[i]) {
+//                                 th.style.width           = thConfigs[i].width;
+//                                 th.style.textAlign       = thConfigs[i].textAlign;
+//                                 th.style.padding         = thConfigs[i].padding;
+//                                 th.style.fontWeight      = 'normal';
+//                                 th.style.backgroundColor = '#d1d1d1';
+//                                 th.style.border          = 'none';
+//                             }
+//                         });
+//                     });
+
+//                     // 9. Fix td right-align
+//                     clonedDoc.querySelectorAll('.main-table td.right-align').forEach(td => {
+//                         td.style.textAlign    = 'right';
+//                         td.style.paddingRight = '48px';
+//                     });
+//                 }
+//             },
+//             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+//             pagebreak: { mode: ['css', 'legacy'] }
+//         };
+
+//         await html2pdf().set(opt).from(invoiceRef.current).save();
+//         toast.success("Invoice Downloaded Successfully");
+//     } catch (err) {
+//         console.error("❌ PDF Error:", err);
+//         toast.error("Error generating PDF");
+//     } finally {
+//         headStyles.forEach(s => {
+//             if (!s.parentNode) document.head.appendChild(s);
+//         });
+//         setPdfLoading(false);
+//     }
+// };
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     // ─────────────────────────────────────────────────────────────────────────────
+//     const handlePrint = () => window.print();
+
+//     if (!invoice) return null;
+
+//     return (
+//         <InvoiceTemplate
+//             loading={loading}
+//             invoice={invoice}
+//             pdfLoading={pdfLoading}
+//             onDownloadPDF={handleDownloadPDF}
+//             onPrint={handlePrint}
+//             onBack={() => navigate("/invoices")}
+//         >
+//             <div className="ic-main-wrapper" ref={invoiceRef}>
+//                 <style dangerouslySetInnerHTML={{ __html: `
+//                     @page { size: A4; margin: 0mm; }
+
+//                     .ic-main-wrapper { 
+//                         width: 100%; 
+//                         background: #fff; 
+//                         font-family: Arial, Helvetica, sans-serif; 
+//                         color: #000; 
+//                         font-size: 12px;
+//                     }
+//                     .ic-sheet { 
+//                         width: 210mm; 
+//                         min-height: 296mm; 
+//                         padding: 30px 25px; 
+//                         margin: 0 auto; 
+//                         box-sizing: border-box; 
+//                         background: #fff; 
+//                         page-break-after: always; 
+//                         break-after: page;
+//                         position: relative; 
+//                         display: flex; 
+//                         flex-direction: column;
+//                     }
+//                     .ic-sheet:last-child {
+//                         page-break-after: avoid; 
+//                         break-after: avoid;
+//                     }
+//                     .header { text-align: center; margin-bottom: 30px; display: flex; justify-content: center;}
+//                     .logo-img { max-width: 170px; height: auto; }
+                    
+//                     .top-section { display: flex; justify-content: space-between; margin-bottom: 20px; }
+//                     .guest-info { width: 45%; line-height: 1.3; }
+//                     .guest-info-address { max-width: 250px; line-height: 1.4; word-wrap: break-word; }
+//                     .invoice-title { width: 45%; text-align: left; padding-left: 20px; font-weight: bold; font-size: 12px; padding-top: 15px;}
+                    
+//                     .details-container { display: flex; justify-content: space-between; margin-bottom: 30px; margin-top: 40px;}
+//                     .details-table { width: 100%; border-collapse: collapse; font-size: 12px;}
+//                     .details-table td {  vertical-align: top; border: none; }
+//                     .padding-class {padding-top: 3px; padding-bottom: 3px;}
+//                     detials-table2 { width: 100%; border-collapse: collapse; font-size: 12px;}
+//                     detials-table2 td { padding: 2px 0; vertical-align: top; border: none; }
+//                     .details-table2 .colon { width: 10px; text-align: center; }
+
+//                     .details-table .lbl { width: 95px; }
+//                     .details-table .colon { width: 10px; text-align: center; }
+//                     .left-details-wrapper { width: 48%; margin-top: 10px;}
+//                     .right-details-wrapper { width: 40%; }
+                    
+//                     .user-info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px;}
+//                     .user-info-row > div { flex: 1; }
+//                     .user-info-row > div:nth-child(1) { margin-left: 8%; }
+//                     .user-info-row > div:nth-child(2) { text-align: center; margin-left:25px; }
+//                     .user-info-row > div:nth-child(3) { text-align: right; margin-right: 12%; }
+                    
+//                     .main-table { 
+//                         width: 100%; 
+//                         border-collapse: collapse; 
+//                         margin-bottom: 10px; 
+//                         flex-grow: 0;
+//                         font-size: 12px; 
+//                         table-layout: fixed;
+//                     }
+//                     .main-table th { 
+//                         background-color: #d1d1d1 !important; 
+//                         padding: 6px 10px; 
+//                         text-align: left; 
+//                         font-weight: normal; 
+//                         border: none;
+//                         -webkit-print-color-adjust: exact !important;
+//                         print-color-adjust: exact !important;
+//                     }
+//                     .main-table th.right-align { text-align: right; padding-right: 48px; }
+//                     .main-table td { 
+//                         padding: 10px 10px;
+//                         vertical-align: top; 
+//                         border: none; 
+//                         line-height: 1.3;
+//                     }
+//                     .main-table td.right-align { text-align: right; padding-right: 48px; }
+//                     .main-table tr { height: auto !important; }
+
+//                     .ic-spacer { flex-grow: 1; }
+                    
+//                     .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 30px; width: 100%; }
+//                     .totals-wrapper { width: 390px; } 
+//                     .balance-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+//                     .balance-label { text-align: right; }
+//                     .balance-value { text-align: right; padding-right: 48px; }
+                    
+//                     .thick-line { border-top: 3px solid #000; width: 100%; margin-bottom: 11px; margin-top: 13px;}
+                    
+//                     .totals-table { width: 80%; border-collapse: collapse; font-size: 12px; }
+//                     .totals-table td { padding: 2px 0px 2px 30px; border: none; }
+//                     .totals-table .label-col { text-align: right; }
+//                     .label-col2 { text-align: right; padding-left: 0px !important; }
+//                     .totals-table .val-col { text-align: left; padding-right: 15px; }
+                    
+//                     .footer { text-align: center; font-size: 10px; line-height: 1.4; color: #000; margin-top: auto; padding-top: 20px; }
+
+//                     @media print {
+//                         body { background: none; }
+//                         .ic-main-wrapper { padding: 0 !important; background: none !important; }
+//                         .ic-sheet { 
+//                             margin: 0 auto !important; 
+//                             box-shadow: none !important; 
+//                             page-break-after: always !important; 
+//                             break-after: page !important; 
+//                         }
+//                         .ic-sheet:last-child { page-break-after: avoid !important; break-after: avoid !important; }
+//                         .no-print { display: none !important; }
+//                     }
+//                 `}} />
+
+//                 {paginatedData.map((page, index) => (
+//                     <div
+//                         className="ic-sheet"
+//                         key={index}
+//                         style={index === paginatedData.length - 1 ? { pageBreakAfter: 'avoid', breakAfter: 'avoid' } : {}}
+//                     >
+//                         {/* ── HEADER ── */}
+//                         <div className="header">
+//                             <img src={logo} alt="InterContinental Logo" className="logo-img" />
+//                         </div>
+
+//                         {/* ── GUEST INFO + TITLE ── */}
+//                         <div className="top-section">
+//                             <div className="guest-info">
+//                                 <div>{invoice.guestName}</div>
+//                                 {invoice.address && <div className="guest-info-address">{invoice.address}</div>}
+//                                 {invoice.country && <div>{invoice.country}</div>}
+//                             </div>
+//                             <div className="invoice-title">
+//                                 INFORMATION INVOICE
+//                             </div>
+//                         </div>
+
+//                         {/* ── DETAILS ── */}
+//                         <div className="details-container">
+//                             <div className="left-details-wrapper">
+//                                 <table className="details-table">
+//                                     <tbody>
+//                                         <tr>
+//                                             <td className="lbl" style={{padding:"3px 0px"}}>Membership No.</td>
+//                                             <td className="colon">:</td>
+//                                             <td>{invoice.membershipNo}</td>
+//                                         </tr>
+//                                         <tr>
+//                                             <td className="lbl" style={{padding:"3px 0px"}}>Company Name</td>
+//                                             <td className="colon">:</td>
+//                                             <td>{invoice.companyName}</td>
+//                                         </tr>
+//                                         <tr>
+//                                             <td className="lbl" style={{padding:"3px 0px"}}>SST No.</td>
+//                                             <td className="colon">:</td>
+//                                             <td>{invoice.sstNo}</td>
+//                                         </tr>
+//                                     </tbody>
+//                                 </table>
+//                             </div>
+//                             <div className="right-details-wrapper">
+//                                 <table className="details-table2">
+//                                     <tbody>
+//                                         <tr>
+//                                             <td className="lbl" style={{width: "110px"}}>Invoice No.</td>
+//                                             <td className="colon">:</td>
+//                                             <td>{invoice.invoiceNo}</td>
+//                                         </tr>
+//                                         <tr>
+//                                             <td className="lbl">Room Number</td>
+//                                             <td className="colon">:</td>
+//                                             <td>{invoice.roomNo}</td>
+//                                         </tr>
+//                                         <tr>
+//                                             <td className="lbl">Arrival Date</td>
+//                                             <td className="colon">:</td>
+//                                             <td>{formatDate(invoice.arrivalDate)}</td>
+//                                         </tr>
+//                                         <tr>
+//                                             <td className="lbl">Departure Date</td>
+//                                             <td className="colon">:</td>
+//                                             <td>{formatDate(invoice.departureDate)}</td>
+//                                         </tr>
+//                                     </tbody>
+//                                 </table>
+//                             </div>
+//                         </div>
+
+//                         {/* ── USER INFO ROW ── */}
+//                         <div className="user-info-row">
+//                             <div>Room No: {invoice.roomNo}</div>
+//                             <div>User: {invoice.userId}</div>
+//                             <div>Cashier No: &nbsp; {invoice.cashierName}</div>
+//                         </div>
+
+//                         {/* ── MAIN TABLE ── */}
+//                         <table className="main-table">
+//                             <thead>
+//                                 <tr>
+//                                     <th style={{ width: '12%' }}>Date</th>
+//                                     <th style={{ width: '43%', paddingRight: "0px" }}>Descriptions</th>
+//                                     <th style={{ width: '35%' , padding: '6px 0' }}>References</th>
+//                                     <th className="right-align" style={{ width: '15%' }}>Amount</th>
+//                                 </tr>
+//                             </thead>
+//                             <tbody>
+//                                 {page.items.map((item, idx) => (
+//                                     <tr key={item.id || idx}>
+//                                         <td>{formatDate(item.date)}</td>
+//                                         <td style={{ whiteSpace: 'pre-line' }}>{item.desc}</td>
+//                                         <td style={{ whiteSpace: 'pre-line' }}>{item.ref}</td>
+//                                         <td className="right-align">{formatCurrency(item.amount)}</td>
+//                                     </tr>
+//                                 ))}
+//                             </tbody>
+//                         </table>
+
+//                         {/* ── SPACER ── */}
+//                         <div className="ic-spacer" />
+
+//                         {/* ── TOTALS (last page only) ── */}
+//                         {page.isLastPage && (
+//                             <div className="totals-container">
+//                                 <div className="totals-wrapper">
+//                                     <div className="balance-row">
+//                                         <span className="balance-label" style={{ flex: "0.65" }}>Balance RM</span>
+//                                         <span className="balance-value">{formatCurrency(invoice.summary.balance)}</span>
+//                                     </div>
+//                                     <div className="thick-line"></div>
+//                                     <table className="totals-table">
+//                                         <tbody>
+//                                             <tr>
+//                                                 <td className="label-col2">Total Amount Excluded Service Tax:</td>
+//                                                 <td className="val-col">{formatCurrency(invoice.summary.excludedTax)}</td>
+//                                             </tr>
+//                                             <tr>
+//                                                 <td className="label-col2">Service Tax:</td>
+//                                                 <td className="val-col">{formatCurrency(invoice.summary.serviceTax)}</td>
+//                                             </tr>
+//                                             <tr>
+//                                                 <td className="label-col2">TTX @ RM10.00 per Night:</td>
+//                                                 <td className="val-col">{formatCurrency(invoice.summary.tourismTax)}</td>
+//                                             </tr>
+//                                             <tr>
+//                                                 <td className="label-col2">Total Amount:</td>
+//                                                 <td className="val-col">{formatCurrency(invoice.summary.totalAmount)}</td>
+//                                             </tr>
+//                                             <tr>
+//                                                 <td className="label-col2"> Total USD:</td>
+//                                                 <td className="val-col">{formatCurrency(invoice.summary.totalAmountUsd)}</td>
+//                                             </tr>
+//                                         </tbody>
+//                                     </table>
+//                                 </div>
+//                             </div>
+//                         )}
+//                     </div>
+//                 ))}
+//             </div>
+//         </InvoiceTemplate>
+//     );
+// };
+
+// export default IntercontinentalInvoiceViewMalaysia;
+
+
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from '/InterContinental-logo.jpeg?url';
+import logo from '/InterContinentalM-logo.png?url';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONSTANTS
+// A4 page at windowWidth=794px in html2canvas:
+//   height = 794 × (297/210) = 1123px
+//   padding top+bottom = 30+25 = 55px
+//   usable = 1123 - 55 = 1068px
+//
+// Fixed top block per page (header+guest+details+user-row+table-thead):
+//   measured empirically, tuned via PAGE_TOP_OFFSET constant below.
+//
+// Totals+footer block (last page only):
+//   measured empirically, tuned via PAGE_BOTTOM_OFFSET constant below.
+// ─────────────────────────────────────────────────────────────────────────────
+const A4_USABLE_HEIGHT = 1067;   // px at 96dpi, windowWidth 794
+const PAGE_TOP_OFFSET  = 340;    // header + guest + details + user-row + thead
+const PAGE_BOTTOM_OFFSET = 190;  // totals section + footer
+const ROW_HEIGHT       = 38;     // px per transaction row (tunable)
+
+// Rows that fit on a normal (non-last) continuation page
+const ROWS_PER_MIDDLE_PAGE = Math.floor(
+    (A4_USABLE_HEIGHT - PAGE_TOP_OFFSET) / ROW_HEIGHT
+); // ~21
+
+// Rows that fit when page also carries the totals footer
+const ROWS_PER_LAST_PAGE = Math.floor(
+    (A4_USABLE_HEIGHT - PAGE_TOP_OFFSET - PAGE_BOTTOM_OFFSET) / ROW_HEIGHT
+); // ~14
 
 // ─────────────────────────────────────────────────────────────────────────────
 // UTILITIES
@@ -17,8 +643,8 @@ const formatDate = (dateStr) => {
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const yy = String(d.getFullYear()).slice(-2);
         return `${dd}/${mm}/${yy}`;
-    } catch { 
-        return dateStr; 
+    } catch {
+        return dateStr;
     }
 };
 
@@ -36,44 +662,488 @@ const parseDateForSort = (dateStr) => {
     return isNaN(d.getTime()) ? 0 : d.getTime();
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGINATION ENGINE
+// Splits items into pages so that:
+//   • Every non-last page fits ROWS_PER_MIDDLE_PAGE rows
+//   • The last page fits ROWS_PER_LAST_PAGE rows (leaving room for totals)
+//   • Edge-case: 0 items → one page with totals
+// ─────────────────────────────────────────────────────────────────────────────
+const buildPages = (items) => {
+    if (!items || items.length === 0) {
+        return [{ items: [], isLastPage: true, pageNo: 1, totalPages: 1 }];
+    }
+
+    const pages = [];
+    let remaining = [...items];
+
+    // We don't know ahead of time which page is "last", so fill greedily
+    // using ROWS_PER_MIDDLE_PAGE, but then check if the final page overflows
+    // ROWS_PER_LAST_PAGE. If it does, split it.
+
+    while (remaining.length > 0) {
+        const isLastChunk = remaining.length <= ROWS_PER_MIDDLE_PAGE;
+
+        if (isLastChunk) {
+            // This chunk will be the last page — does it fit with the totals?
+            if (remaining.length <= ROWS_PER_LAST_PAGE) {
+                pages.push({ items: remaining.slice(), isLastPage: true });
+                remaining = [];
+            } else {
+                // Too many rows for the totals to fit — split: one more middle page
+                // then the remainder becomes the true last page
+                const middleChunk = remaining.slice(0, ROWS_PER_MIDDLE_PAGE);
+                pages.push({ items: middleChunk, isLastPage: false });
+                remaining = remaining.slice(ROWS_PER_MIDDLE_PAGE);
+            }
+        } else {
+            // Take a full middle-page chunk
+            const chunk = remaining.slice(0, ROWS_PER_MIDDLE_PAGE);
+            pages.push({ items: chunk, isLastPage: false });
+            remaining = remaining.slice(ROWS_PER_MIDDLE_PAGE);
+        }
+    }
+
+    // Stamp page numbers
+    const total = pages.length;
+    pages.forEach((p, i) => {
+        p.pageNo = i + 1;
+        p.totalPages = total;
+    });
+
+    return pages;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SHARED CSS STRING — injected once at the wrapper level
+// ─────────────────────────────────────────────────────────────────────────────
+const INVOICE_CSS = `
+    @page { size: A4 portrait; margin: 0mm; }
+
+    .ic-main-wrapper {
+        width: 100%;
+        background: #fff;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #000;
+        font-size: 12px;
+    }
+
+    /* ── One A4 sheet ── */
+    .ic-sheet {
+        width: 210mm;
+        height: 296.5mm; /* Changed from min-height: 297mm */
+        overflow: hidden; /* Prevent visual leaks */
+        padding: 30px 25px 25px;
+        margin: 0 auto;
+        box-sizing: border-box;
+        background: #fff;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        page-break-after: always;
+        break-after: page;
+    }
+    .ic-sheet:last-child {
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    /* ── Header ── */
+    .ic-header {
+        text-align: center;
+        margin-bottom: 22px;
+        display: flex;
+        justify-content: center;
+    }
+    .logo-img { max-width: 170px; height: auto; }
+
+    /* ── Guest + title ── */
+    .top-section { display: flex; justify-content: space-between; margin-bottom: 16px; }
+    .guest-info { width: 45%; line-height: 1.3; }
+    .guest-info-address { max-width: 250px; line-height: 1.4; word-wrap: break-word; }
+    .invoice-title { width: 45%; text-align: left; padding-left: 20px; font-weight: bold; font-size: 12px; padding-top: 15px; }
+
+    /* ── Details two-column ── */
+    .details-container { display: flex; justify-content: space-between; margin-bottom: 18px; margin-top: 28px; }
+    .left-details-wrapper  { width: 48%; margin-top: 10px; }
+    .right-details-wrapper { width: 40%; }
+
+    .details-table  { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .details-table  td { vertical-align: top; border: none; padding: 3px 0; }
+    .details-table2 { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .details-table2 td { padding: 3px 0; vertical-align: top; border: none; }
+
+    .details-table  .lbl  { width: 95px; }
+    .details-table  .colon { width: 10px; text-align: center; }
+    .details-table2 .lbl  { width: 110px; }
+    .details-table2 .colon { width: 10px; text-align: center; }
+
+    /* ── User info row ── */
+    .user-info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
+    .user-info-row > div { flex: 1; }
+    .user-info-row > div:nth-child(1) { margin-left: 8%; }
+    .user-info-row > div:nth-child(2) { text-align: center; margin-left: 25px; }
+    .user-info-row > div:nth-child(3) { text-align: right; margin-right: 12%; }
+
+    /* ── Main transactions table ── */
+    .main-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        table-layout: fixed;
+        flex-shrink: 0;
+    }
+    .main-table col.col-date   { width: 12%; }
+    .main-table col.col-desc   { width: 43%; }
+    .main-table col.col-ref    { width: 35%; }
+    .main-table col.col-amount { width: 10%; }
+
+    .main-table th {
+        background-color: #d1d1d1 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        padding: 6px 10px;
+        text-align: left;
+        font-weight: normal;
+        border: none;
+    }
+    .main-table th.right-align { text-align: right; padding-right: 48px; }
+
+    .main-table td {
+        padding: 10px 10px;
+        vertical-align: top;
+        border: none;
+        line-height: 1.3;
+    }
+    .main-table td.right-align { text-align: right; padding-right: 48px; }
+
+    /* ── Spacer — pushes totals to bottom on last page ── */
+    .ic-spacer { flex-grow: 1; min-height: 10px; }
+
+    /* ── Totals ── */
+    .totals-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-bottom: 20px;
+        width: 100%;
+        /* CRITICAL: never let page break split the totals block */
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .totals-wrapper { width: 390px; }
+    .balance-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .balance-label { text-align: right; }
+    .balance-value { text-align: right; padding-right: 48px; }
+
+    .thick-line { border-top: 3px solid #000; width: 100%; margin: 11px 0 13px; }
+
+    .totals-table { width: 80%; border-collapse: collapse; font-size: 12px; }
+    .totals-table td { padding: 2px 0px 2px 30px; border: none; }
+    .totals-table .label-col2 { text-align: right; padding-left: 0 !important; }
+    .totals-table .val-col    { text-align: left; padding-right: 15px; }
+
+    /* ── Footer ── */
+    .ic-footer {
+        text-align: center;
+        font-size: 10px;
+        line-height: 1.4;
+        color: #000;
+        padding-top: 12px;
+        margin-top: auto;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* ── Print overrides ── */
+    @media print {
+        body { background: none; }
+        .no-print { display: none !important; }
+
+        .ic-main-wrapper { padding: 0 !important; background: none !important; }
+
+        .ic-sheet {
+            margin: 0 auto !important;
+            box-shadow: none !important;
+            page-break-after: always !important;
+            break-after: page !important;
+        }
+        .ic-sheet:last-child {
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+        }
+
+        .totals-container,
+        .ic-footer {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .main-table th {
+            background-color: #d1d1d1 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+    }
+`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// onclone patch for html2pdf — applied once to the cloned document
+// ─────────────────────────────────────────────────────────────────────────────
+const applyPdfClonePatches = (clonedDoc) => {
+    // 1. Wrapper
+    const wrapper = clonedDoc.querySelector('.ic-main-wrapper');
+    if (wrapper) {
+        wrapper.style.cssText += 'width:794px;margin:0;padding:0;background:#fff;';
+    }
+
+    // 2. Sheets
+    const sheets = clonedDoc.querySelectorAll('.ic-sheet');
+    sheets.forEach((s, index) => {
+        s.style.cssText += [
+            'width:794px',
+            'height:1122px', // CHANGED: Strictly 1122px to prevent 0.5px overflow
+            'max-height:1122px', 
+            'overflow:hidden', // CHANGED: Clip any sub-pixel spillage
+            'margin:0',
+            'padding:30px 25px 25px',
+            'box-sizing:border-box',
+            'display:flex',
+            'flex-direction:column',
+        ].join(';') + ';';
+
+        // CHANGED: Forcefully remove page breaks on the very last page in the DOM
+        if (index === sheets.length - 1) {
+            s.style.pageBreakAfter = 'avoid';
+            s.style.breakAfter = 'avoid';
+        } else {
+            s.style.pageBreakAfter = 'always';
+            s.style.breakAfter = 'page';
+        }
+    });
+
+    // 3. Spacer
+    clonedDoc.querySelectorAll('.ic-spacer').forEach(s => {
+        s.style.cssText += 'display:block;flex-grow:1;min-height:10px;';
+    });
+
+    // 4. Remove stray borders on detail area
+    clonedDoc.querySelectorAll(
+        '.details-container,.left-details-wrapper,.right-details-wrapper,' +
+        '.details-table,.details-table td,.details-table2,.details-table2 td'
+    ).forEach(el => {
+        el.style.border = 'none';
+        el.style.boxShadow = 'none';
+        el.style.outline = 'none';
+    });
+
+    // 5. Left details nudge
+    clonedDoc.querySelectorAll('.left-details-wrapper').forEach(el => {
+        el.style.marginTop = '18px';
+    });
+
+    // 6. User-info-row explicit flex
+    clonedDoc.querySelectorAll('.user-info-row').forEach(row => {
+        row.style.cssText += 'display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;';
+        const divs = row.querySelectorAll('div');
+        if (divs[0]) { divs[0].style.flex = '1'; divs[0].style.marginLeft = '8%'; }
+        if (divs[1]) { divs[1].style.flex = '1'; divs[1].style.textAlign = 'right'; divs[1].style.paddingRight = '15%'; }
+        if (divs[2]) { divs[2].style.flex = '1'; divs[2].style.textAlign = 'right'; divs[2].style.marginRight = '12%'; }
+    });
+
+    // 7. Main table
+    clonedDoc.querySelectorAll('.main-table').forEach(t => {
+        t.style.cssText += 'table-layout:fixed;width:100%;border-collapse:collapse;';
+    });
+
+    // 8. TH widths
+    const thConfigs = [
+        { width: '12%', textAlign: 'left',  padding: '6px 10px' },
+        { width: '43%', textAlign: 'left',  padding: '6px 0px 6px 10px' },
+        { width: '35%', textAlign: 'left',  padding: '6px 0' },
+        { width: '10%', textAlign: 'right', padding: '6px 48px 6px 10px' },
+    ];
+    clonedDoc.querySelectorAll('.main-table thead tr').forEach(row => {
+        row.querySelectorAll('th').forEach((th, i) => {
+            if (thConfigs[i]) {
+                th.style.width           = thConfigs[i].width;
+                th.style.textAlign       = thConfigs[i].textAlign;
+                th.style.padding         = thConfigs[i].padding;
+                th.style.fontWeight      = 'normal';
+                th.style.backgroundColor = '#d1d1d1';
+                th.style.border          = 'none';
+            }
+        });
+    });
+
+    // 9. TD right-align
+    clonedDoc.querySelectorAll('.main-table td.right-align').forEach(td => {
+        td.style.textAlign    = 'right';
+        td.style.paddingRight = '48px';
+    });
+
+    // 10. Totals — force no-break
+    clonedDoc.querySelectorAll('.totals-container').forEach(el => {
+        el.style.pageBreakInside = 'avoid';
+        el.style.breakInside     = 'avoid';
+    });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEADER BLOCK — rendered on every page
+// ─────────────────────────────────────────────────────────────────────────────
+const PageHeader = ({ invoice }) => (
+    <>
+        <div className="ic-header">
+            <img src={logo} alt="InterContinental Logo" className="logo-img" />
+        </div>
+
+        <div className="top-section">
+            <div className="guest-info">
+                <div>{invoice.guestName}</div>
+                {invoice.address && <div className="guest-info-address">{invoice.address}</div>}
+                {invoice.country && <div>{invoice.country}</div>}
+            </div>
+            <div className="invoice-title">INFORMATION INVOICE</div>
+        </div>
+
+        <div className="details-container">
+            <div className="left-details-wrapper">
+                <table className="details-table">
+                    <tbody>
+                        <tr>
+                            <td className="lbl">Membership No.</td>
+                            <td className="colon">:</td>
+                            <td>{invoice.membershipNo}</td>
+                        </tr>
+                        <tr>
+                            <td className="lbl">Company Name</td>
+                            <td className="colon">:</td>
+                            <td>{invoice.companyName}</td>
+                        </tr>
+                        <tr>
+                            <td className="lbl">SST No.</td>
+                            <td className="colon">:</td>
+                            <td>{invoice.sstNo}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div className="right-details-wrapper">
+                <table className="details-table2">
+                    <tbody>
+                        <tr>
+                            <td className="lbl">Invoice No.</td>
+                            <td className="colon">:</td>
+                            <td>{invoice.invoiceNo}</td>
+                        </tr>
+                        <tr>
+                            <td className="lbl">Room Number</td>
+                            <td className="colon">:</td>
+                            <td>{invoice.roomNo}</td>
+                        </tr>
+                        <tr>
+                            <td className="lbl">Arrival Date</td>
+                            <td className="colon">:</td>
+                            <td>{formatDate(invoice.arrivalDate)}</td>
+                        </tr>
+                        <tr>
+                            <td className="lbl">Departure Date</td>
+                            <td className="colon">:</td>
+                            <td>{formatDate(invoice.departureDate)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div className="user-info-row">
+            <div>Room No: {invoice.roomNo}</div>
+            <div>User: {invoice.userId}</div>
+            <div>Cashier No:&nbsp;{invoice.cashierName}</div>
+        </div>
+    </>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOTALS BLOCK — rendered only on the last page
+// ─────────────────────────────────────────────────────────────────────────────
+const TotalsBlock = ({ summary }) => (
+    <div className="totals-container">
+        <div className="totals-wrapper">
+            <div className="balance-row">
+                <span className="balance-label" style={{ flex: "0.65" }}>Balance RM</span>
+                <span className="balance-value">{formatCurrency(summary.balance)}</span>
+            </div>
+            <div className="thick-line" />
+            <table className="totals-table">
+                <tbody>
+                    <tr>
+                        <td className="label-col2">Total Amount Excluded Service Tax:</td>
+                        <td className="val-col">{formatCurrency(summary.excludedTax)}</td>
+                    </tr>
+                    <tr>
+                        <td className="label-col2">Service Tax:</td>
+                        <td className="val-col">{formatCurrency(summary.serviceTax)}</td>
+                    </tr>
+                    <tr>
+                        <td className="label-col2">TTX @ RM10.00 per Night:</td>
+                        <td className="val-col">{formatCurrency(summary.tourismTax)}</td>
+                    </tr>
+                    <tr>
+                        <td className="label-col2">Total Amount:</td>
+                        <td className="val-col">{formatCurrency(summary.totalAmount)}</td>
+                    </tr>
+                    <tr>
+                        <td className="label-col2">Total USD:</td>
+                        <td className="val-col">{formatCurrency(summary.totalAmountUsd)}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
 const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
     const { invoiceId } = useParams();
-    const location = useLocation();
-    const navigate = useNavigate();
+    const location  = useLocation();
+    const navigate  = useNavigate();
     const invoiceRef = useRef(null);
 
-    const [invoice, setInvoice] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [pdfLoading, setPdfLoading] = useState(false);
+    const [invoice,       setInvoice]       = useState(null);
+    const [loading,       setLoading]       = useState(true);
+    const [pdfLoading,    setPdfLoading]    = useState(false);
     const [paginatedData, setPaginatedData] = useState([]);
 
     const isPdfDownload = location.pathname.includes("/download-pdf");
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // MAPPING API DATA
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ── MAP API → invoice object ──────────────────────────────────────────────
     const mapApiDataToInvoice = (data) => {
         if (!data) return null;
 
-        const accommodationItems = (data.accommodationDetails || []).map((item, index) => ({
-            id: `acc_${index}`,
+        const accommodationItems = (data.accommodationDetails || []).map((item, i) => ({
+            id: `acc_${i}`,
             rawDate: parseDateForSort(item.date),
             date: item.date,
             desc: item.description,
             ref: item.reference || "",
-            amount: item.amount
+            amount: item.amount,
         }));
 
-        const serviceItems = (data.otherServices || []).map((item, index) => ({
-            id: `ser_${index}`,
+        const serviceItems = (data.otherServices || []).map((item, i) => ({
+            id: `ser_${i}`,
             rawDate: parseDateForSort(item.date),
             date: item.date,
             desc: item.name,
             ref: item.reference || "",
-            amount: item.amount
+            amount: item.amount,
         }));
 
-        const allItems = [...accommodationItems, ...serviceItems].sort((a, b) => a.rawDate - b.rawDate);
+        const allItems = [...accommodationItems, ...serviceItems]
+            .sort((a, b) => a.rawDate - b.rawDate);
 
         return {
             guestName:     data.guestName     || "",
@@ -86,23 +1156,21 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
             membershipNo:  data.membershipNo  || "",
             companyName:   data.companyName   || "",
             sstNo:         data.sstRegNo      || "",
-            cashierName:   data.cashierId   || "",
-            userId: data.uuid,
+            cashierName:   data.cashierId     || "",
+            userId:        data.uuid,
             items: allItems,
             summary: {
-                excludedTax: data.baseTaxableAmount || 0,
-                serviceTax:  data.totalSst8Percent  || 0,
-                tourismTax:  data.totalTourismTax   || 0,
-                totalAmount: data.grandTotalMyr     || 0,
-                totalAmountUsd: data.balanceUsd     || 0,
-                balance:     0.00
-            }
+                excludedTax:    data.baseTaxableAmount || 0,
+                serviceTax:     data.totalSst8Percent  || 0,
+                tourismTax:     data.totalTourismTax   || 0,
+                totalAmount:    data.grandTotalMyr     || 0,
+                totalAmountUsd: data.balanceUsd        || 0,
+                balance:        0.00,
+            },
         };
     };
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // LOAD INVOICE DATA — only from prop (like Oasia), no dummy fallback
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ── LOAD ─────────────────────────────────────────────────────────────────
     useEffect(() => {
         if (invoiceData) {
             setInvoice(mapApiDataToInvoice(invoiceData));
@@ -110,212 +1178,96 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
         }
     }, [invoiceData]);
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // AUTOMATED PDF DOWNLOAD HOOK
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ── PAGINATION ───────────────────────────────────────────────────────────
     useEffect(() => {
-        if (isPdfDownload && invoice && invoiceRef.current) {
+        if (!invoice?.items) return;
+        setPaginatedData(buildPages(invoice.items));
+    }, [invoice]);
+
+    // ── AUTO PDF ON /download-pdf ROUTE ──────────────────────────────────────
+    useEffect(() => {
+        if (isPdfDownload && invoice && paginatedData.length > 0 && invoiceRef.current) {
             const timer = setTimeout(async () => {
                 await handleDownloadPDF();
                 navigate("/invoices", { replace: true });
-            }, 1000);
+            }, 1200);
             return () => clearTimeout(timer);
         }
-    }, [isPdfDownload, invoice, navigate]);
+    }, [isPdfDownload, invoice, paginatedData, navigate]);
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // PAGINATION LOGIC
-    // ─────────────────────────────────────────────────────────────────────────────
-    useEffect(() => {
-        if (!invoice?.items) return;
+    // ── PDF DOWNLOAD ─────────────────────────────────────────────────────────
+    const handleDownloadPDF = useCallback(async () => {
+        if (!invoiceRef.current) return;
+        setPdfLoading(true);
 
-        const tx = invoice.items;
-        const pages = [];
-        const MAX_ROWS_NORMAL_PAGE = 25;
+        // Strip stylesheets before capture (prevents oklch crash in html2canvas)
+        const headStyles = Array.from(
+            document.head.querySelectorAll('link[rel="stylesheet"], style')
+        );
+        headStyles.forEach(s => s.parentNode?.removeChild(s));
 
-        if (tx.length === 0) {
-            pages.push({ items: [], showTotals: true });
-        } else {
-            for (let i = 0; i < tx.length; i += MAX_ROWS_NORMAL_PAGE) {
-                const chunk = tx.slice(i, i + MAX_ROWS_NORMAL_PAGE);
-                const isLastChunk = i + MAX_ROWS_NORMAL_PAGE >= tx.length;
-                pages.push({ items: chunk, showTotals: isLastChunk });
-            }
-        }
-
-        const totalPages = pages.length;
-        pages.forEach((p, idx) => {
-            p.pageNo = idx + 1;
-            p.totalPages = totalPages;
-            p.isLastPage = p.showTotals;
-        });
-
-        setPaginatedData(pages);
-    }, [invoice]);
-
-const handleDownloadPDF = async () => {
-    if (!invoiceRef.current) return;
-    setPdfLoading(true);
-
-    const headStyles = Array.from(
-        document.head.querySelectorAll('link[rel="stylesheet"], style')
-    );
-    headStyles.forEach(s => s.parentNode?.removeChild(s));
-
-    try {
-        const images = invoiceRef.current.querySelectorAll('img');
-        await Promise.all(
-            Array.from(images).map(img => {
+        try {
+            // Wait for images
+            const images = invoiceRef.current.querySelectorAll('img');
+            await Promise.all(Array.from(images).map(img => {
                 if (img.complete) return Promise.resolve();
                 return new Promise(resolve => {
                     img.onload = resolve;
                     img.onerror = resolve;
                 });
-            })
-        );
+            }));
 
-        await new Promise(resolve => setTimeout(resolve, 400));
+            // Extra settle time for layout
+            await new Promise(r => setTimeout(r, 500));
 
-        const opt = {
-            margin: 0,
-            filename: `IC_KualaLumpur_${invoice.invoiceNo || 'Invoice'}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: {
-                scale: 2,
-                useCORS: true,
-                letterRendering: true,
-                scrollX: 0,
-                scrollY: 0,
-                windowWidth: 794,
-                onclone: (clonedDoc) => {
-                    // 1. Fix wrapper
-                    const wrapper = clonedDoc.querySelector('.ic-main-wrapper');
-                    if (wrapper) {
-                        wrapper.style.width = '794px';
-                        wrapper.style.margin = '0';
-                        wrapper.style.padding = '0';
-                        wrapper.style.background = '#fff';
-                    }
+            const opt = {
+                margin:   0,
+                filename: `IC_KualaLumpur_${invoice.invoiceNo || 'Invoice'}.pdf`,
+                image:    { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: 794,
+                    onclone: applyPdfClonePatches,
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] },
+            };
 
-                    // 2. Fix sheets
-                    const sheets = clonedDoc.querySelectorAll('.ic-sheet');
-                    sheets.forEach(s => {
-                        s.style.width = '794px';
-                        s.style.minHeight = '1100px';
-                        s.style.margin = '0';
-                        s.style.padding = '30px 25px';
-                        s.style.boxSizing = 'border-box';
-                        s.style.display = 'flex';
-                        s.style.flexDirection = 'column';
-                    });
+await html2pdf()
+    .set(opt)
+    .from(invoiceRef.current)
+    .toPdf()
+    .get('pdf')
+    .then((pdf) => {
+        // html2pdf's generated page count
+        const generatedPages = pdf.internal.getNumberOfPages();
+        // Your React state's exact page count
+        const expectedPages = paginatedData.length;
 
-                    // 3. Spacer — pushes totals to bottom without overflow
-                    clonedDoc.querySelectorAll('.ic-spacer').forEach(s => {
-                        s.style.display = 'block';
-                        s.style.flexGrow = '1';
-                        s.style.minHeight = '20px';
-                        s.style.maxHeight = '400px';
-                    });
+        // If an extra blank page sneaked in, delete it
+        if (generatedPages > expectedPages) {
+            for (let i = generatedPages; i > expectedPages; i--) {
+                pdf.deletePage(i);
+            }
+        }
+    })
+    .save();            toast.success("Invoice Downloaded Successfully");
+        } catch (err) {
+            console.error("❌ PDF Error:", err);
+            toast.error("Error generating PDF");
+        } finally {
+            headStyles.forEach(s => {
+                if (!s.parentNode) document.head.appendChild(s);
+            });
+            setPdfLoading(false);
+        }
+    }, [invoice, invoiceRef]);
 
-                    // 4. Fix stray black line on details
-                    clonedDoc.querySelectorAll('.details-container, .left-details-wrapper, .right-details-wrapper, .details-table, .details-table td, .details-table2, .details-table2 td').forEach(el => {
-                        el.style.border = 'none';
-                        el.style.borderBottom = 'none';
-                        el.style.boxShadow = 'none';
-                        el.style.outline = 'none';
-                    });
-
-                 // 5. Left details — nudge down to align with right side
-clonedDoc.querySelectorAll('.left-details-wrapper').forEach(el => {
-    el.style.marginTop = '18px'; // Increased to push the bottom line down
-});
-
-                    // 6. Fix user-info-row alignment
-                    clonedDoc.querySelectorAll('.user-info-row').forEach(row => {
-                        row.style.display = 'flex';
-                        row.style.justifyContent = 'space-between';
-                        row.style.marginBottom = '10px';
-                        row.style.fontSize = '12px';
-
-                        const divs = row.querySelectorAll('div');
-
-                        // Room No
-                        if (divs[0]) {
-                            divs[0].style.flex = '1';
-                            divs[0].style.marginLeft = '8%';
-                            divs[0].style.textAlign = 'left';
-                        }
-
-                        // User
-                       // User
-if (divs[1]) {
-    divs[1].style.flex = '1';
-    divs[1].style.textAlign = 'right'; 
-    divs[1].style.paddingRight = '15%'; // Pushes it exactly to the spot you drew
-    divs[1].style.marginRight = '0';
-    divs[1].style.marginLeft = '0';
-}
-
-                        // Cashier No
-                        if (divs[2]) {
-                            divs[2].style.flex = '1';
-                            divs[2].style.textAlign = 'right';
-                            divs[2].style.marginRight = '12%';
-                        }
-                    });
-
-                    // 7. Fix main table layout
-                    clonedDoc.querySelectorAll('.main-table').forEach(table => {
-                        table.style.tableLayout = 'fixed';
-                        table.style.width = '100%';
-                        table.style.borderCollapse = 'collapse';
-                    });
-
-                    // 8. Fix th widths and alignment
-                    const thConfigs = [
-                        { width: '12%', textAlign: 'left',  padding: '6px 10px' },
-                        { width: '43%', textAlign: 'left',  padding: '6px 0px 6px 10px' },
-                        { width: '35%', textAlign: 'left',  padding: '6px 0' },
-                        { width: '10%', textAlign: 'right', padding: '6px 48px 6px 10px' },
-                    ];
-                    clonedDoc.querySelectorAll('.main-table thead tr').forEach(row => {
-                        row.querySelectorAll('th').forEach((th, i) => {
-                            if (thConfigs[i]) {
-                                th.style.width           = thConfigs[i].width;
-                                th.style.textAlign       = thConfigs[i].textAlign;
-                                th.style.padding         = thConfigs[i].padding;
-                                th.style.fontWeight      = 'normal';
-                                th.style.backgroundColor = '#d1d1d1';
-                                th.style.border          = 'none';
-                            }
-                        });
-                    });
-
-                    // 9. Fix td right-align
-                    clonedDoc.querySelectorAll('.main-table td.right-align').forEach(td => {
-                        td.style.textAlign    = 'right';
-                        td.style.paddingRight = '48px';
-                    });
-                }
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'] }
-        };
-
-        await html2pdf().set(opt).from(invoiceRef.current).save();
-        toast.success("Invoice Downloaded Successfully");
-    } catch (err) {
-        console.error("❌ PDF Error:", err);
-        toast.error("Error generating PDF");
-    } finally {
-        headStyles.forEach(s => {
-            if (!s.parentNode) document.head.appendChild(s);
-        });
-        setPdfLoading(false);
-    }
-};
-    // ─────────────────────────────────────────────────────────────────────────────
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ── PRINT ─────────────────────────────────────────────────────────────────
     const handlePrint = () => window.print();
 
     if (!invoice) return null;
@@ -330,208 +1282,35 @@ if (divs[1]) {
             onBack={() => navigate("/invoices")}
         >
             <div className="ic-main-wrapper" ref={invoiceRef}>
-                <style dangerouslySetInnerHTML={{ __html: `
-                    @page { size: A4; margin: 0mm; }
+                {/* Single global style block */}
+                <style dangerouslySetInnerHTML={{ __html: INVOICE_CSS }} />
 
-                    .ic-main-wrapper { 
-                        width: 100%; 
-                        background: #fff; 
-                        font-family: Arial, Helvetica, sans-serif; 
-                        color: #000; 
-                        font-size: 12px;
-                    }
-                    .ic-sheet { 
-                        width: 210mm; 
-                        min-height: 296mm; 
-                        padding: 30px 25px; 
-                        margin: 0 auto; 
-                        box-sizing: border-box; 
-                        background: #fff; 
-                        page-break-after: always; 
-                        break-after: page;
-                        position: relative; 
-                        display: flex; 
-                        flex-direction: column;
-                    }
-                    .ic-sheet:last-child {
-                        page-break-after: avoid; 
-                        break-after: avoid;
-                    }
-                    .header { text-align: center; margin-bottom: 30px; display: flex; justify-content: center;}
-                    .logo-img { max-width: 170px; height: auto; }
-                    
-                    .top-section { display: flex; justify-content: space-between; margin-bottom: 20px; }
-                    .guest-info { width: 45%; line-height: 1.3; }
-                    .guest-info-address { max-width: 250px; line-height: 1.4; word-wrap: break-word; }
-                    .invoice-title { width: 45%; text-align: left; padding-left: 20px; font-weight: bold; font-size: 12px; padding-top: 15px;}
-                    
-                    .details-container { display: flex; justify-content: space-between; margin-bottom: 30px; margin-top: 40px;}
-                    .details-table { width: 100%; border-collapse: collapse; font-size: 12px;}
-                    .details-table td {  vertical-align: top; border: none; }
-                    .padding-class {padding-top: 3px; padding-bottom: 3px;}
-                    detials-table2 { width: 100%; border-collapse: collapse; font-size: 12px;}
-                    detials-table2 td { padding: 2px 0; vertical-align: top; border: none; }
-                    .details-table2 .colon { width: 10px; text-align: center; }
-
-                    .details-table .lbl { width: 95px; }
-                    .details-table .colon { width: 10px; text-align: center; }
-                    .left-details-wrapper { width: 48%; margin-top: 10px;}
-                    .right-details-wrapper { width: 40%; }
-                    
-                    .user-info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px;}
-                    .user-info-row > div { flex: 1; }
-                    .user-info-row > div:nth-child(1) { margin-left: 8%; }
-                    .user-info-row > div:nth-child(2) { text-align: center; margin-left:25px; }
-                    .user-info-row > div:nth-child(3) { text-align: right; margin-right: 12%; }
-                    
-                    .main-table { 
-                        width: 100%; 
-                        border-collapse: collapse; 
-                        margin-bottom: 10px; 
-                        flex-grow: 0;
-                        font-size: 12px; 
-                        table-layout: fixed;
-                    }
-                    .main-table th { 
-                        background-color: #d1d1d1 !important; 
-                        padding: 6px 10px; 
-                        text-align: left; 
-                        font-weight: normal; 
-                        border: none;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    .main-table th.right-align { text-align: right; padding-right: 48px; }
-                    .main-table td { 
-                        padding: 10px 10px;
-                        vertical-align: top; 
-                        border: none; 
-                        line-height: 1.3;
-                    }
-                    .main-table td.right-align { text-align: right; padding-right: 48px; }
-                    .main-table tr { height: auto !important; }
-
-                    .ic-spacer { flex-grow: 1; }
-                    
-                    .totals-container { display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 30px; width: 100%; }
-                    .totals-wrapper { width: 390px; } 
-                    .balance-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-                    .balance-label { text-align: right; }
-                    .balance-value { text-align: right; padding-right: 48px; }
-                    
-                    .thick-line { border-top: 3px solid #000; width: 100%; margin-bottom: 11px; margin-top: 13px;}
-                    
-                    .totals-table { width: 80%; border-collapse: collapse; font-size: 12px; }
-                    .totals-table td { padding: 2px 0px 2px 30px; border: none; }
-                    .totals-table .label-col { text-align: right; }
-                    .label-col2 { text-align: right; padding-left: 0px !important; }
-                    .totals-table .val-col { text-align: left; padding-right: 15px; }
-                    
-                    .footer { text-align: center; font-size: 10px; line-height: 1.4; color: #000; margin-top: auto; padding-top: 20px; }
-
-                    @media print {
-                        body { background: none; }
-                        .ic-main-wrapper { padding: 0 !important; background: none !important; }
-                        .ic-sheet { 
-                            margin: 0 auto !important; 
-                            box-shadow: none !important; 
-                            page-break-after: always !important; 
-                            break-after: page !important; 
-                        }
-                        .ic-sheet:last-child { page-break-after: avoid !important; break-after: avoid !important; }
-                        .no-print { display: none !important; }
-                    }
-                `}} />
-
-                {paginatedData.map((page, index) => (
+                {paginatedData.map((page, pageIndex) => (
                     <div
+                        key={pageIndex}
                         className="ic-sheet"
-                        key={index}
-                        style={index === paginatedData.length - 1 ? { pageBreakAfter: 'avoid', breakAfter: 'avoid' } : {}}
+                        style={page.isLastPage
+                            ? { pageBreakAfter: 'avoid', breakAfter: 'avoid' }
+                            : {}
+                        }
                     >
-                        {/* ── HEADER ── */}
-                        <div className="header">
-                            <img src={logo} alt="InterContinental Logo" className="logo-img" />
-                        </div>
+                        {/* ── HEADER (repeats on every page) ── */}
+                        <PageHeader invoice={invoice} />
 
-                        {/* ── GUEST INFO + TITLE ── */}
-                        <div className="top-section">
-                            <div className="guest-info">
-                                <div>{invoice.guestName}</div>
-                                {invoice.address && <div className="guest-info-address">{invoice.address}</div>}
-                                {invoice.country && <div>{invoice.country}</div>}
-                            </div>
-                            <div className="invoice-title">
-                                INFORMATION INVOICE
-                            </div>
-                        </div>
-
-                        {/* ── DETAILS ── */}
-                        <div className="details-container">
-                            <div className="left-details-wrapper">
-                                <table className="details-table">
-                                    <tbody>
-                                        <tr>
-                                            <td className="lbl" style={{padding:"3px 0px"}}>Membership No.</td>
-                                            <td className="colon">:</td>
-                                            <td>{invoice.membershipNo}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="lbl" style={{padding:"3px 0px"}}>Company Name</td>
-                                            <td className="colon">:</td>
-                                            <td>{invoice.companyName}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="lbl" style={{padding:"3px 0px"}}>SST No.</td>
-                                            <td className="colon">:</td>
-                                            <td>{invoice.sstNo}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className="right-details-wrapper">
-                                <table className="details-table2">
-                                    <tbody>
-                                        <tr>
-                                            <td className="lbl" style={{width: "110px"}}>Invoice No.</td>
-                                            <td className="colon">:</td>
-                                            <td>{invoice.invoiceNo}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="lbl">Room Number</td>
-                                            <td className="colon">:</td>
-                                            <td>{invoice.roomNo}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="lbl">Arrival Date</td>
-                                            <td className="colon">:</td>
-                                            <td>{formatDate(invoice.arrivalDate)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="lbl">Departure Date</td>
-                                            <td className="colon">:</td>
-                                            <td>{formatDate(invoice.departureDate)}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* ── USER INFO ROW ── */}
-                        <div className="user-info-row">
-                            <div>Room No: {invoice.roomNo}</div>
-                            <div>User: {invoice.userId}</div>
-                            <div>Cashier No: &nbsp; {invoice.cashierId}</div>
-                        </div>
-
-                        {/* ── MAIN TABLE ── */}
+                        {/* ── TRANSACTIONS TABLE ── */}
                         <table className="main-table">
+                            <colgroup>
+                                <col className="col-date"   />
+                                <col className="col-desc"   />
+                                <col className="col-ref"    />
+                                <col className="col-amount" />
+                            </colgroup>
                             <thead>
                                 <tr>
-                                    <th style={{ width: '12%' }}>Date</th>
-                                    <th style={{ width: '43%', paddingRight: "0px" }}>Descriptions</th>
-                                    <th style={{ width: '35%' , padding: '6px 0' }}>References</th>
-                                    <th className="right-align" style={{ width: '15%' }}>Amount</th>
+                                    <th>Date</th>
+                                    <th style={{ paddingRight: '0px' }}>Descriptions</th>
+                                    <th style={{ padding: '6px 0' }}>References</th>
+                                    <th className="right-align">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -546,44 +1325,12 @@ if (divs[1]) {
                             </tbody>
                         </table>
 
-                        {/* ── SPACER ── */}
+                        {/* ── SPACER — pushes totals to bottom ── */}
                         <div className="ic-spacer" />
 
-                        {/* ── TOTALS (last page only) ── */}
+                        {/* ── TOTALS (last page only, never breaks) ── */}
                         {page.isLastPage && (
-                            <div className="totals-container">
-                                <div className="totals-wrapper">
-                                    <div className="balance-row">
-                                        <span className="balance-label" style={{ flex: "0.65" }}>Balance RM</span>
-                                        <span className="balance-value">{formatCurrency(invoice.summary.balance)}</span>
-                                    </div>
-                                    <div className="thick-line"></div>
-                                    <table className="totals-table">
-                                        <tbody>
-                                            <tr>
-                                                <td className="label-col2">Total Amount Excluded Service Tax:</td>
-                                                <td className="val-col">{formatCurrency(invoice.summary.excludedTax)}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="label-col2">Service Tax:</td>
-                                                <td className="val-col">{formatCurrency(invoice.summary.serviceTax)}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="label-col2">TTX @ RM10.00 per Night:</td>
-                                                <td className="val-col">{formatCurrency(invoice.summary.tourismTax)}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="label-col2">Total Amount:</td>
-                                                <td className="val-col">{formatCurrency(invoice.summary.totalAmount)}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="label-col2"> Total USD:</td>
-                                                <td className="val-col">{formatCurrency(invoice.summary.totalAmountUsd)}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                            <TotalsBlock summary={invoice.summary} />
                         )}
                     </div>
                 ))}
