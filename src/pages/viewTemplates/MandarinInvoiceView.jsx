@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-import html2pdf from 'html2pdf.js';
+// import html2pdf from 'html2pdf.js';
 import { InvoiceTemplate } from "../../components";
-import logo from "/mandarin-logo.jpeg?url";
-import invoiceApi from "../../Api/invoice.api"; 
+import logo from "/mandarin-logo.png?url";
+import invoiceApi from "../../Api/invoice.api";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PURE HELPERS  
@@ -41,7 +41,7 @@ const parseDateForSort = (dateStr) => {
 
 const mapApiDataToInvoice = (data = {}) => {
   const items = [];
-  
+
   const allTransactions = [
     ...(data.accommodationDetails || []),
     ...(data.otherServices || [])
@@ -60,10 +60,10 @@ const mapApiDataToInvoice = (data = {}) => {
   });
 
   items.sort((a, b) => a.rawDate - b.rawDate);
-  
+
   const payments = data.payments || [];
   const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-  
+
   const totalAmount = data.totalAmountPayable || items.reduce((sum, item) => sum + item.total, 0);
   const balance = totalAmount - totalPayments;
 
@@ -81,30 +81,30 @@ const mapApiDataToInvoice = (data = {}) => {
   return {
     invoiceNo: data.invoiceNo || "",
     invoiceDate: formatDate(data.invoiceDate) || "",
-    reference: data.referenceNo || data.reservationNo || "",
+    reference: data.reservationNo || "",
     arrival: formatDate(data.arrivalDate) || "",
     departure: formatDate(data.departureDate) || "",
     room: data.roomNo || "",
     cashierName: data.cashierName || "",
-    
+    referenceNo: data.referenceNo || "",
+
     guestName: data.guestName || "",
     companyName: data.companyName || "",
     phone: data.guestPhone || "",
-    email: data.guestEmail || "",
     poBox: data.poBox || "",
     address: data.address || "",
     addressLine2: data.addressLine2 || "",
-    taxId: data.vatNo || "",
-    
+    taxId: data.guestEmail || "",
+
     items: items,
     payments: payments,
-    
+
     totalNet: data.taxableAmountExclVat || 0,
     totalVat: data.vatAt20Percent || 0,
     totalAmount: totalAmount,
     totalPayments: totalPayments,
     balance: balance,
-    
+
     taxSummary: taxSummary,
   };
 };
@@ -116,11 +116,11 @@ const mapApiDataToInvoice = (data = {}) => {
 const buildPages = (items = [], payments = []) => {
   const REGULAR_PAGE_MAX = 22; // Max rows if the page DOES NOT have totals
   const LAST_PAGE_MAX_WITH_TOTALS = 10; // Max rows if the page DOES have totals
-  
+
   if (items.length === 0) {
     return [{ items: [], showTotals: true, pageNo: 1, totalPages: 1 }];
   }
-  
+
   const pages = [];
   let currentIdx = 0;
 
@@ -155,13 +155,13 @@ const buildPages = (items = [], payments = []) => {
       currentIdx += REGULAR_PAGE_MAX;
     }
   }
-  
+
   const total = pages.length;
-  pages.forEach((p, idx) => { 
-    p.pageNo = idx + 1; 
+  pages.forEach((p, idx) => {
+    p.pageNo = idx + 1;
     p.totalPages = total;
   });
-  
+
   return pages;
 };
 
@@ -195,8 +195,8 @@ const MandarinInvoiceView = ({ invoiceData }) => {
   const fetchInvoiceData = async () => {
     try {
       setLoading(true);
-      const response = await invoiceApi.getInvoiceById(invoiceId); 
-      
+      const response = await invoiceApi.getInvoiceById(invoiceId);
+
       let rawData = response.data || response;
       if (rawData.data) {
         rawData = rawData.data;
@@ -204,7 +204,7 @@ const MandarinInvoiceView = ({ invoiceData }) => {
           rawData = rawData.data;
         }
       }
-      
+
       setInvoice(mapApiDataToInvoice(rawData));
     } catch (err) {
       console.error("Error fetching Mandarin invoice:", err);
@@ -230,72 +230,77 @@ const MandarinInvoiceView = ({ invoiceData }) => {
     }
   }, [isPdfDownload, invoice, navigate]);
 
-  const handleDownloadPDF = async () => {
-    if (!invoiceRef.current) return;
-    setPdfLoading(true);
+ 
 
-    const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
-    headStyles.forEach(style => {
-        const text = style.textContent || "";
-        const href = style.href || "";
-        const isPreserved = text.includes('Mandarin') || href.includes('mandarin') || text.includes('a4-page');
-        if (isPreserved) return;
-        if (style.parentNode) {
-            style.parentNode.removeChild(style);
-        }
-    });
+const handleDownloadPDF = async () => {
+  if (!invoiceRef.current) return;
+  setPdfLoading(true);
 
-    try {
-      const images = invoiceRef.current.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => {
-          if (img.complete) return Promise.resolve();
-          return new Promise(resolve => {
-              img.onload = resolve;
-              img.onerror = resolve;
-          });
-      }));
+  const headStyles = Array.from(
+    document.head.querySelectorAll('link[rel="stylesheet"], style')
+  );
+  headStyles.forEach(s => s.parentNode && s.parentNode.removeChild(s));
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+  try {
+    const images = invoiceRef.current.querySelectorAll('img');
+    await Promise.all(Array.from(images).map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+    }));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      const element = invoiceRef.current;
-      const opt = {
-        margin: 0,
-        filename: `Mandarin_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { 
-            scale: 4, 
-            useCORS: true, 
-            letterRendering: true,
-            scrollY: 0,
-            windowWidth: 794
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-      };
-      
-      await html2pdf().set(opt).from(element).save();
-      toast.success("PDF Downloaded Successfully");
-    } catch (err) {
-      console.error("PDF Error:", err);
-      toast.error("Failed to generate PDF");
-    } finally {
-      headStyles.forEach(style => {
-          if (!style.parentNode) {
-              document.head.appendChild(style);
-          }
+    const pageEls = invoiceRef.current.querySelectorAll('.a4-page');
+    if (!pageEls.length) return;
+
+    const { jsPDF }   = await import('jspdf');
+    const html2canvas = (await import('html2canvas')).default;
+
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+    for (let i = 0; i < pageEls.length; i++) {
+      const el = pageEls[i];
+
+      const prevMargin   = el.style.margin;
+      const prevShadow   = el.style.boxShadow;
+      el.style.margin    = '0';
+      el.style.boxShadow = 'none';
+
+      const canvas = await html2canvas(el, {
+        scale:           4,
+        useCORS:         true,
+        letterRendering: true,
+        scrollY:         0,
+        width:           el.offsetWidth,
+        windowWidth:     el.offsetWidth,
       });
-      setPdfLoading(false);
+
+      el.style.margin    = prevMargin;
+      el.style.boxShadow = prevShadow;
+
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
     }
-  };
+
+    pdf.save(`${invoice.referenceNo || invoice.invoiceNo || 'Invoice'}.pdf`);
+    toast.success("PDF Downloaded Successfully");
+  } catch (err) {
+    console.error("PDF Error:", err);
+    toast.error("Failed to generate PDF");
+  } finally {
+    headStyles.forEach(s => document.head.appendChild(s));
+    setPdfLoading(false);
+  }
+};
 
   const handlePrint = () => window.print();
 
   if (!invoice) {
-      return (
-          <InvoiceTemplate loading={loading} error={error} invoice={invoice} onBack={() => navigate("/invoices")}>
-              <></>
-          </InvoiceTemplate>
-      );
+    return (
+      <InvoiceTemplate loading={loading} error={error} invoice={invoice} onBack={() => navigate("/invoices")}>
+        <></>
+      </InvoiceTemplate>
+    );
   }
 
   const PageHeader = ({ page }) => (
@@ -303,7 +308,7 @@ const MandarinInvoiceView = ({ invoiceData }) => {
       <div className="header">
         <div className="title">Tax Invoice</div>
         <div className="logo-container">
-          <img src={logo} alt="Mandarin Oriental" />       
+          <img src={logo} alt="Mandarin Oriental" />
         </div>
       </div>
 
@@ -312,7 +317,6 @@ const MandarinInvoiceView = ({ invoiceData }) => {
           <strong>{invoice.guestName}</strong>
           {invoice.companyName && <strong>{invoice.companyName}</strong>}
           {invoice.phone && <strong>{invoice.phone}</strong>}
-          {invoice.email && <strong>{invoice.email}</strong>}
           {invoice.poBox && <strong>{invoice.poBox}</strong>}
           {invoice.address && <strong>{invoice.address}</strong>}
           {invoice.addressLine2 && <strong>{invoice.addressLine2}</strong>}
@@ -378,7 +382,7 @@ const MandarinInvoiceView = ({ invoiceData }) => {
           width: 100%;
           display: flex;
           flex-direction: column;
-          align-items: flex-start;
+          align-items: center;
           overflow: hidden;
         }
 
@@ -391,23 +395,27 @@ const MandarinInvoiceView = ({ invoiceData }) => {
           color: #000;
         }
 
-        .a4-page {
-          width: 210mm;
-          min-height: 297mm;
-          background: white;
-          margin: 0 0 20px 0; 
-          padding: 40px;
-          box-shadow: 0 0 10px rgba(0,0,0,0.1);
-          position: relative;
-          page-break-after: always;
-          break-after: page;
-        }
+  .a4-page {
+  width: 210mm;
+  height: 297mm;
+  background: white;
+  margin: 0 0 20px 0; 
+  padding: 40px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-        .a4-page:last-child {
-          page-break-after: avoid;
-          break-after: avoid;
-          margin-bottom: 0;
-        }
+.a4-page:not(:last-child) {
+  page-break-after: always;
+  break-after: page;
+}
+
+.a4-page:last-child {
+  margin-bottom: 0;
+}
 
         .header {
           display: flex;
@@ -527,9 +535,9 @@ const MandarinInvoiceView = ({ invoiceData }) => {
         }
 
         .footer {
-          position: absolute;
-          bottom: 40px;
-          left: 0;
+        display: flex;
+        justify-content: center;
+        margin-top: auto; 
           width: 100%;
           text-align: center;
           font-size: 9px;
@@ -584,7 +592,7 @@ const MandarinInvoiceView = ({ invoiceData }) => {
                     </td>
                   </tr>
                 )}
-                
+
                 {page.showTotals && (
                   <>
                     {/* Render Payments within the table */}
@@ -597,7 +605,7 @@ const MandarinInvoiceView = ({ invoiceData }) => {
                         <td>({formatCurrency(payment.amount)})</td>
                       </tr>
                     ))}
-                    
+
                     {/* Render standard item totals */}
                     <tr className="total-row">
                       <td>Total</td>

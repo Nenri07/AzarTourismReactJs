@@ -303,23 +303,36 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
        page-break-after: avoid !important;
        page-break-inside: avoid !important;
     }
-
+   
     /* Radisson Exact Styling */
     .logo-section { text-align: center; margin-bottom: 30px;     justify-content: center;     display: flex }
-    .logo-section img { width: 480px; }
+    .logo-section img { width: 500px; }
 
     .header-info { position: relative; height: 35px; font-weight: bold; font-size: 11px; margin-bottom: 15px; }
-    .header-info .date { position: absolute; left: 0; top: 0; }
-    .header-info .facture { position: absolute; left: 50%; transform: translateX(-40%); top: 15px; }
+    .header-info .date { position: absolute; left: 0; top: 0; font-size: 12px; }
+    .header-info .facture { position: absolute; left: 50%; transform: translateX(-40%); top: 15px; font-size: 13px; }
 
     .boxes-container { display: flex; justify-content: space-between; margin-bottom: 46px; }
     
     .box { border: 4px double #000; padding: 15px 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-    .box-left { width: 46%; height: 131px; font-weight: bold; }
-    .box-left .title { font-size: 13px; margin-bottom: 8px; }
-    .box-left .address { font-size: 11px; line-height: 1.4; text-transform: uppercase;}
+    .box-left { width: 46%; height: 131px; font-weight: bold; padding-top: 55px; }
+    .box-left .title { font-size: 13px; margin-bottom: 3px; font-size: 15.5px; line-height: 1}
+    .box-left .address { font-size: 11px; line-height: 1.4; text-transform: uppercase; font-size: 13px;}
     
-    .box-right { width: 46%; height: 131px; font-weight: bold; font-size: 10px; line-height: 1.8; }
+    .box-right {
+    display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+   padding-bottom: 4px;
+    padding-top: 0;
+    padding-left: 1px;
+    width: 46%;
+    min-height: 131px;
+    font-weight: bold;
+    font-size: 13px;
+    padding-right: 0px;
+    }
 
     .table-container { width: 100%; margin-bottom: 10px; }
 .main-table{
@@ -341,14 +354,14 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
     .underline { text-decoration: underline; }
 
     .totals-container { display: flex; justify-content: flex-end; }
-    .main-table{ width: 100%; border: 2px solid  #000; border-collapse: separate; }
+    .main-table{ width: 100%; border: 1px solid  #000; border-collapse: separate; }
     .totals-table { width: 45%; border: 2px solid  #000; border-collapse: separate; }
     .col-tot-label { width: 110px; }
     .col-tot-val { width: 110px; }
-    .totals-table td { border: 2px double #000; padding: 3px 6px; font-weight: bold; font-size: 11px; border-collapse: separate; }
+    .totals-table td { border: 2px double #000; padding: 0.2px 2px 0.2px 6px; font-weight: bold; font-size: 13px; border-collapse: separate; }
 
-    .main-table td { border: 2px double #000; padding: 3px 6px; font-weight: bold; font-size: 11px; border-collapse: separate; }
-.main-table th { border: 2px double #000; padding: 3px 6px; font-weight: bold; font-size: 11px; border-collapse: separate; }
+    .main-table td { border: 1px double #000; padding: 3px 6px; font-weight: bold; font-size: 13px; border-collapse: separate; }
+.main-table th { border: 1px double #000; padding: 3px 6px; font-weight: bold; font-size: 11px; border-collapse: separate; }
 
     .stamp-container { position: absolute; bottom: 120px; left: 55%; transform: translateX(-50%); pointer-events: none; opacity: 0.7; }
 
@@ -398,10 +411,10 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
                 </div>
                 
                 <div className="box box-right">
-                  STC RADISSON BLU<br />
-                  HOTEL & CONVENTION<br />
-                  TUNIS CENTER<br /><br />
-                  MATRICULE FISCAL: {invoice.hotel.matriculeFiscal}
+                  <span>STC RADISSON BLU</span>
+                  <span>HOTEL & CONVENTION</span>
+                  <span>TUNIS CENTER</span>
+                  <span style={{textAlign: "left" , paddingTop: "5px"}}>MATRICULE FISCAL: {invoice.hotel.matriculeFiscal}</span>
                 </div>
               </div>
 
@@ -417,7 +430,7 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
 
     <thead>
       <tr>
-        <th className="text-left" style={{ paddingLeft: '30px' }}>PRESTATION</th>
+        <th className="text-left" style={{ textAlign: "center", fontSize: "13px"}}>PRESTATION</th>
         <th className="text-center">QTE</th>
         <th className="text-center">NB JOURS</th>
         <th className="text-center">PU</th>
@@ -444,8 +457,8 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
 
               <td className="text-center">{item.qty}</td>
               <td className="text-center">{item.days}</td>
-              <td className="text-right">{formatCurrency(invoice.totals.PuAmount)}</td>
-              <td className="text-right">{(invoice.totals.totalroom)}</td>
+              <td className="text-right" style={{paddingRight: "2px"}}>{formatCurrency(invoice.totals.PuAmount)}</td>
+              <td className="text-right" style={{paddingRight: "2px"}}>{(invoice.totals.totalroom)}</td>
             </tr>
           );
         })()

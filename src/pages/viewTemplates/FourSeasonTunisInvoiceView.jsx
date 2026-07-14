@@ -100,6 +100,7 @@ const mapApiDataToInvoice = (data = {}) => {
   const finalBalance = Number(data.grandTotalTnd || 0);
 
   return {
+    referenceNo: data.referenceNo,
     meta: {
       date: formatDate(data.invoiceDate),
     },
@@ -141,8 +142,8 @@ const buildPages = (items = []) => {
   if (items.length === 0) return [{ items: [], isLastPage: true, pageNo: 1, totalPages: 1 }];
 
   const pages = [];
-  const ROWS_PER_PAGE = 17;
-  const SAME_PAGE_TOTALS_LIMIT = 5;
+  const ROWS_PER_PAGE = 29;
+  const SAME_PAGE_TOTALS_LIMIT = 13;
 
   for (let i = 0; i < items.length; i += ROWS_PER_PAGE) {
     const pageItems = items.slice(i, i + ROWS_PER_PAGE);
@@ -273,7 +274,7 @@ const FourSeasonTunisInvoiceView = ({ invoiceData }) => {
 
       const opt = {
         margin:      0,
-        filename:    `FourSeasonTunis_Invoice_${invoice.guest.room || 'Room'}.pdf`,
+        filename:    `${invoice.referenceNo || "invoice"}.pdf`,
         image:       { type: 'jpeg', quality: 1 },
         html2canvas: { scale: 4, useCORS: true, letterRendering: true, scrollY: 0, windowWidth: 794 },
         jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -300,14 +301,14 @@ const FourSeasonTunisInvoiceView = ({ invoiceData }) => {
   if (!invoice) return null;
 
   const styles = `
-    @page { size: A4 portrait; margin: 0; font-family: "Times New Roman", Times, serif !important;
+    @page { size: A4 portrait; margin: 0;font-family: Times New Roman !important;
   }
     * { box-sizing: border-box; }
 
     .invoice-box {
       width: 100%;
-      font-family: "Times New Roman", Times, serif !important;
-      font-size: 14.5px;
+font-family: Times New Roman !important;
+      font-size: 13px;
       color: #000;
       background: #f5f5f5;
       -webkit-print-color-adjust: exact;
@@ -318,7 +319,7 @@ const FourSeasonTunisInvoiceView = ({ invoiceData }) => {
     .inv-page {
       width: 210mm;
       height: 296mm;
-      padding: 8mm 8mm 5mm 8mm;
+      padding: 8mm 8mm 5mm 4mm;
       margin: 20px auto;
       background: #fff;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -403,7 +404,7 @@ const FourSeasonTunisInvoiceView = ({ invoiceData }) => {
   const PageHeader = ({ page }) => (
     <div style={{ position: 'relative', width: '100%', marginBottom: '40px' }}>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '55px' }}>
-        <img src={logo} alt="Four Seasons Tunis Logo" style={{ width: '100px' }} />
+        <img src={logo} alt="Four Seasons Tunis Logo" style={{ width: '115px' }} />
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -411,8 +412,8 @@ const FourSeasonTunisInvoiceView = ({ invoiceData }) => {
         <div style={{ width: '46%', fontSize: '14.5px', lineHeight: '1.4' }}>
           <div style={{ display: 'block', whiteSpace: 'pre-wrap' }}>{invoice.guest.companyName}</div>
           <div style={{ display: 'block', whiteSpace: 'pre-wrap' }}>{invoice.guest.companyAddress}</div>
-          <div style={{ marginTop: '4px', fontFamily: 'times new roman' }}><strong>Invoice No: </strong><span style={{ marginLeft: '10px', fontWeight: 'bold' }}>{invoice.guest.invoiceNo}</span></div>
-          <div style={{ marginTop: '1px', fontFamily: 'times new roman', fontWeight: 'bold' }}>INVOICE</div>
+          <div style={{ marginTop: '4px', fontFamily: 'Times New Roman' }}><strong>Invoice No: </strong><span style={{ marginLeft: '10px', fontWeight: 'bold' }}>{invoice.guest.invoiceNo}</span></div>
+          <div style={{ marginTop: '1px', fontFamily: 'Times New Roman', fontWeight: 'bold' }}>INVOICE</div>
           <div style={{ marginTop: '4px' }}>
             <span style={{ fontStyle: 'italic' }}>Guest Name:</span> 
             <span style={{ marginLeft: '15px', fontStyle: 'italic' }}>{invoice.guest.name}</span>
@@ -500,9 +501,9 @@ const FourSeasonTunisInvoiceView = ({ invoiceData }) => {
                           {/* Total Row */}
                           <tr>
                             <td></td>
-                            <td style={{ textAlign: 'left', fontWeight: 'bold', padding: '8px 0 8px 45px'}}>Total</td>
-                            <td className="right-align" style={{ padding: '8px 0', fontWeight: 'bold', textAlign: 'center' }}>{invoice.totals.totalDebit}</td>
-                            <td className="right-align" style={{ padding: '8px 12px 8px 0', fontWeight: 'bold', textAlign: 'right' }}>{invoice.totals.totalCredit || '0.000'}</td>
+                            <td style={{ textAlign: 'left', fontWeight: 'bold', padding: '8px 0 4px 45px'}}>Total</td>
+                            <td className="right-align" style={{ padding: '4px 0', fontWeight: 'bold', textAlign: 'center' }}>{invoice.totals.totalDebit}</td>
+                            <td className="right-align" style={{ padding: '8px 12px 4px 0', fontWeight: 'bold', textAlign: 'right' }}>{invoice.totals.totalCredit || '0.000'}</td>
                           </tr>
                           {/* Line below Total (Partial width) */}
                           <tr>
@@ -519,22 +520,22 @@ const FourSeasonTunisInvoiceView = ({ invoiceData }) => {
                       </tbody>
                    </table>
  
-                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '60px' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px' }}>
                       {/* Left Side: Tax Breakdown */}
-                      <div style={{ width: '40%' }}>
+                      <div style={{ width: '40%' , paddingTop: "25px", paddingLeft: "15px"}}>
                          <table style={{ width: '85%', borderCollapse: 'collapse', fontSize: '14px', lineHeight: '1.4' }}>
                             <colgroup>
                               <col style={{ width: '55%' }} />
                               <col style={{ width: '45%' }} />
                             </colgroup>
                             <tbody>
-                              <tr><td>Net Amount</td><td style={{textAlign: 'left'}}>{invoice.totals.netAmount}</td></tr>
-                              <tr><td>FDCST 1%</td><td style={{textAlign: 'left'}}>{invoice.totals.fdcst1}</td></tr>
-                              <tr><td>VAT 7%</td><td style={{textAlign: 'left'}}>{invoice.totals.tva7}</td></tr>
-                              <tr><td>Tax Stamp</td><td style={{textAlign: 'left'}}>{invoice.totals.stampDuty}</td></tr>
-                              <tr><td>VAT 19%</td><td style={{textAlign: 'left'}}>{invoice.totals.tva19}</td></tr>
-                              <tr><td>City Tax</td><td style={{textAlign: 'left'}}>{invoice.totals.cityTax}</td></tr>
-                              <tr><td>Gross Amount</td><td style={{textAlign: 'left'}}>{invoice.totals.grossAmount}</td></tr>
+                              <tr><td style={{paddingBottom:"2px"}}>Net Amount</td><td style={{textAlign: 'left', paddingBottom: "2px"}}>{invoice.totals.netAmount}</td></tr>
+                              <tr><td style={{paddingBottom:"2px"}}>FDCST 1%</td><td style={{textAlign: 'left', paddingBottom: "2px"}}>{invoice.totals.fdcst1}</td></tr>
+                              <tr><td style={{paddingBottom:"2px"}}>VAT 7%</td><td style={{textAlign: 'left', paddingBottom: "2px"}}>{invoice.totals.tva7}</td></tr>
+                              <tr><td style={{paddingBottom:"2px"}}>Tax Stamp</td><td style={{textAlign: 'left', paddingBottom: "2px"}}>{invoice.totals.stampDuty}</td></tr>
+                              <tr><td style={{paddingBottom:"2px"}}>VAT 19%</td><td style={{textAlign: 'left', paddingBottom: "2px"}}>{invoice.totals.tva19}</td></tr>
+                              <tr><td style={{paddingBottom:"2px"}}>City Tax</td><td style={{textAlign: 'left', paddingBottom: "2px"}}>{invoice.totals.cityTax}</td></tr>
+                              <tr><td style={{paddingBottom:"2px"}}>Gross Amount</td><td style={{textAlign: 'left', paddingBottom: "2px"}}>{invoice.totals.grossAmount}</td></tr>
                             </tbody>
                          </table>
                       </div>
@@ -550,20 +551,15 @@ const FourSeasonTunisInvoiceView = ({ invoiceData }) => {
                             <tbody>
                               <tr>
                                 <td>Balance TND</td>
-                                <td style={{textAlign: 'right'}}>{invoice.totals.balance} TND</td>
+                                <td style={{textAlign: 'right', width: '40%'}}>{invoice.totals.balance}&nbsp;TND</td>
                               </tr>
                               {invoice.totals.balanceEur && (
                                 <tr>
                                   <td>Balance EUR</td>
-                                  <td style={{textAlign: 'right'}}>{invoice.totals.balanceEur} EUR</td>
+                                  <td style={{textAlign: 'right'}}>{invoice.totals.balanceEur}&nbsp;EUR</td>
                                 </tr>
                               )}
-                              {invoice.totals.balanceUsd && (
-                                <tr>
-                                  <td>Balance USD</td>
-                                  <td style={{textAlign: 'right'}}>{invoice.totals.balanceUsd} USD</td>
-                                </tr>
-                              )}
+                              
                                 <tr>
                                   <td></td>
                                   <td></td>
@@ -573,14 +569,7 @@ const FourSeasonTunisInvoiceView = ({ invoiceData }) => {
                       </div>
                    </div>
  
-                   {/* Bank Details Area */}
-                   <div style={{ marginTop: '40px', lineHeight: '1.3', fontSize: '14px' }}>
-                      Bank Detail:<br/>
-                      Name of the Bank: BIAT<br/>
-                      RIB: 08 003 0005110983222 22<br/>
-                      IBAN: TN59 0800 3000 5110 9832 2222<br/>
-                      SWFIT: BIATTNTT
-                   </div>
+                 
                  </div>
                )}
 

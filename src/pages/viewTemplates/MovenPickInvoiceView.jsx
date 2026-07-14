@@ -6,7 +6,7 @@ import { InvoiceTemplate } from "../../components"; // Adjust path as needed
 
 // Update the path to your actual logo
 
-const logo =  '/Movenpick-Logo.png'; 
+import logo from '/Movenpick-logo.png'; 
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PURE HELPERS  
@@ -81,7 +81,6 @@ const mapApiDataToInvoice = (data = {}) => {
       company: data.companyName || "Azar Company",
       address1: "Algeria Square Building Number 12",
       address2: "First Floor, Tripoli, Libya.",
-      country: "Tunisia",
       room: data.roomNo,
       arrival: formatDate(data.arrivalDate),
       departure: formatDate(data.departureDate),
@@ -113,8 +112,8 @@ const buildPages = (items = []) => {
   if (items.length === 0) return [{ items: [], isLastPage: true, pageNo: 1, totalPages: 1 }];
 
   const pages = [];
-  const MAX_ROWS_NORMAL = 15; 
-  const MAX_ROWS_WITH_TOTALS = 6; 
+  const MAX_ROWS_NORMAL = 20; 
+  const MAX_ROWS_WITH_TOTALS = 15; 
 
   for (let i = 0; i < items.length;) {
     const remaining = items.length - i;
@@ -292,38 +291,52 @@ const MovenpickInvoiceView = ({ invoiceData }) => {
     }
 
     /* Movenpick Specific Styles */
-    .header { margin-bottom: 30px; justify-content: center; display: flex;}
+    .header { margin-bottom: 30px; justify-content: left; display: flex;}
     .logo { width: 250px; margin-bottom: 5px; }
-    .address-section { line-height: 1.4; margin-bottom: 30px; }
+    .address-section { line-height: 1.4; margin-bottom: 45px; }
     .invoice-title { font-size: 16px; font-weight: normal; margin-bottom: 20px; text-transform: uppercase; }
     
     .meta-data { display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .meta-group { width: 45%; }
-    .meta-row { display: flex; margin-bottom: 2px; }
-    .meta-label { width: 120px; }
-    .meta-value { font-weight: bold; }
+    .meta-group { width: 34.5%; }
+    .meta-row { display: flex; }
+    .meta-label { width: 142px; }
+    .meta-labelR{ width: 70px; }
+    .meta-value { }
 
     .line-items { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
     .line-items th {
       border-top: 1px solid #000;
       border-bottom: 1px solid #000;
-      padding: 8px 4px;
+      padding: 0.2px 4px;
       text-align: left;
       font-weight: bold;
     }
-    .line-items td { padding: 8px 4px; vertical-align: top; }
+    .line-items td { padding: 1px 25px 1px 4px; vertical-align: top; }
     .text-right { text-align: right; }
     .total-row { font-weight: bold; border-top: 1px solid #000; border-bottom: 1px solid #000; }
 
     .balance-section { margin-top: 15px; display: flex; justify-content: flex-end; }
-    .balance-box { display: flex; width: 300px; font-weight: bold; }
+    .balance-box { display: flex; width: 395px; font-weight: bold; }
 
-    .tax-summary { margin-top: 40px; float: right; width: 250px; }
-    .tax-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
-    .tax-label { text-align: left; }
-    .tax-value { text-align: right; font-weight: bold; }
+    .tax-summary { margin-top: 8px; float: right; width: 290px; }
+    .tax-row { display: flex; justify-content: flex-end; line-height: 1.3; }
+    .tax-label {
+  flex: 1;
+  text-align: left;
+}
 
-    .currency-info { margin-top: 50px; line-height: 1.5; }
+.tax-container{
+display: flex;
+justify-content: center;
+padding-left: 145px;
+}
+
+.tax-value {
+  width: 105px;         /* fixed width so both value columns sit tight together */
+  text-align: right;
+}
+
+    .currency-info { line-height: 1.5; }
 
     @media print {
       body * { visibility: hidden; }
@@ -361,11 +374,11 @@ const MovenpickInvoiceView = ({ invoiceData }) => {
           <div className="meta-row"><span className="meta-label">Guest Name</span><span className="meta-value">{invoice.guest.name}</span></div>
         </div>
         <div className="meta-group">
-          <div className="meta-row"><span className="meta-label">Date</span><span className="meta-value">{invoice.meta.date}</span></div>
-          <div className="meta-row"><span className="meta-label">Cashier</span><span className="meta-value">{invoice.meta.cashier}</span></div>
-          <div className="meta-row"><span className="meta-label">User ID</span><span className="meta-value">{invoice.meta.userId}</span></div>
-          <div className="meta-row"><span className="meta-label">Page(s)</span><span className="meta-value">{page.pageNo} of {page.totalPages}</span></div>
-          <div className="meta-row"><span className="meta-label">VAT No.</span><span className="meta-value">{invoice.meta.vatNo}</span></div>
+          <div className="meta-row" style={{justifyContent: "flex-start"}}><span className="meta-labelR" style={{textAlign: "left"}}>Date</span><span className="meta-value" style={{textAlign: "right", width: "135px"}}>{invoice.meta.date}</span></div>
+          <div className="meta-row" style={{justifyContent: "flex-start"}}><span className="meta-labelR"  style={{textAlign: "left"}}>Cashier</span><span className="meta-value" style={{textAlign: "right", width: "135px"}}>{invoice.meta.cashier}</span></div>
+          <div className="meta-row" style={{justifyContent: "flex-start"}}><span className="meta-labelR"  style={{textAlign: "left"}}>User ID</span><span className="meta-value" style={{textAlign: "right", width: "135px"}}>{invoice.meta.userId}</span></div>
+          <div className="meta-row" style={{justifyContent: "flex-start"}}><span className="meta-labelR"  style={{textAlign: "left"}}>Page(s)</span><span className="meta-value" style={{textAlign: "right", width: "135px"}}>{page.pageNo} of {page.totalPages}</span></div>
+          <div className="meta-row" style={{justifyContent: "flex-start"}}><span className="meta-labelR"  style={{textAlign: "left"}}>VAT No.</span><span className="meta-value" style={{textAlign: "right", width: "135px"}}>{invoice.meta.vatNo}</span></div>
         </div>
       </div>
     </>
@@ -392,13 +405,13 @@ const MovenpickInvoiceView = ({ invoiceData }) => {
               <table className="line-items">
                 <thead>
                   <tr>
-                    <th width="15%">Date</th>
-                    <th width="35%">Description</th>
+                    <th width="10%">Date</th>
+                    <th width="31%">Description</th>
                     <th width="10%">Qty.</th>
-                    <th width="10%" className="text-right">Debit TND</th>
-                    <th width="10%" className="text-right">Credit TND</th>
-                    <th width="10%" className="text-right">Debit TND</th>
-                    <th width="10%" className="text-right">Credit TND</th>
+                    <th width="12%" className="text-right">Debit TND</th>
+                    <th width="12%" className="text-right">Credit TND</th>
+                    <th width="12%" className="text-right">Debit TND</th>
+                    <th width="12%" className="text-right">Credit TND</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -431,41 +444,53 @@ const MovenpickInvoiceView = ({ invoiceData }) => {
                 <>
                   <div className="balance-section">
                     <div className="balance-box">
-                      <div style={{ flex: 1 }}>Balance</div>
-                      <div style={{ flex: 1 }} className="text-right">{invoice.totals.balance}</div>
-                      <div style={{ flex: 1 }} className="text-right">TND</div>
+                      <div style={{ flex: 0 }}>Balance</div>
+                      <div style={{ flex: 1 , paddingRight: "150px"}} className="text-right">{invoice.totals.balance}&nbsp; TND</div>
+                      <div style={{ flex: 1 }} className="text-right"></div>
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right', marginTop: '20px', fontStyle: 'italic' }}>
+                  <div style={{ textAlign: 'right', marginTop: '10px', fontStyle: 'italic', paddingRight: "45px"}}>
                     1 TND = 1 TND
                   </div>
-
+                  <div className='tax-container'>
                   <div className="tax-summary">
                     <div className="tax-row">
-                      <span className="tax-label">NET Taxable</span>
-                      <span className="tax-value">{invoice.totals.netAmount}</span>
+                      <span className="tax-label" style={{fontWeight: "bold"}}>NET Taxable</span>
+                      <span className="tax-value" style={{fontWeight: "bold"}}>{invoice.totals.netAmount} TND</span>
+                      <span className="tax-value" style={{fontWeight: "bold"}}>{invoice.totals.netAmount} TND</span>
                     </div>
                     <div className="tax-row">
                       <span className="tax-label">FDCST 1%</span>
                       <span className="tax-value">{invoice.totals.fdcst1}</span>
+                                            <span className="tax-value">{invoice.totals.fdcst1}</span>
+
                     </div>
                     <div className="tax-row">
                       <span className="tax-label">VAT 7%</span>
                       <span className="tax-value">{invoice.totals.tva7}</span>
+                                            <span className="tax-value">{invoice.totals.tva7}</span>
+
                     </div>
                     <div className="tax-row">
                       <span className="tax-label">City Tax</span>
                       <span className="tax-value">{invoice.totals.cityTax}</span>
+                                            <span className="tax-value">{invoice.totals.cityTax}</span>
+
                     </div>
                     <div className="tax-row">
                       <span className="tax-label">Stamp Fees</span>
                       <span className="tax-value">{invoice.totals.stampDuty}</span>
+                                            <span className="tax-value">{invoice.totals.stampDuty}</span>
+
                     </div>
-                    <div className="tax-row" style={{ borderTop: '1px solid #000', paddingTop: '2px' }}>
-                      <span className="tax-label">Total Gross</span>
-                      <span className="tax-value">{invoice.totals.totalGross}</span>
+                    <div className="tax-row">
+                      <span className="tax-label" style={{fontWeight: "bold"}}>Total Gross</span>
+                      <span className="tax-value" style={{fontWeight: "bold"}}>{invoice.totals.totalGross}</span>
+                                            <span className="tax-value" style={{fontWeight: "bold"}}>{invoice.totals.totalGross}</span>
+
                     </div>
+                  </div>
                   </div>
 
                   <div className="currency-info">

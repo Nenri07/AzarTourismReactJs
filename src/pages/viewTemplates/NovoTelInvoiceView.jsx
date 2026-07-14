@@ -107,19 +107,19 @@ export default function NovotelInvoiceView({ invoiceData }) {
         const finalBalance = Number((data.grandTotalTnd || 0) + (data.cityTaxTotal || 0) + (data.stampTaxTotal || 0));
 
         const invoiceData = {
-            guestName: data.guestName,
-            persons: `Adults: ${data.adults} / Child: ${data.children}`,
-            roomNo: data.roomNo,
-            referenceNo: data.invoiceNo,
+            guestName: data.guestName || "",
+            persons: data.adults||data.children ? `Adults: ${data.adults} / Child: ${data.children}` : "",
+            roomNo: data.roomNo||"",
+            referenceNo: data.invoiceNo||"",
             arrival: formatDate(data.arrivalDate),
             departure: formatDate(data.departureDate),
             issueDate: formatDate(data.invoiceDate || data.created_at),
             companyName: data.companyName || "AZAR TOURISM SERVICES",
             companyAddress: data.companyAddress || "Algeria Square Building Tripoli Libyan",
-            accountNo: data.accountNo,
-            vatNo: data.vatNo,
-            invoiceNo: data.invoiceNo,
-            cashier: data.cashier,
+            accountNo: data.accountNo||"",
+            vatNo: data.vatNo||"",
+            invoiceNo: data.invoiceNo||"",
+            cashier: data.cashier||"",
             currency: "TND",
             exchangeRate: 2.85,
             lines: lines,
@@ -310,6 +310,16 @@ export default function NovotelInvoiceView({ invoiceData }) {
           page-break-after: avoid;
         }
 
+        /* Novotel logo styling - keeps the height at 64px but forces squeezed width */
+        .novotel-logo-squeezed {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          height: 64px !important;
+          width: 145px !important;  /* Controls how narrow it gets. Adjust this lower if you want it even more squeezed */
+          object-fit: fill !important; /* Forces physical image squeeze without cropping */
+        }
+
         .stamp-logo {
           position: absolute;
           right: 15px;
@@ -323,13 +333,14 @@ export default function NovotelInvoiceView({ invoiceData }) {
         .flex { display: flex; }
         .justify-between { justify-content: space-between; }
         .flex-col { flex-direction: column; }
-        .text-right { text-align: right; }
+        .text-right { text-align: right;     padding-right: 11px; }
+        .text-left p-1 {text-align: left;   vertical-align: top; }
         .text-center { text-align: center; }
         .w-full { width: 100%; }
-        .mb-4 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 2rem; }
         .mt-6 { margin-top: 1.5rem; }
         .border-b { border-bottom: 1px solid #000; }
-        .pb-1 { padding-bottom: 0.25rem; }
+        .pb-1 { padding-bottom: 0rem; }
         .mb-1 { margin-bottom: 0.25rem; }
         .mb-3 { margin-bottom: 0.75rem; }
 
@@ -355,20 +366,19 @@ export default function NovotelInvoiceView({ invoiceData }) {
             <div ref={invoiceRef}>
                 {paginatedData.map((pageData, pageIdx) => (
                     <div key={pageIdx} className="invoice-page shadow-lg print:shadow-none mb-4">
-                        {/* Logo */}
+                        {/* Squeezed Logo Container */}
                         <div className="text-center mb-4">
                             <img
                                 src={LOGO_URL}
-                                width="220"
                                 alt="Novotel"
-                                className="mx-auto mt-1.5 mb-1.5 h-15.5"
+                                className="novotel-logo-squeezed mt-1.5 mb-1.5"
                             />
                         </div>
 
                         {/* Header - Two columns */}
                         <div
                             className="grid-2 mb-4"
-                            style={{ fontSize: "11px", lineHeight: "1.4" }}
+                            style={{ fontSize: "12px", lineHeight: "1.4" }}
                         >
                             <div>
                                 <div>Name : {invoice.guestName}</div>
@@ -406,10 +416,10 @@ export default function NovotelInvoiceView({ invoiceData }) {
                                         borderBottom: "1px solid #000",
                                     }}
                                 >
-                                    <th className="text-left p-1" style={{ width: "15%" }}>
+                                    <th className="text-left p-1" style={{ width: "11%"  ,  verticalAlign: "top" ,  textAlign: "left", }}>
                                         Date
                                     </th>
-                                    <th className="text-left p-1" style={{ width: "55%" }}>
+                                    <th className="text-left p-1" style={{ width: "55%" , verticalAlign: "top" , textAlign: "left",}}>
                                         Description
                                     </th>
                                     <th className="text-right p-1" style={{ width: "15%" }}>
@@ -417,7 +427,7 @@ export default function NovotelInvoiceView({ invoiceData }) {
                                         <br />
                                         {invoice.currency}
                                     </th>
-                                    <th className="text-right p-1" style={{ width: "15%" }}>
+                                    <th className="text-right p-1" style={{ width: "12%" }}>
                                         Credits
                                         <br />
                                         {invoice.currency}
@@ -428,12 +438,12 @@ export default function NovotelInvoiceView({ invoiceData }) {
                                 {pageData.lines.length > 0 ? (
                                     pageData.lines.map((line, i) => (
                                         <tr key={i}>
-                                            <td className="p-1" style={{lineHeight: '1.8'}}>{line.date}</td>
-                                            <td className="p-1" style={{lineHeight: '1.8'}}>{line.description}</td>
-                                            <td className="text-right p-1" style={{lineHeight: '1.8'}}>
+                                            <td className="p-0" style={{lineHeight: '1.8'}}>{line.date}</td>
+                                            <td className="p-0" style={{lineHeight: '1.8'}}>{line.description}</td>
+                                            <td className="text-right p-0" style={{lineHeight: '1.8'}}>
                                                 {Number(line.debit).toFixed(3)}
                                             </td>
-                                            <td className="text-right p-1" style={{lineHeight: '1.8'}}>
+                                            <td className="text-right p-0" style={{lineHeight: '1.8'}}>
                                                 {Number(line.credit).toFixed(3)}
                                             </td>
                                         </tr>
@@ -451,7 +461,7 @@ export default function NovotelInvoiceView({ invoiceData }) {
                         {/* Footer - Only on last page */}
                         {pageData.isLastPage && (
                             <div className="mt-6" style={{ fontSize: "10px" }}>
-                                <div style={{ borderTop: "1px solid #000", paddingTop: "8px" }}>
+                                <div style={{ borderTop: "1px solid #000", paddingTop: "2px" }}>
                                     <div className="grid-2">
                                         {/* Left - USD */}
                                         <div
@@ -482,27 +492,28 @@ export default function NovotelInvoiceView({ invoiceData }) {
                                         {/* Right - Totals and taxes */}
                                         <div>
                                             <div className="flex justify-between border-b border-black pb-1 mb-1">
-                                                <span style={{ marginLeft: "auto", marginRight: "80px" }}>
+                                                <span style={{ marginLeft: "auto", marginRight: "170px" , fontSize:"12px"}}>
                                                     Total
                                                 </span>
                                                 <span className="text-right" style={{ width: "80px" }}>
                                                     {totalDebit.toFixed(3)}
                                                 </span>
-                                                <span className="text-right" style={{ width: "80px" }}>
+                                                <span className="text-right" style={{ width: "103px" }}>
                                                     {totalCredit.toFixed(3)}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between mb-3">
-                                                <span style={{ marginLeft: "auto", marginRight: "80px" }}>
+                                                <span style={{ marginLeft: "auto" ,fontSize: "12px", paddingRight: "15px"}}>
                                                     Balance
                                                 </span>
-                                                <span className="text-center" style={{ width: "160px" }}>
+                                                <span className="text-center" style={{ width: "330px" ,fontSize: "12px" ,textAlign:"left",paddingLeft:"50px"}}>
                                                     {totalDebit.toFixed(3)} {invoice.currency}
                                                 </span>
                                             </div>
 
-                                            <div className="text-right" style={{ lineHeight: "1.6" }}>
-                                                <div className="flex justify-between">
+                                            <div className="text-right"   style={{ lineHeight: "1.4",     width: "240px",      marginLeft: "auto" , alignContent:""}}>
+
+                                                <div className="flex justify-between" style={{textAlign:"left"}}>
                                                     <span>Net Taxable</span>
                                                     <span>
                                                         {Number(invoice.netTaxable || 0).toFixed(3)}{" "}
@@ -575,6 +586,3 @@ export default function NovotelInvoiceView({ invoiceData }) {
         </InvoiceTemplate>
     );
 }
-
-
-

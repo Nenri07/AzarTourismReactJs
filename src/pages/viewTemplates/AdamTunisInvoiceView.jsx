@@ -132,6 +132,7 @@ const mapApiDataToInvoice = (data = {}) => {
   const finalBalance = Number((data.grandTotalTnd || 0) + (data.cityTaxTotal || 0) + (data.stampTaxTotal || 0));
 
   return {
+    referenceNo: data.refferenceNo,
     meta: {
       date: formatDate(data.invoiceDate),
     },
@@ -296,7 +297,7 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
 
       const opt = {
         margin:      0,
-        filename:    `ADAM_Invoice_${invoice.guest.room || 'Room'}.pdf`,
+        filename:    `${invoice.referenceNo || 'invoice'}.pdf`,
         image:       { type: 'jpeg', quality: 1 },
         html2canvas: { scale: 4, useCORS: true, letterRendering: true, scrollY: 0, windowWidth: 794 },
         jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -419,7 +420,7 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
         </div>
         
         {/* Right Side */}
-        <div style={{ width: '48%', fontSize: '13.5px', marginTop: '8px'}}>
+        <div style={{ width: '51%', fontSize: '14px', marginTop: '8px'}}>
           <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <colgroup>
                <col style={{ width: '27%' }} />
@@ -475,7 +476,7 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th style={{paddingLeft: '15px'}}>Description</th>
+                    <th style={{paddingLeft: '25px'}}>Description</th>
                     <th className="right-align">Débit TND</th>
                     <th className="right-align">Crédit TND</th>
                   </tr>
@@ -485,7 +486,7 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
                     <React.Fragment key={index}>
                       <tr>
                         <td>{txn.date}</td>
-                        <td>{txn.desc}</td>
+                        <td style={{ paddingLeft: '10px' }}>{txn.desc}</td>
                         <td className="right-align">{formatCurrency(txn.debit)}</td>
                         <td className="right-align"></td>
                       </tr>
@@ -516,29 +517,22 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
                       </tr>
                       <tr style={{ fontWeight: 'normal',  }}>
                         <td></td>
-                        <td style={{ padding: '4px 0',  borderBottom: '2px solid #000' }}>Total</td>
-                        <td className="right-align" style={{ padding: '4px 0',  borderBottom: '2px solid #000'  }}>{invoice.totals.totalDebit}</td>
-                        <td className="right-align" style={{ padding: '4px 0',  borderBottom: '2px solid #000'  }}>{invoice.totals.totalCredit}</td>
+                        <td style={{ padding: '2px 0 11px 0',  borderBottom: '2px solid #000' }}>Total</td>
+                        <td className="right-align" style={{ padding: '4px 0 11px 0',  borderBottom: '2px solid #000'  }}>{invoice.totals.totalDebit}</td>
+                        <td className="right-align" style={{ padding: '4px 0 11px 0',  borderBottom: '2px solid #000'  }}>{invoice.totals.totalCredit}</td>
                       </tr>
                       {/* <tr>
                         <td colSpan="4" style={{ borderTop: '1.5px solid #000' }}></td>
                       </tr> */}
                     <tr>
                       {/* Left: Bank Details */}
-                      <td rowSpan="2" style={{ verticalAlign: 'top', paddingRight: '10px' }}>
-                        <div style={{ lineHeight: '1.2', fontFamily: 'times new roman' }}>
-                          <span style={{ fontWeight: 'bold', borderBottom: '1.2px solid #000', display: 'inline-block' }}>Détails Bancaire:</span><br />
-                          AMEN BANK<br />
-                          Agence Mohamed V (Tunis)<br />
-                          <span style={{ fontWeight: 'bold', borderBottom: '1.2px solid #000', display: 'inline-block', marginTop: '2px' }}>Compte en dinars :</span><br />
-                          RIB : 07 807 0081 101 115447 15
-                        </div>
-                      </td>
+                      {/* Bank Details removed — cell kept empty to preserve column width/position */}
+  <td rowSpan="2" style={{ verticalAlign: 'top', paddingRight: '10px' }}></td>
 
-                      {/* Right: Balance row */}
-                      <td style={{ padding: '4px 0' }}>Balance en TND :</td>
-                      <td className="right-align" style={{ padding: '4px 0' }}>{invoice.totals.balance}</td>
-                      <td></td>
+  {/* Right: Balance row */}
+  <td style={{ padding: '4px 0 8px 0' }}>Balance en TND :</td>
+  <td className="right-align" style={{ padding: '4px 0' }}>{invoice.totals.balance}</td>
+  <td></td>
                     </tr>
                     <tr>
                       {/* Right: Thick bar and breakdown */}
@@ -575,7 +569,6 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
                   ADAM Hotel Suites<br />
                   Cité les Pins- Les Berges du Lac 2, 1053 Tunis - Tunisia<br />
                   T: +216 36 049 000 F: +216 36 048 000<br />
-                  Email : Info@adamhotelsuites.com
                 </div>
               )}
 

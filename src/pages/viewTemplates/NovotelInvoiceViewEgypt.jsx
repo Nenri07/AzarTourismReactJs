@@ -633,7 +633,7 @@ const NovotelInvoiceViewEgypt = ({ invoiceData }) => {
   const [paginatedData, setPaginatedData] = useState([]);
   const invoiceRef = useRef(null);
 
-  const ROWS_PER_PAGE = 15;
+  const ROWS_PER_PAGE = 18;
   const isPdfDownload = location.pathname.includes("/download-pdf");
 
   useEffect(() => {
@@ -999,7 +999,7 @@ const NovotelInvoiceViewEgypt = ({ invoiceData }) => {
           }
           
           .invoice-table tbody td {
-              padding: 6px 6px;
+              padding: 8px 6px;
               border: none;
               font-size: 12px;
               vertical-align: top;
@@ -1028,7 +1028,7 @@ const NovotelInvoiceViewEgypt = ({ invoiceData }) => {
               padding-right: 188px;
           }
           .totals-table {
-              width: 290px;
+              width: 305px;
               border-collapse: collapse;
               font-weight: bold;
               font-size: 12px;
@@ -1178,7 +1178,7 @@ const NovotelInvoiceViewEgypt = ({ invoiceData }) => {
               <thead>
                 <tr>
                   <th style={{ width: '12%' , verticalAlign: "top"}}>Date</th>
-                  <th style={{ width: '42%' , verticalAlign: "top"}}>Description</th>
+                  <th style={{ width: '34%' , verticalAlign: "top"}}>Description</th>
                   <th className="right-align" style={{ width: '11.5%' }}>Charges<br /><span style={{color : "white" ,fontWeight : "300"}}>EGP</span></th>
                   <th className="right-align" style={{ width: '11.5%' }}>Credits<br /><span style={{color : "white" ,fontWeight : "300"}}>EGP</span></th>
                   <th className="right-align" style={{ width: '11.5%' }}>Charges<br /><span style={{color : "white" ,fontWeight : "300"}}>USD</span></th>
@@ -1259,7 +1259,7 @@ const NovotelInvoiceViewEgypt = ({ invoiceData }) => {
               </div>
             )}
             
-            <div className={page.showTotals ? "footer-logo-inline" : "footer-logo-fixed"}>
+            <div className="footer-logo-fixed">
               <img src={footerLogo} alt="Novotel Signature" />
             </div>
 

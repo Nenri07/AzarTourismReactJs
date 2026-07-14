@@ -52,7 +52,7 @@ import MovenpickInvoiceView from "./MovenPickInvoiceView";
 import LeCorailInvoiceView from "./LeCorailInvoiceView";
 import SheratonInvoiceView from "./SheratonInvoiceView";
 import NovotelInvoiceViewEgypt from "./NovotelInvoiceViewEgypt";
-
+import HiltonMetropolaneInvoiceView from "./HiltonMetropolaneInvoiceView";
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
@@ -137,12 +137,15 @@ export default function DynamicInvoiceViewPage() {
       
       let detectedType = "GrandAras"; // Default fallback
       
-      if (hotelName.includes("hilton") && hotelName.includes("park lane")) {
+      if (hotelName.includes("london hilton") && hotelName.includes("park lane")) {
         detectedType = "HiltonParkLane";
       }
 
         else if (hotelName.includes("radisson blu hotel & convention center tunis")) {
         detectedType = "Radisson_Tunis";
+      }
+        else if (hotelName.includes("hilton london metropole")) {
+        detectedType = "HiltonMetropolane";
       }
         else if (hotelName.includes("sheraton tunis hotel")) {
         detectedType = "Sheraton_Tunis";
@@ -473,6 +476,9 @@ else if(hotelType=="Raffles"){
 }
 else if(hotelType=="NovotelCairo"){
  return <NovotelInvoiceViewEgypt invoiceData={invoice} />
+}
+else if(hotelType=="HiltonMetropolane"){
+ return <HiltonMetropolaneInvoiceView invoiceData={invoice} />
 }
   else {
     // Default fallback

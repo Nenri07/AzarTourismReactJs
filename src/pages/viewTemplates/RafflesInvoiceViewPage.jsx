@@ -829,7 +829,7 @@ const handleDownloadPDF = async () => {
 
                   <div className="balance-line">
                     <span className="balance-label">Balance/Toplam &nbsp;:</span>
-                    <span className="balance-value">0.00</span>
+                    <span className="balance-value">0.00 TRL</span>
                   </div>
 
                 </div>
@@ -838,15 +838,13 @@ const handleDownloadPDF = async () => {
                   <div className="footer-row">
                     EUR Toplam / Total in EUR &nbsp;{invoice.totalInEUR}
                   </div>
-                  <div className="footer-row">
-                    {invoice.writtenTotalText}
+                  <div className="exchange-rate-row">
+                    Room Check-in Exch. Rate ( EUR ) : &nbsp;&nbsp;{invoice.exchangeRate}
                   </div>
 
                   <div className="footer-spacer"></div>
 
-                  <div className="exchange-rate-row">
-                    Room Check-in Exch. Rate ( EUR ) : &nbsp;&nbsp;{invoice.exchangeRate}
-                  </div>
+                 
                 </div>
               </>
             )}

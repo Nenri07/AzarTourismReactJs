@@ -51,7 +51,7 @@ const mapApiDataToInvoice = (data = {}) => {
   const svcRows = (data.otherServices || []).map((svc) => ({
     rawDate: svc.date,
     date: formatDate(svc.date),
-    text: svc.text || svc.name || "",
+    text: svc.text?.toUpperCase() || svc.name || "",
     chgExclVat: formatCurrency(svc.charges_excl_vat),
     vat: formatCurrency(svc.vat_amount),
     chgGbp: formatCurrency(svc.charges_gbp),
@@ -65,10 +65,10 @@ const mapApiDataToInvoice = (data = {}) => {
   const balance = 0.00;
 
   const vatSummary = {
-    exclVat: "1,209.93",
+    exclVat: formatCurrency(data.taxableAmountExclVat||0),
     vatPercent: "VAT 20%",
-    vatAmount: "241.99",
-    inclVat: "1,451.91",
+    vatAmount: formatCurrency(data.vatAt20Percent||0),
+    inclVat: formatCurrency(data.totalAmountPayable||0),
   };
 
   const detailedTransactions = {
@@ -85,16 +85,17 @@ const mapApiDataToInvoice = (data = {}) => {
   };
 
   return {
-    guestName:     data.guestName     || "Alhade, Alhadad",
-    companyName:   data.companyName   || "AGODA COMPANY PTE LTD",
-    roomNo:        data.roomNo        || "0621",
-    arrivalDate:   formatDate(data.arrivalDate    || "2026-01-31"),
-    departureDate: formatDate(data.departureDate  || "2026-02-07"),
-    resNo:         data.reservationNo || data.confNo || "281765081",
+    guestName:     data.guestName     || "",
+    companyName:   data.companyName   || "",
+    accountNumber: data.accountNumber || "",
+    roomNo:        data.roomNo        || "",
+    arrivalDate:   formatDate(data.arrivalDate    || ""),
+    departureDate: formatDate(data.departureDate  || ""),
+    resNo:         data.reservationNo || data.confNo || "",
     invoiceNo:     data.invoiceNo     || "",
-    folioNo:       data.folioNo       || "537461",
-    invoiceDate:   formatDate(data.invoiceDate || data.taxDate || "2026-02-07"),
-    referenceNo:   data.referenceNo   || "PPWA00224",
+    folioNo:       data.folioNo       || "",
+    invoiceDate:   formatDate(data.invoiceDate || data.taxDate || ""),
+    referenceNo:   data.referenceNo   || "",
     currency:      data.currency      || "GBP",
     items,
     totals: {
@@ -203,7 +204,7 @@ const ParkPlazaInvoiceView = ({ invoiceData }) => {
         pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
       }
 
-      pdf.save(`Park_Plaza_Invoice_${invoice.folioNo || invoice.invoiceNo || 'Invoice'}.pdf`);
+      pdf.save(`${invoice.referenceNo || invoice.invoiceNo || 'Invoice'}.pdf`);
       toast.success("PDF Downloaded Successfully");
     } catch (err) {
       console.error("PDF Error:", err);
@@ -238,10 +239,18 @@ const ParkPlazaInvoiceView = ({ invoiceData }) => {
             background: #e0e0e0;
             gap: 20px;
           }
-          @media print {
-            .park-plaza-wrapper { background: #fff !important; padding: 0 !important; gap: 0 !important; }
-            .no-print { display: none !important; }
-          }
+         @media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  .park-plaza-wrapper { background: #fff !important; padding: 0 !important; gap: 0 !important; }
+  .no-print { display: none !important; }
+  .invoice-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+}
 
           .invoice-page {
             width: 850px;
@@ -376,7 +385,7 @@ const ParkPlazaInvoiceView = ({ invoiceData }) => {
                   </div>
 
                   <div className="account-no">
-                    {invoice.referenceNo && <>Account No.: {invoice.referenceNo}</>}
+                    {invoice.accountNumber && <>Account No.: {invoice.accountNumber}</>}
                   </div>
                 </div>
 

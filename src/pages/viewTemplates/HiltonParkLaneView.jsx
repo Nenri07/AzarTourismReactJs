@@ -94,7 +94,7 @@ const HiltonParkLaneView = ({ invoiceData }) => {
         items.push({
             date: formatDate(svc.date),
             rawDate: new Date(svc.date),
-            text: svc.name || svc.text || svc.description || svc.service_name || "Service",
+            text: (svc.name || svc.text || svc.description || svc.service_name).toUpperCase() || "Service",
             id: svc.id || svc.ref_id || data.servicesRefId || "",
             refNo: svc.refNo || svc.ref_no || "",
             chargesGBP: svc.amount || svc.chargesGbp || svc.guest_charges || svc.total || svc.debit ? formatCurrency(svc.amount || svc.chargesGbp || svc.guest_charges || svc.total || svc.debit) : "",
@@ -112,12 +112,17 @@ const HiltonParkLaneView = ({ invoiceData }) => {
     });
 
     return {
+      referenceNo: data.referenceNo || data.reference_no || "",
       guestName: data.guestName || data.guest_name || "",
       companyNames: "Azar Tourism Services",
       companyAddress: "P.O.BOX Number: 1254\nAlgeria Square\nBuilding Number 12 First Floor\nTripoli\nLibya",
       roomNo: data.roomNo || data.room_number || "",
+      arrivalTime: data.arrivalTime || "",
+
       arrivalDate: data.arrivalDate || data.arrival_date || "",
       departureDate: data.departureDate || data.departure_date || "",
+            departureTime: data.departureTime || "",
+
       adultChild: data.adultChild || (data.adults !== undefined ? `${data.adults}/${data.children || 0}` : ""),
       roomRate: data.roomRate || (data.gbpAmount ? formatCurrency(data.gbpAmount) : ""),
       ratePlan: data.ratePlan || data.rate_plan || "",
@@ -127,12 +132,14 @@ const HiltonParkLaneView = ({ invoiceData }) => {
       vatNo: data.vatNo || data.vat_no || "",
       folioNo: data.folioNo || data.folio_no || "",
       invoiceDate: data.invoiceDate || data.tax_date || new Date(),
+            invoiceTime: data.invoiceTime || "",
+
       
       items,
       formattedInvoiceDate: formatDate(data.invoiceDate || data.tax_date || new Date()),
-      formattedArrivalDate: formatDateWithTime(data.arrivalDate || data.arrival_date),
-      formattedDepartureDate: formatDateWithTime(data.departureDate || data.departure_date),
-      
+      formattedArrivalDate: formatDateWithTime(data.arrivalDate || data.arrival_date, data.arrivalTime || ""),
+      formattedDepartureDate: formatDateWithTime(data.departureDate || data.departure_date, data.departureTime || ""),
+      formattedInvoiceDate: formatDateWithTime(data.invoiceDate, data.invoiceTime || ""),
       totalAmountPayable: data.totalAmountPayable || data.grand_total_gbp || data.grandTotalGbp || data.grandTotal || 0,
       taxableAmountExclVat: data.taxableAmountExclVat || data.total_net_excl_vat || calcVAT(data.totalAmountPayable || data.grand_total_gbp || data.grandTotalGbp || data.grandTotal || 0).net,
       vatAt20Percent: data.vatAt20Percent || data.total_vat_20 || calcVAT(data.totalAmountPayable || data.grand_total_gbp || data.grandTotalGbp || data.grandTotal || 0).vat,
@@ -154,18 +161,17 @@ const HiltonParkLaneView = ({ invoiceData }) => {
     } catch { return dateString; }
   };
 
-  const formatDateWithTime = (dateString) => {
+  const formatDateWithTime = (dateString,timeString) => {
     if (!dateString) return "";
     try {
         const d = new Date(dateString);
         if (isNaN(d.getTime())) return dateString;
         const dd = String(d.getDate()).padStart(2, '0');
         const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const yy = String(d.getFullYear());
-        const hh = String(d.getHours()).padStart(2, '0');
-        const min = String(d.getMinutes()).padStart(2, '0');
+                const yy = String(d.getFullYear());   // <-- this was missing
+
         const ss = String(d.getSeconds()).padStart(2, '0');
-        return `${dd}/${mm}/${yy}\u00A0\u00A0${hh}:${min}:${ss}`;
+        return `${dd}/${mm}/${yy}\u00A0\u00A0${timeString}:${ss}`;
     } catch { return dateString; }
   };
 
@@ -235,7 +241,7 @@ const HiltonParkLaneView = ({ invoiceData }) => {
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `Hilton_Invoice_${invoice.confNo || 'Invoice'}.pdf`,
+        filename: `${invoice.referenceNo || 'Invoice'}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { 
             scale: 4, 
@@ -481,7 +487,7 @@ const HiltonParkLaneView = ({ invoiceData }) => {
 
                 {/* Row 4: LONDON HILTON... */}
                 <div style={{ marginTop: '10px', marginBottom: '6px' }}>
-                    LONDON HILTON ON PARK LANE {invoice.formattedInvoiceDate} 12:43:46
+                    LONDON HILTON ON PARK LANE {invoice.formattedInvoiceDate} 
                 </div>
 
             </div>

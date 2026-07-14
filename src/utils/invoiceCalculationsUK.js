@@ -21,12 +21,14 @@ export const UK_HOTEL_CONFIGS = {
     columns: ['DATE', 'DESCRIPTION', 'ID', 'REF NO', 'GUEST CHARGES', 'CREDIT', 'BALANCE'],
     showVatBreakdownInRows: false, // Shows gross in table, VAT summary at bottom
     defaultRoomDescription: 'ROOM & BREAKFAST',
-    buildRows: ({ date, description, grossAmount, refId, refNo, credit }) => [
+    buildRows: ({ date, description, grossAmount, refId, refNo, credit , netAmount, vatAmount }) => [
       {
         date,
         description,
         id: refId,
         ref_no: refNo,
+         net: credit ? null : parseNum(netAmount),
+        vat_amount: credit ? null : parseNum(vatAmount),
         guest_charges: credit ? null : parseNum(grossAmount),
         credit: credit ? parseNum(credit) : null,
         balance: null,
@@ -40,12 +42,14 @@ export const UK_HOTEL_CONFIGS = {
     columns: ['DATE', 'DESCRIPTION', 'ID', 'REF NO', 'GUEST CHARGES', 'CREDIT', 'BALANCE'],
     showVatBreakdownInRows: false,
     defaultRoomDescription: 'ROOM & BREAKFAST',
-    buildRows: ({ date, description, grossAmount, refId, refNo, credit }) => [
+    buildRows: ({ date, description, grossAmount, refId, refNo, credit, netAmount, vatAmount }) => [
       {
         date,
         description,
         id: refId,
         ref_no: refNo,
+        net: credit ? null : parseNum(netAmount),
+        vat_amount: credit ? null : parseNum(vatAmount),
         guest_charges: credit ? null : parseNum(grossAmount),
         credit: credit ? parseNum(credit) : null,
         balance: null,
@@ -58,13 +62,16 @@ export const UK_HOTEL_CONFIGS = {
     detect: (name) => name.toLowerCase().includes('four seasons'),
     columns: ['Date', 'Description', 'Reference', 'Debit £', 'Credit £'],
     showVatBreakdownInRows: false,
-    buildRows: ({ date, description, grossAmount, refNo, credit }) => [
+    buildRows: ({ date, description, grossAmount, refNo, credit,netAmount, vatAmount  }) => [
       {
         date,
         description,
         reference: refNo || '',
         debit: credit ? null : parseNum(grossAmount),
         credit: credit ? parseNum(credit) : null,
+          net: credit ? null : parseNum(netAmount),
+        vat_amount: credit ? null : parseNum(vatAmount),
+        guest_charges: credit ? null : parseNum(grossAmount),
       },
     ],
   },
@@ -80,6 +87,9 @@ export const UK_HOTEL_CONFIGS = {
         text: description,
         charges_excl_vat: credit ? null : parseNum(netAmount),
         vat_amount: credit ? null : parseNum(vatAmount),
+         net: credit ? null : parseNum(netAmount),
+        vat_amount: credit ? null : parseNum(vatAmount),
+        guest_charges: credit ? null : parseNum(grossAmount),
         charges_gbp: credit ? null : parseNum(grossAmount),
         credits_gbp: credit ? parseNum(credit) : null,
       },
@@ -91,12 +101,15 @@ export const UK_HOTEL_CONFIGS = {
     detect: (name) => name.toLowerCase().includes('marriott'),
     columns: ['Date', 'Text', 'Charges GBP', 'Credits GBP'],
     showVatBreakdownInRows: false,
-    buildRows: ({ date, description, grossAmount, credit }) => [
+    buildRows: ({ date, description, grossAmount, credit, netAmount, vatAmount }) => [
       {
         date,
         text: description,
         charges_gbp: credit ? null : parseNum(grossAmount),
         credits_gbp: credit ? parseNum(credit) : null,
+          net: credit ? null : parseNum(netAmount),
+        vat_amount: credit ? null : parseNum(vatAmount),
+        total: credit ? `(${parseNum(Math.abs(credit)).toFixed(2)})` : parseNum(grossAmount),
       },
     ],
   },
@@ -106,6 +119,7 @@ export const UK_HOTEL_CONFIGS = {
     detect: (name) => name.toLowerCase().includes('mandarin'),
     columns: ['Date', 'Description', 'Net', 'VAT Amount', 'Total'],
     showVatBreakdownInRows: true,
+    defaultRoomDescription: 'Package Accommodation',
     buildRows: ({ date, description, grossAmount, netAmount, vatAmount, credit }) => [
       {
         date,
@@ -124,13 +138,17 @@ export const UK_HOTEL_CONFIGS = {
     columns: ['DATE', 'DESCRIPTION', 'REFERENCE', 'DEBIT', 'CREDIT'],
     showVatBreakdownInRows: false,
     defaultRoomDescription: 'Accommodation',
-    buildRows: ({ date, description, grossAmount, reference, credit }) => [
+    buildRows: ({ date, description, grossAmount, reference, credit, netAmount, vatAmount }) => [
       {
         date,
         description,
         reference: reference || '',
         debit: credit ? null : parseNum(grossAmount),
         credit: credit ? parseNum(credit) : null,
+        net: credit ? null : parseNum(netAmount),
+        vat_amount: credit ? null : parseNum(vatAmount),
+        total: credit ? `(${parseNum(Math.abs(credit)).toFixed(2)})` : parseNum(grossAmount),
+        
       },
     ],
   },

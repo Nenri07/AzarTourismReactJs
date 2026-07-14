@@ -196,7 +196,7 @@ export default function DynamicInvoiceFormPageUK() {
           else if (fieldId === "service_date")
             mappedService[fieldId] = service.date || "";
           else if (fieldId === "gross_amount")
-            mappedService[fieldId] = service.amount || service.total || "";
+            mappedService[fieldId] = service.amount || service.total || service.guest_charges|| "";
           else if (fieldId === "net_amount")
             mappedService[fieldId] = service.net || "";
           else if (fieldId === "vat_amount")

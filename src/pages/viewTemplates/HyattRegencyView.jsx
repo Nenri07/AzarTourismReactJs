@@ -79,7 +79,7 @@ const HyattRegencyView = ({ invoiceData }) => {
             date: formatDate(item.date),
             rawDate: new Date(item.date),
             description: "Accommodation" || item.description || item.text,
-            reference: item.reference || item.refNo || item.ref_no || "",
+            reference: "",
             debit: item.chargesGbp || item.guest_charges || item.debit ? formatCurrency(item.chargesGbp || item.guest_charges || item.debit) : "",
             credit: item.creditsGbp || item.credit ? formatCurrency(item.creditsGbp || item.credit) : "",
             type: 'accommodation'
@@ -92,8 +92,8 @@ const HyattRegencyView = ({ invoiceData }) => {
         items.push({
             date: formatDate(svc.date),
             rawDate: new Date(svc.date),
-            description: svc.name || svc.text || svc.service_name || "Service",
-            reference: svc.reference || svc.refNo || svc.ref_no || "",
+            description: svc.description || svc.text || svc.service_name || "Service",
+            reference:"",
             debit: svc.amount || svc.chargesGbp || svc.guest_charges || svc.total || svc.debit ? formatCurrency(svc.amount || svc.chargesGbp || svc.guest_charges || svc.total || svc.debit) : "",
             credit: svc.creditsGbp || svc.credit ? formatCurrency(svc.creditsGbp || svc.credit) : "",
             type: 'service'
@@ -116,9 +116,10 @@ const HyattRegencyView = ({ invoiceData }) => {
       arrivalDate: data.arrivalDate || data.arrival_date || "",
       departureDate: data.departureDate || data.departure_date || "",
       invoiceDate: data.invoiceDate || data.tax_date || new Date(),
-      cashierNo: data.cashierNo || data.cashier_no || "",
+      cashierNo: data.cashierId || data.cashier_no || "",
       vatNo: data.vatNo || data.vat_no,
       confNo: data.confNo || data.conf_no || "",
+      referenceNo: data.referenceNo || data.reference_no || "",
       
       items,
       formattedInvoiceDate: formatUpperDate(data.invoiceDate || data.tax_date || new Date()),
@@ -211,7 +212,7 @@ const HyattRegencyView = ({ invoiceData }) => {
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `Hyatt_Regency_Invoice_${invoice.confNo || 'Invoice'}.pdf`,
+        filename: `${invoice.referenceNo || 'Invoice'}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { 
             scale: 4, 
@@ -304,7 +305,7 @@ const HyattRegencyView = ({ invoiceData }) => {
             }
             body { background: none; margin: 0; padding: 0; }
             .hyatt-page { 
-              padding: 15mm 15mm !important; 
+              padding: 2mm 15mm 15mm 15mm !important; 
               margin: 0 !important; 
               box-shadow: none !important; 
               width: 100% !important;

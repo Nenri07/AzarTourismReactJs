@@ -93,7 +93,7 @@ const FourSeasonParkLaneView = ({ invoiceData }) => {
         items.push({
             date: formatDate(svc.date),
             rawDate: new Date(svc.date),
-            text: svc.name || svc.text || svc.service_name || "Service",
+            text: svc.description || svc.text || svc.service_name || "Service",
             reference: svc.reference || svc.refNo || svc.ref_no || "",
             debitGBP: svc.amount || svc.chargesGbp || svc.total || svc.debit ? formatCurrency(svc.amount || svc.chargesGbp || svc.total || svc.debit) : "",
             creditGBP: svc.creditsGbp || svc.credit ? formatCurrency(svc.creditsGbp || svc.credit) : "",
@@ -118,8 +118,9 @@ const FourSeasonParkLaneView = ({ invoiceData }) => {
       departureDate: data.departureDate || data.departure_date || "",
       invoiceDate: data.invoiceDate || data.tax_date || new Date(),
       folioNo: data.folioNo || data.folio_no || "",
-      cashierNo: data.cashierNo || data.cashier_no || "",
+      cashierNo: data.cashierId || data.cashier_no || "",
       vatNo: data.vatNo || data.vat_no || "",
+      referenceNo: data.referenceNo || data.reference_no || "",
       
       items,
       formattedInvoiceDate: formatDate(data.invoiceDate || data.tax_date || new Date()),
@@ -232,7 +233,7 @@ const FourSeasonParkLaneView = ({ invoiceData }) => {
       const element = invoiceRef.current;
       const opt = {
         margin: 0,
-        filename: `Four_Seasons_Invoice_${invoice.folioNo || 'Invoice'}.pdf`,
+        filename: `${invoice.referenceNo || 'Invoice'}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { 
             scale: 4, 

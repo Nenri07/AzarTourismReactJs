@@ -1520,6 +1520,8 @@ const formatDate = (dateStr) => {
 
 // NEW: dd/mm/yyyy format ("date/month/year") for all dates OUTSIDE the main
 // table — invoice date (top-right + meta block) and the Stay arrival/departure dates.
+// NEW: dd/mm/yy format ("date/month/year") for all dates OUTSIDE the main
+// table — invoice date (top-right + meta block) and the Stay arrival/departure dates.
 const formatDateSlash = (dateStr) => {
   if (!dateStr) return "";
   try {
@@ -1527,11 +1529,15 @@ const formatDateSlash = (dateStr) => {
     if (isNaN(d.getTime())) return dateStr;
     const dd = String(d.getDate()).padStart(2, '0');
     const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = d.getFullYear();
-    return `${dd}/${mm}/${yyyy}`;
-  } catch { return dateStr; }
+    
+    // Convert year to string and grab the last two characters
+    const yy = String(d.getFullYear()).slice(-2); 
+    
+    return `${dd}/${mm}/${yy}`;
+  } catch { 
+    return dateStr; 
+  }
 };
-
 const formatCurrency = (val) => {
   if (val === null || val === undefined || val === "") return "";
   return parseFloat(val).toLocaleString('fr-FR', {
@@ -1694,8 +1700,8 @@ const mapApiDataToInvoice = (data = {}) => {
       companyAddress1: compAddr1,
       companyAddress2: compAddr2,
       companyAddress3: compAddr3,
-      mf: data.vatNo || "",
-      tel: data.companyTel || ""
+      mf: "",
+      tel: data.membershipNo || ""
     },
     items,
     totals: {
@@ -1791,7 +1797,7 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
   // ─────────────────────────────────────────────────────────────────────────
   // buildPrintHTML
   // ─────────────────────────────────────────────────────────────────────────
-  const buildPrintHTML = async (pagesData, invoiceState, stylesStr, logoSrc) => {
+ const buildPrintHTML = async (pagesData, invoiceState, stylesStr, logoSrc) => {
     let logoDataUrl = logoSrc;
     let stampDataUrl = '/lecroilstamp.png';
 
@@ -1833,7 +1839,7 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
           ? `<strong>Débiteurs</strong>`
           : `<div style="display:flex;justify-content:space-between;">
                <div style="width:64%">${txn.client || ''}</div>
-               <div style="width:36%;padding-left:4px">${txn.desc || ''}</div>
+               <div style="width:59%;padding-left:4px">${txn.desc || ''}</div>
              </div>`;
 
         return `<tr style="${grey}">
@@ -1848,12 +1854,12 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
         </tr>`;
       }).join('');
 
-      const tableHTML = page.items.length > 0 ? `
+      const tableHTML = (page.items.length > 0 || page.isLastPage) ? `
         <table style="width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;margin-bottom:${page.isLastPage ? '15px' : '8px'};font-family:Arial,Helvetica,sans-serif;">
           <colgroup>
-            <col style="width:11%"><col style="width:45%"><col style="width:8%">
+            <col style="width:12%"><col style="width:26%"><col style="width:8%">
             <col style="width:5%"><col style="width:9%"><col style="width:5%">
-            <col style="width:9%"><col style="width:8%">
+            <col style="width:7%"><col style="width:10%">
           </colgroup>
           <thead>
             <tr style="border-top:2px solid #a5a5a5;border-bottom:2px solid #a5a5a5;">
@@ -1872,7 +1878,7 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
 
       const totalsHTML = page.isLastPage ? `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:15px;">
-          <div style="width:40%;border:1.5px solid #777;border-radius:10px;overflow:hidden;">
+          <div style="width:49%;border:1.5px solid #777;border-radius:10px;overflow:hidden;">
             <table style="width:100%;height:112px;border-collapse:collapse;font-size:12px;font-family:Arial,Helvetica,sans-serif;">
               <thead>
                 <tr>
@@ -1890,16 +1896,16 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
               </tbody>
             </table>
           </div>
-          <div style="width:49%;padding:10px 14px;font-size:13.5px;display:flex;flex-direction:column;gap:10px;font-family:Arial,Helvetica,sans-serif;border-top:2px solid #a5a5a5;border-bottom:2px solid #a5a5a5;border-left:2px solid #a5a5a5;border-right:none;border-top-left-radius:12px;border-bottom-left-radius:12px;">
+          <div style="width:38%;padding:10px 14px;font-size:13.5px;display:flex;flex-direction:column;gap:10px;font-family:Arial,Helvetica,sans-serif;border-top:2px solid #a5a5a5;border-bottom:2px solid #a5a5a5;border-left:2px solid #a5a5a5;border-right:none;border-top-left-radius:12px;border-bottom-left-radius:12px;">
             <div style="display:flex;justify-content:space-between;"><span>Total VAT excluded</span><span>${invoiceState.totals.netAmount}</span></div>
             <div style="display:flex;justify-content:space-between;"><span>VAT</span><span>${invoiceState.totals.tva7}</span></div>
             <div style="display:flex;justify-content:space-between;"><span>Fiscal stamp</span><span>${invoiceState.totals.stampDuty}</span></div>
           </div>
         </div>
-        <div style="display:flex;justify-content:flex-end;width:100%;margin-top:10px;">
+        <div style="display:flex;justify-content:flex-end;width:100%;margin-top:-13px;">
           <div style="display:flex;justify-content:flex-end;align-items:stretch;height:22px;gap:5px;">
-            <div style="border:1px solid #999;box-shadow:4px 4px 0px #cfcfcf;width:160px;padding:3px 10px;display:flex;align-items:center;font-size:13px;font-family:Arial,Helvetica,sans-serif;">Invoice TOTAL</div>
-            <div style="border:1px solid #999;box-shadow:4px 4px 0px #cfcfcf;width:170px;padding:3px 10px;text-align:right;font-weight:bold;font-size:14px;display:flex;align-items:center;justify-content:flex-end;font-family:Arial,Helvetica,sans-serif;">${invoiceState.totals.balance}</div>
+            <div style="border:1px solid #999;box-shadow:4px 4px 0px #cfcfcf;width:160px;padding:3px 2px;display:flex;align-items:center;font-size:13px;font-family:Arial,Helvetica,sans-serif;">Invoice TOTAL</div>
+            <div style="border:1px solid #999;box-shadow:4px 4px 0px #cfcfcf;width:170px;padding:3px 2px;text-align:right;font-weight:bold;font-size:14px;display:flex;align-items:center;justify-content:flex-end;font-family:Arial,Helvetica,sans-serif;">${invoiceState.totals.balance}</div>
           </div>
         </div>
         <div style="display:flex;justify-content:right;">
@@ -1910,7 +1916,7 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
           </div>
         </div>` : '';
 
-      // CHANGED: stamp image added next to FINANCE DEPARTMENT line
+      // CHANGED: finance department block now matches screen exactly (no stamp image, no TND note, no contact line)
       const financeDeptHTML = page.isLastPage ? `
         <div style="margin-top:25px;margin-bottom:10px;width:100%;display:flex;justify-content:space-between;align-items:flex-end;">
           <div style="width:68%;">
@@ -1918,10 +1924,6 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
             <div style="font-size:13px;font-family:Arial,Helvetica,sans-serif;">FINANCE DEPARTMENT</div>
           </div>
         </div>
-                  <img src="${stampDataUrl}" alt="Finance Stamp" style="width:110px;height:auto;object-fit:contain;margin-bottom:4px;" />
-
-        <div style="font-size:11.5px;font-weight:bold;margin-bottom:4px;font-family:Arial,Helvetica,sans-serif;">Our invoices are in Tunisian Dinars (TND)</div>
-        <div style="font-size:11.5px;font-weight:bold;margin-bottom:15px;font-family:Arial,Helvetica,sans-serif;">For any financial information, please contact us by phone or by email : controle2@corail-suites.com</div>
       ` : '';
 
       const footerHTML = `
@@ -1931,7 +1933,6 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
               <div>Société Mehari Beach &nbsp;&nbsp; Immeuble Hannibal Les Berges du Lac Tunis</div>
               <div>Tel +216 71 960 220 &nbsp;&nbsp;&nbsp; Fax +216 71 960 231</div>
             </div>
-            <div style="font-size:12px;font-weight:bold;">SHAYMA</div>
           </div>
         </div>
       `;
@@ -1943,7 +1944,7 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
 
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">
           <div style="display:flex;">
-            <img src="${logoDataUrl}" alt="LE CORAIL" style="width:165px;height:auto;object-fit:contain;" />
+            <img src="${logoDataUrl}" alt="LE CORAIL" style="width:145px;height:auto;object-fit:contain;" />
             <div style="font-size:13px;line-height:1.4;font-family:Arial,Helvetica,sans-serif;">
               <span style="font-weight:bold;font-size:14px;">LE CORAIL Suites Hôtel</span><br/>
               Rue de la feuille D'érable<br/>
@@ -1953,15 +1954,7 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
             </div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;font-size:11.5px;">
-            <div style="word-spacing:4px;font-size:13px;">${invoiceState.meta.date} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${invoiceState.meta.time} Page ${page.pageNo} of ${page.totalPages}</div>
-            <table style="font-size:12px;text-align:left;border-spacing:0;position:absolute;top:70px;right:113px;">
-              <tbody>
-                <tr><td style="width:80px;">Téléphone:</td><td>+216 71 268 000</td></tr>
-                <tr><td>Fax:</td><td>+216 71 268 444</td></tr>
-                <tr><td>RIB:</td><td>BT LAC 2 : 05031000098300042891</td></tr>
-                <tr><td>IBAN:</td><td>TN5905031000098300042891</td></tr>
-              </tbody>
-            </table>
+            <div style="word-spacing:4px;font-size:13px;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${invoiceState.meta.time} Page ${page.pageNo} of ${page.totalPages}</div>
           </div>
         </div>
 
@@ -1971,11 +1964,11 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
           <div style="width:49%;">
             <div style="display:flex;align-items:center;gap:15px;margin-bottom:3px;">
               <h1 style="font-size:22px;font-weight:bold;margin:0;letter-spacing:0.5px;font-family:Arial,Helvetica,sans-serif;">INVOICE</h1>
-              <div style="border:1px solid #999;box-shadow:4px 4px 0px #cfcfcf;padding:3px 10px;font-size:17px;font-weight:bold;width:210px;font-family:Arial,Helvetica,sans-serif;">${invoiceState.meta.invoiceNo}</div>
+              <div style="border:1px solid #999;box-shadow:4px 4px 0px #cfcfcf;padding:0.2px 10px;font-size:17px;font-weight:bold;width:160px;font-family:Arial,Helvetica,sans-serif;">${invoiceState.meta.invoiceNo}</div>
             </div>
             <div style="display:grid;grid-template-columns:95px auto;font-size:11.5px;font-family:Arial,Helvetica,sans-serif;">
               <div style="grid-column:1/span 2;">
-                <span style="display:inline-block;width:90px;"></span>
+                <span style="display:inline-block;width:125px;"></span>
                 <strong style="font-size:13px;">Date &nbsp; ${invoiceState.meta.date}</strong>
               </div>
               <div>Identifiant:</div><div><strong style="font-size:12px;">${invoiceState.guest.identifiant}</strong></div>
@@ -2077,7 +2070,7 @@ ${allPagesHTML}
       background: #fff;
       width: 210mm;
       height: 297mm;
-      padding: 10mm 8mm;
+      padding: 5mm 8mm 10mm 8mm;
       box-shadow: 0 2px 12px rgba(0,0,0,0.13);
       color: #000;
       position: relative;
@@ -2109,11 +2102,11 @@ ${allPagesHTML}
     .lc-text-right { text-align: right; }
     .lc-text-center { text-align: center; }
     .lc-flex-between { display: flex; justify-content: space-between; }
-    .lc-divider-thick { border-top: 1px solid #959595; margin: 4px 0 8px 0; }
+    .lc-divider-thick { border-top: 1px solid #959595; margin: 4px 0 0px 0; }
 
     .lc-header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
     .lc-header-left { display: flex; gap: 0px; }
-    .lc-logo-img { width: 165px; height: auto; object-fit: contain; }
+    .lc-logo-img { width: 145px; height: auto; object-fit: contain; }
     .lc-hotel-address { font-size: 13px; line-height: 1.4; font-family: Arial, Helvetica, sans-serif; }
     .lc-header-right { display: flex; flex-direction: column; align-items: flex-end; font-size: 11.5px; }
     .lc-page-info { margin-bottom: 0px; word-spacing: 4px; font-size: 13px; }
@@ -2121,35 +2114,40 @@ ${allPagesHTML}
     .lc-contact-table td { padding-bottom: 0px; }
     .lc-contact-table td:first-child { width: 80px; }
 
-    .lc-middle-section { display: flex; justify-content: space-between; align-items: stretch; margin-bottom: 8px; margin-top: 8px; }
+    .lc-middle-section { display: flex; justify-content: space-between; align-items: stretch; margin-bottom: 0px; margin-top: 8px; }
     .lc-invoice-left { width: 49%; }
-    .lc-invoice-title-row { display: flex; align-items: center; gap: 15px; margin-bottom: 3px; }
+    .lc-invoice-title-row { padding-right: 5px;
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 3px;}
     .lc-invoice-title-row h1 { font-size: 22px; font-weight: bold; margin: 0; letter-spacing: 0.5px; font-family: Arial, Helvetica, sans-serif; }
-    .lc-shadow-input-box { border: 1px solid #999; box-shadow: 4px 4px 0px #cfcfcf; padding: 3px 10px; font-size: 17px; font-weight: bold; width: 210px; font-family: Arial, Helvetica, sans-serif; }
+    .lc-shadow-input-box { border: 1px solid #999; box-shadow: 4px 4px 0px #cfcfcf; padding: 0.2px 10px; font-size: 17px; font-weight: bold; width: 160px; font-family: Arial, Helvetica, sans-serif; }
     .lc-invoice-meta-grid { display: grid; grid-template-columns: 95px auto; font-size: 11.5px; font-family: Arial, Helvetica, sans-serif; }
 
     .lc-client-right { width: 62%; padding-top: 2px; }
     .lc-open-right-box { border-top: 2px solid #a5a5a5; border-bottom: 2px solid #a5a5a5; border-left: 2px solid #a5a5a5; border-right: none; border-top-left-radius: 12px; border-bottom-left-radius: 12px; padding: 3px 0 0px 12px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
-    .lc-open-right-box h3 { font-size: 15px; margin-bottom: 6px; font-family: Arial, Helvetica, sans-serif; }
-    .lc-open-right-box p { font-size: 12.5px; margin-bottom: 2px; font-family: Arial, Helvetica, sans-serif; }
+    .lc-open-right-box h3 {font-weight: bold; font-size: 15px; margin-bottom: 6px; font-family: Arial, Helvetica, sans-serif; }
+    .lc-open-right-box p { font-size: 12.5px; line-height: 1.3; font-family: Arial, Helvetica, sans-serif; }
 
     .lc-data-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; margin-bottom: 8px; font-family: Arial, Helvetica, sans-serif; }
     .lc-data-table thead th { border-top: 2px solid #a5a5a5; border-bottom: 2px solid #a5a5a5; padding: 4px 2px; text-align: left; font-weight: normal; }
     .lc-data-table tbody td { padding: 3px 2px; vertical-align: top; line-height: 1.25; }
     .lc-row-grey { background-color: #c0c0c0; }
 
-    .lc-col-date { width: 11%; }
-    .lc-col-detail { width: 45%; }
+    .lc-col-date { width: 12%; }
+    .lc-col-detail { width: 26%; }
     .lc-col-pensio { width: 8%; }
     .lc-col-roo { width: 5%; text-align: center; }
     .lc-col-voucher { width: 9%; }
     .lc-col-qty { width: 5%; text-align: center; }
-    .lc-col-debit { width: 9%; text-align: right; }
-    .lc-col-credit { width: 8%; text-align: right; }
+    .lc-col-debit { width: 7%; text-align: right !important; }
+    .lc-col-credit { width: 10%; text-align: right !important; padding-right: 15px !important; }
 
     .lc-detail-split { display: flex; justify-content: space-between; }
     .lc-detail-client { width: 64%; }
-    .lc-detail-action { width: 36%; padding-left: 4px; }
+    .lc-detail-action { width: 59%; padding-left: 4px; }
 
     .lc-calc-section { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 15px; }
     .lc-vat-closed-box { width: 49%; border: 1.5px solid #777; border-radius: 10px; overflow: hidden; }
@@ -2158,13 +2156,13 @@ ${allPagesHTML}
     .lc-vat-table th { font-weight: normal; border-bottom: 1.5px solid #777; }
     .lc-vat-table th:not(:last-child), .lc-vat-table td:not(:last-child) { border-right: 1.5px solid #777; }
 
-    .lc-totals-closed-box { width: 38%; padding: 10px 14px; font-size: 13.5px; display: flex; flex-direction: column; gap: 10px; font-family: Arial, Helvetica, sans-serif; border-top: 2px solid #a5a5a5; border-bottom: 2px solid #a5a5a5; border-left: 2px solid #a5a5a5; border-right: none; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+    .lc-totals-closed-box { width: 38%; padding: 10px 14px 3px 14px; font-size: 13.5px; display: flex; flex-direction: column; gap: 10px; font-family: Arial, Helvetica, sans-serif; border-top: 2px solid #a5a5a5; border-bottom: 2px solid #a5a5a5; border-left: 2px solid #a5a5a5; border-right: none; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
     .lc-totals-row { display: flex; justify-content: space-between; }
 
     .lc-total-container-right { display: flex; flex-direction: column; align-items: flex-end; width: 38%; margin-top: 10px; }
     .lc-invoice-total-row { display: flex; justify-content: flex-end; align-items: stretch; width: 100%; height: 22px; gap: 5px; }
-    .lc-total-label-box { border: 1px solid #999; width: 160px; padding: 3px 10px; display: flex; align-items: center; font-size: 13px; font-family: Arial, Helvetica, sans-serif; box-shadow: 4px 4px 0px #cfcfcf; }
-    .lc-total-value-box { border: 1px solid #999; box-shadow: 4px 4px 0px #cfcfcf; width: 170px; padding: 3px 10px; text-align: right; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: flex-end; font-family: Arial, Helvetica, sans-serif; }
+    .lc-total-label-box { border: 1px solid #999; width: 160px; padding: 3px 2px; display: flex; align-items: center; font-size: 13px; font-family: Arial, Helvetica, sans-serif; box-shadow: 4px 4px 0px #cfcfcf; }
+    .lc-total-value-box { border: 1px solid #999; box-shadow: 4px 4px 0px #cfcfcf; width: 170px; padding: 3px 2px; text-align: right; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: flex-end; font-family: Arial, Helvetica, sans-serif; }
 
     .lc-bottom-statement { margin-top: 20px; width: 70%; }
     .lc-statement-text { font-size: 13px; margin-bottom: 5px; font-family: Arial, Helvetica, sans-serif; }
@@ -2247,16 +2245,9 @@ ${allPagesHTML}
         </div>
         <div className="lc-header-right">
           <div className="lc-page-info">
-            {invoice.meta.date} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {invoice.meta.time} Page {page.pageNo} of {page.totalPages}
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {invoice.meta.time} Page {page.pageNo} of {page.totalPages}
           </div>
-          <table className="lc-contact-table">
-            <tbody>
-              <tr><td>Téléphone:</td><td>+216 71 268 000</td></tr>
-              <tr><td>Fax:</td><td>+216 71 268 444</td></tr>
-              <tr><td>RIB:</td><td>BT LAC 2 : 05031000098300042891</td></tr>
-              <tr><td>IBAN:</td><td>TN5905031000098300042891</td></tr>
-            </tbody>
-          </table>
+    
         </div>
       </div>
       <div className="lc-divider-thick"></div>
@@ -2268,7 +2259,7 @@ ${allPagesHTML}
           </div>
           <div className="lc-invoice-meta-grid">
             <div style={{ gridColumn: '1 / span 2' }}>
-              <span style={{ display: 'inline-block', width: '90px' }}></span>
+              <span style={{ display: 'inline-block', width: '125px' }}></span>
               <strong style={{ fontSize: '13px' }}>Date &nbsp; {invoice.meta.date}</strong>
             </div>
             <div>Identifiant:</div><div><strong style={{ fontSize: '12px' }}>{invoice.guest.identifiant}</strong></div>
@@ -2318,7 +2309,7 @@ ${allPagesHTML}
             <React.Fragment key={pageIdx}>
               <div className="lc-page-container">
                 <PageHeader page={page} />
-                {page.items.length > 0 && (
+{(page.items.length > 0 || page.isLastPage) && (
                   <table className="lc-data-table" style={{ marginBottom: page.isLastPage ? '15px' : '8px' }}>
                     <thead>
                       <tr>
@@ -2339,7 +2330,7 @@ ${allPagesHTML}
                         const isGreyRow = index % 2 === 0;
                         return (
                           <tr key={index} className={isGreyRow ? "lc-row-grey" : ""}>
-                            <td className="lc-bold">{showDate ? txn.date : ""}</td>
+                            <td >{showDate ? txn.date : ""}</td>
                             <td className={txn.client === "Débiteurs" ? "lc-bold" : ""}>
                               {txn.client === "Débiteurs" ? "Débiteurs" : (
                                 <div className="lc-detail-split">
@@ -2349,7 +2340,7 @@ ${allPagesHTML}
                               )}
                             </td>
                             <td>{txn.pensio}</td>
-                            <td className="lc-text-center">{txn.room}</td>
+                            <td style={{textAlign: "left"}}>{txn.room}</td>
                             <td>{txn.voucher}</td>
                             <td className="lc-text-center">{txn.qty}</td>
                             <td className="lc-text-right">{txn.debit ? formatCurrency(txn.debit) : ""}</td>
@@ -2388,10 +2379,10 @@ ${allPagesHTML}
                         <div className="lc-totals-closed-box">
                           <div className="lc-totals-row"><span>Total VAT excluded</span><span>{invoice.totals.netAmount}</span></div>
                           <div className="lc-totals-row"><span>VAT</span><span>{invoice.totals.tva7}</span></div>
-                          <div className="lc-totals-row"><span>Fiscal stamp</span><span>{invoice.totals.stampDuty}</span></div>
+                          <div className="lc-totals-row" style={{paddingTop: "10px"}}><span>Fiscal stamp</span><span>{invoice.totals.stampDuty}</span></div>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '-13px' }}>
                         <div className="lc-total-container-right">
                           <div className="lc-invoice-total-row">
                             <div className="lc-total-label-box">Invoice TOTAL</div>
@@ -2413,11 +2404,10 @@ ${allPagesHTML}
                           <div className="lc-finance-line"></div>
                           <div className="lc-footer-dept">FINANCE DEPARTMENT</div>
                         </div>
-                        <img src={stamp} alt="Finance Stamp" className="lc-stamp-img" />
+                       
                       </div>
 
-                      <div className="lc-footer-tnd">Our invoices are in Tunisian Dinars (TND)</div>
-                      <div className="lc-footer-contact">For any financial information, please contact us by phone or by email : controle2@corail-suites.com</div>
+                      
                     </>
                   )}
 
@@ -2427,7 +2417,6 @@ ${allPagesHTML}
                         <div>Société Mehari Beach &nbsp;&nbsp; Immeuble Hannibal Les Berges du Lac Tunis</div>
                         <div>Tel +216 71 960 220 &nbsp;&nbsp;&nbsp; Fax +216 71 960 231</div>
                       </div>
-                      <div style={{ fontSize: '12px', fontWeight: 'bold' }}>SHAYMA</div>
                     </div>
                   </div>
                 </div>
