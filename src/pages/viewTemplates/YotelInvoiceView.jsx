@@ -71,7 +71,7 @@ const DualAmount = ({ val, rate }) => {
   const r = Number(rate) || 50.0676;
   const eurNum = tryNum / r;
   return (
-    <div className="text-right">
+    <div className="text-right" style={{ textAlign: 'right', minWidth: '95px' }}>
       <div style={{ letterSpacing: '0.2px' }}>€ {formatCurrency(eurNum)}</div>
       <div style={{ fontStyle: 'italic', letterSpacing: '0.2px' }}>₺ {formatCurrency(tryNum)}</div>
     </div>
@@ -83,13 +83,12 @@ const DualAmountTotals = ({ val, rate }) => {
   const r = Number(rate) || 50.0676;
   const eurNum = tryNum / r;
   return (
-    <div className="text-right">
+    <div style={{ textAlign: 'right', width: '100%', minWidth: '95px' }}>
       <div style={{ fontWeight: 'bold' }}>€ {formatCurrency(eurNum)}</div>
       <div style={{ fontStyle: 'italic' }}>₺ {formatCurrency(tryNum)}</div>
     </div>
   );
 };
-
 // ─────────────────────────────────────────────────────────────────────────────
 // API → VIEW SCHEMA MAPPER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -154,7 +153,7 @@ const mapApiDataToInvoice = (data = {}) => {
           desc: itemDesc,
           debit: e.amount || e.debit || e.rate || e.rate_amount || e.rateAmount || 0,
           credit: e.credit || "",
-          exchange: e.exchangeRate || night.exchangeRate || data.exchangeRate || 50.0676,
+          exchange: e.exchangeRate || night.exchangeRate || data.exchangeRate || 0.000,
         });
       }
     });
@@ -169,7 +168,7 @@ const mapApiDataToInvoice = (data = {}) => {
         desc: "Accommodation Package",
         debit: data.totalRoomAllNights,
         credit: 0,
-        exchange: data.exchangeRate || 50.0676
+        exchange: data.exchangeRate || 0.000
      });
   }
 
@@ -186,7 +185,7 @@ const mapApiDataToInvoice = (data = {}) => {
       desc: svc.name || svc.description || "Service",
       debit: svc.amount || svc.debit || 0,
       credit: svc.credit || "",
-      exchange: svc.exchangeRate || data.exchangeRate || 50.0676,
+      exchange: svc.exchangeRate || data.exchangeRate || 0.000,
     });
   });
 
@@ -229,8 +228,8 @@ const mapApiDataToInvoice = (data = {}) => {
   }
 
   const taxableBase = taxableRoom + totalSvcTaxable;
-  let exRate = data.exchangeRate || 50.0676;
-const resolvedTime = parseTimeString(data.invoiceTime) || formatTime(data.invoiceTime) || "13:35:32";
+  let exRate = data.exchangeRate || 0.000;
+  const resolvedTime = parseTimeString(data.invoiceTime) || formatTime(data.invoiceTime) || "00:00:00";
   const dObj = data.billingDate || data.invoiceDate || new Date();
   const fullInvoiceDate = `${formatDate(dObj)} ${formatTime(dObj)}`;
 
@@ -241,10 +240,10 @@ const resolvedTime = parseTimeString(data.invoiceTime) || formatTime(data.invoic
     refferenceNo: data.referenceNo,
     invoiceNo:    data.invoice_number || data.invoiceNumber || data.invoiceNo || data.invoice_no || "", 
     billingDate:  formatDate(data.billingDate  || data.invoiceDate) || "",
-    fullInvoiceDate: `${formatDate(dObj)} ${resolvedTime || "13:35:32"}`,
+    fullInvoiceDate: `${formatDate(dObj)} ${resolvedTime || "00:00:00"}`,
     roomNo:       data.roomNo          || "",
-    pax:          data.pax             || 1,
-    nights:       data.nights          || 1,
+    pax:          data.numberOfGuests             || "",
+    nights:       data.nights          || "",
     guestName:    data.guestName       || "",
     checkInDate:  formatDate(data.arrivalDate)   || "",
     checkOutDate: formatDate(data.departureDate) || "",
@@ -255,9 +254,9 @@ const resolvedTime = parseTimeString(data.invoiceTime) || formatTime(data.invoic
     
     // Additional Hotel Fields
     folioNo:      data.folioNo   || data.folio_no   || data.invoiceNo || "",
-    confNo:       data.confNo    || data.conf_no    || "",
-    iataNo:       data.iataNo    || data.iata_no    || "45216371",
-    taxNo:        data.taxNo     || data.tax_no     || "222222222222",
+    confNo:       data.confirmationNumber    || data.confirmationNo   || "",
+    iataNo:       data.iataNumber    || data.iata_no    || "",
+    taxNo:        data.voucherNo    || "",
     exchangeRate: exRate,
 
     items:        allItems,
@@ -508,12 +507,11 @@ const YotelInvoiceView = ({ invoiceData }) => {
       font-size: 9px;
       margin-top: 5px;
     }
-    .totals-grid {
+.totals-grid {
       display: grid;
-      grid-template-columns: auto auto;
-      gap: 4px 80px;
+      grid-template-columns: auto 100px;
+      gap: 4px 20px;
       line-height: 1.4;
-      justify-items: end;
     }
     .totals-grid .label {
       font-weight: bold;
@@ -563,10 +561,9 @@ const YotelInvoiceView = ({ invoiceData }) => {
       <div className="info-blocks">
         <div className="left-info">
           <div>{invoice.party}</div>
-          <div>Mejrab, Abdullah</div>
-          <div>Algeria Square Building Number 12 First Floor, Tripoli,</div>
-          <div>1254 TRIPOLI</div>
-          <div>Libyan Arab Jamahiriya</div>
+          <div>Tripoli Tower Ground Floor Office no 50,</div>
+          <div>Tripoli</div>
+          <div>Libya</div>
           <div><span style={{ fontWeight: 'bold' }}>Tax Number: </span>{invoice.taxNo}</div>
         </div>
         <div className="right-info">
@@ -647,31 +644,54 @@ const YotelInvoiceView = ({ invoiceData }) => {
                   <td colSpan="4" className="table-line-bottom" style={{ padding: 0, height: 5 }}></td>
                 </tr>
               </tbody>
+              
+              {page.showTotals && (
+                <tbody>
+                  <tr>
+                    <td colSpan="2"></td>
+                    <td className="text-right" style={{ fontWeight: 'bold', paddingTop: '8px' }}>Total Charge</td>
+                    <td className="text-right" style={{ paddingTop: '8px' }}>
+                      <DualAmountTotals val={invoice.summary.grandTotal} rate={invoice.exchangeRate} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="2"></td>
+                    <td className="text-right" style={{ fontWeight: 'bold', paddingTop: '4px' }}>Total Credits</td>
+                    <td className="text-right" style={{ paddingTop: '4px' }}>
+                      <DualAmountTotals val={invoice.summary.totalCredits} rate={invoice.exchangeRate} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="2"></td>
+                    <td className="text-right" style={{ fontWeight: 'bold', paddingTop: '4px' }}>Net Amount</td>
+                    <td className="text-right" style={{ paddingTop: '4px' }}>
+                      <DualAmountTotals val={invoice.taxableBase} rate={invoice.exchangeRate} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="2"></td>
+                    <td className="text-right" style={{ fontWeight: 'bold', paddingTop: '4px' }}>Balance</td>
+                    <td className="text-right" style={{ paddingTop: '4px' }}>
+                      <DualAmountTotals val={invoice.summary.balance} rate={invoice.exchangeRate} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="2"></td>
+                    <td className="text-right" style={{ paddingTop: '4px' }}>VAT</td>
+                    <td className="text-right" style={{ paddingTop: '4px' }}>
+                      <DualAmountTotals val={invoice.taxTotalTaxAmt} rate={invoice.exchangeRate} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="2"></td>
+                    <td className="text-right" style={{ paddingTop: '4px' }}>2% Accommodation Tax</td>
+                    <td className="text-right" style={{ paddingTop: '4px' }}>
+                      <DualAmountTotals val={invoice.summary.accommodationTax} rate={invoice.exchangeRate} />
+                    </td>
+                  </tr>
+                </tbody>
+              )}
             </table>
-
-            {page.showTotals && (
-              <div className="totals-section">
-                <div className="totals-grid">
-                  <span className="label">Total Charge</span>
-                  <DualAmountTotals val={invoice.summary.grandTotal} rate={invoice.exchangeRate} />
-
-                  <span className="label">Total Credits</span>
-                  <DualAmountTotals val={invoice.summary.totalCredits} rate={invoice.exchangeRate} />
-
-                  <span className="label">Net Amount</span>
-                  <DualAmountTotals val={invoice.taxableBase} rate={invoice.exchangeRate} />
-
-                  <span className="label">Balance</span>
-                  <DualAmountTotals val={invoice.summary.balance} rate={invoice.exchangeRate} />
-
-                  <span className="label" style={{ fontWeight: 'normal' }}>VAT</span>
-                  <DualAmountTotals val={invoice.taxTotalTaxAmt} rate={invoice.exchangeRate} />
-
-                  <span className="label" style={{ fontWeight: 'normal' }}>2% Accommodation Tax</span>
-                  <DualAmountTotals val={invoice.summary.accommodationTax} rate={invoice.exchangeRate} />
-                </div>
-              </div>
-            )}
             
           </div>
         ))}
