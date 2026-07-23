@@ -86,9 +86,9 @@ const PullmanInvoiceViewPage = ({ invoiceData }) => {
       guest: {
         company: data.companyName || "AZAR TOURISM & SERVICES",
         addressLines: [
-          "Algeria Square Building",
-          "Number 12 First Floor",
-          "Libyan Arab Jamahiriya"
+          "Tripoli Tower Ground Floor",
+          "Office no 50",
+          "Libya"
         ],
         guestName: data.guestName,
         arNumber: data.arNumber

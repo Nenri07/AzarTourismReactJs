@@ -9,7 +9,7 @@ const SAMPLE_HOTEL_CONFIG = {
   "country": "Tunis",
   "form_fields": [
     {"field_id": "company_name", "label": "Company Name", "data_type": "string", "required": true, "max_length": 100, "example": "Azar Tourism Services"},
-    {"field_id": "address", "label": "Company Address", "data_type": "string", "required": true, "max_length": 200, "example": "Algeria Square Building Tripoli Libyan Arab Jamal"},
+    {"field_id": "address", "label": "Company Address", "data_type": "string", "required": true, "max_length": 200, "example": "Tripoli Tower Ground Floor Office no 50, Tripoli, Libya"},
     {"field_id": "account_number", "label": "Account Number", "data_type": "string", "required": true, "max_length": 20, "example": "ARZ2022TOU"},
     {"field_id": "vat_number", "label": "VAT Number", "data_type": "string", "required": false, "max_length": 20, "example": ""},
     {"field_id": "invoice_number", "label": "Invoice Number", "data_type": "string", "required": true, "max_length": 20, "example": "49569"},

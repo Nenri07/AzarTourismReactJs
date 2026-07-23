@@ -537,10 +537,10 @@ const HiltonIstanbulInvoiceViewPage = ({ invoiceData }) => {
                <div style={{ marginTop: '10px' }}>{invoice.guestInfo.guestName}</div>
 
                 <div style={{ marginTop: '13px' }}>AZAR TOURISM SERVICES</div>
-                <div style={{ marginTop: '16px' }}>ALGERIA SQUARE BUILDING NUMBER 12 </div>
-                <div style={{ marginTop: '15px' }}>FIRST FLOOR</div>
+                <div style={{ marginTop: '16px' }}>TRIPOLI TOWER GROUND FLOOR </div>
+                <div style={{ marginTop: '15px' }}>OFFICE NO 50</div>
                 <div> TRIPOLI</div>
-                <div> LIBIYA.</div>
+                <div> LIBYA.</div>
 
                 <div style={{ marginTop: '16px' }}>*** INFORMATION BILL ***</div>
 

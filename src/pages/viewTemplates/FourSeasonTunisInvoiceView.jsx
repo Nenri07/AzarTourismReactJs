@@ -34,6 +34,10 @@ const formatCurrency = (val) => {
 // API → VIEW SCHEMA MAPPER
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// API → VIEW SCHEMA MAPPER
+// ─────────────────────────────────────────────────────────────────────────────
+
 const mapApiDataToInvoice = (data = {}) => {
   if (!data) return null;
 
@@ -76,7 +80,7 @@ const mapApiDataToInvoice = (data = {}) => {
     });
   }
 
-  // Other Services
+  // Other Services (e.g., Laundry, Restaurant)
   if (data.otherServices && data.otherServices.length > 0) {
     data.otherServices.forEach((svc) => {
       const svcDate = svc.date || data.invoiceDate;
@@ -86,7 +90,23 @@ const mapApiDataToInvoice = (data = {}) => {
         desc: svc.name,
         debit: svc.amount,
         credit: 0,
-        priority: 2 // Priority 2: Extra Services
+        priority: 2 // Appears after Accommodation, before City Tax
+      });
+    });
+  }
+
+  // Stamp Tax
+  if (data.stampTaxDetails && data.stampTaxDetails.length > 0) {
+    // Force it onto the first date of the invoice, as the last row of that day
+    const firstDate = data.accommodationDetails?.[0]?.date || data.arrivalDate || data.invoiceDate;
+    data.stampTaxDetails.forEach((stamp) => {
+      allItems.push({
+        date: formatDate(firstDate),
+        time: getNormalizedTime(firstDate),
+        desc: "Stamp Tax", // Override backend "Timbre fiscal"
+        debit: stamp.amount,
+        credit: 0,
+        priority: 4 // Highest priority number so it falls last on that specific date
       });
     });
   }
@@ -107,7 +127,7 @@ const mapApiDataToInvoice = (data = {}) => {
     guest: {
       name: data.guestName,
       companyName: data.companyNames || "Azar Tourism",
-      companyAddress: data.addresss || "Algeria Square Building Number 12 First Floor\nTripoli\nLibya",
+      companyAddress: data.addresss || "Tripoli Tower Ground Floor Office no 50\nTripoli\nLibya",
       room: data.roomNo,
       arrival: formatDate(data.arrivalDate),
       departure: formatDate(data.departureDate),

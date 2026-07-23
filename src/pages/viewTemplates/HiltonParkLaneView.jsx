@@ -115,7 +115,7 @@ const HiltonParkLaneView = ({ invoiceData }) => {
       referenceNo: data.referenceNo || data.reference_no || "",
       guestName: data.guestName || data.guest_name || "",
       companyNames: "Azar Tourism Services",
-      companyAddress: "P.O.BOX Number: 1254\nAlgeria Square\nBuilding Number 12 First Floor\nTripoli\nLibya",
+      companyAddress: "Tripoli Tower Ground Floor Office no 50\nTripoli\nLibya",
       roomNo: data.roomNo || data.room_number || "",
       arrivalTime: data.arrivalTime || "",
 

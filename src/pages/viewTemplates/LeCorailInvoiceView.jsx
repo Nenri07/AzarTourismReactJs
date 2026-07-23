@@ -1511,7 +1511,7 @@ const formatDate = (dateStr) => {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     const dd = String(d.getDate()).padStart(2, '0');
-    const months = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+    const months = ['jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'];
     const mmm = months[d.getMonth()];
     const yyyy = d.getFullYear();
     return `${dd}-${mmm}-${yyyy}`;
@@ -1529,13 +1529,13 @@ const formatDateSlash = (dateStr) => {
     if (isNaN(d.getTime())) return dateStr;
     const dd = String(d.getDate()).padStart(2, '0');
     const mm = String(d.getMonth() + 1).padStart(2, '0');
-    
+
     // Convert year to string and grab the last two characters
-    const yy = String(d.getFullYear()).slice(-2); 
-    
+    const yy = String(d.getFullYear()).slice(-2);
+
     return `${dd}/${mm}/${yy}`;
-  } catch { 
-    return dateStr; 
+  } catch {
+    return dateStr;
   }
 };
 const formatCurrency = (val) => {
@@ -1655,13 +1655,14 @@ const mapApiDataToInvoice = (data = {}) => {
         itemsRaw.push({
           rawDate: svc.date ? svc.date.split('T')[0] : data.invoiceDate,
           client: svc.name || svc.service_name || "Service",
-          desc: svc.voucher || svc.ref || "",
+          desc: svc.description || "",
           pensio: "",
           room: data.roomNo,
-          voucher: "",
-          qty: svc.qty || 1,
+          voucher: svc.voucher || "",
+          qty: svc.quantity || svc.qty || 1,
           debit: svc.amount,
-          credit: ""
+          credit: "",
+          forceDate: true   // NEW: always print the date for service rows
         });
       });
   }
@@ -1690,6 +1691,8 @@ const mapApiDataToInvoice = (data = {}) => {
       time: formatTimeAMPM(data.invoiceTime),
     },
     guest: {
+      tel:data.membershipNo||"",
+      mf:data.taxId||"",
       identifiant: data.userId || "",
       name: data.guestName || "",
       room: data.roomNo || "",
@@ -1700,11 +1703,11 @@ const mapApiDataToInvoice = (data = {}) => {
       companyAddress1: compAddr1,
       companyAddress2: compAddr2,
       companyAddress3: compAddr3,
-      mf: "",
-      tel: data.membershipNo || ""
     },
     items,
     totals: {
+      exchangeRate: formatCurrency(data.sellingRate),
+      totalInUsd: formatCurrency(data.balanceUsd),
       netAmount: formatCurrency(data.totalHorsTaxes),
       taxBase: formatCurrency(data.totalHorsTaxes),
       tva7: formatCurrency(data.vat7Pct),
@@ -1797,7 +1800,7 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
   // ─────────────────────────────────────────────────────────────────────────
   // buildPrintHTML
   // ─────────────────────────────────────────────────────────────────────────
- const buildPrintHTML = async (pagesData, invoiceState, stylesStr, logoSrc) => {
+  const buildPrintHTML = async (pagesData, invoiceState, stylesStr, logoSrc) => {
     let logoDataUrl = logoSrc;
     let stampDataUrl = '/lecroilstamp.png';
 
@@ -1810,7 +1813,7 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
         c.getContext('2d').drawImage(liveLogoEl, 0, 0);
         logoDataUrl = c.toDataURL('image/png');
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // CHANGED: convert stamp image to data URL for popup PDF
     try {
@@ -1822,13 +1825,13 @@ const LeCorailInvoiceView = ({ invoiceData }) => {
         c.getContext('2d').drawImage(liveStampEl, 0, 0);
         stampDataUrl = c.toDataURL('image/png');
       }
-    } catch (_) {}
+    } catch (_) { }
 
     const renderPage = (page) => {
       let lastDate = "";
 
       const rows = page.items.map((txn, index) => {
-        const showDate = txn.date !== lastDate;
+        const showDate = txn.forceDate || txn.date !== lastDate;
         if (showDate) lastDate = txn.date;
         // CHANGED: grey row color matched to reference PDF (#c0c0c0)
         const grey = index % 2 === 0 ? 'background:#c0c0c0;-webkit-print-color-adjust:exact;print-color-adjust:exact;' : '';
@@ -2245,9 +2248,9 @@ ${allPagesHTML}
         </div>
         <div className="lc-header-right">
           <div className="lc-page-info">
-             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {invoice.meta.time} Page {page.pageNo} of {page.totalPages}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {invoice.meta.time} Page {page.pageNo} of {page.totalPages}
           </div>
-    
+
         </div>
       </div>
       <div className="lc-divider-thick"></div>
@@ -2309,7 +2312,7 @@ ${allPagesHTML}
             <React.Fragment key={pageIdx}>
               <div className="lc-page-container">
                 <PageHeader page={page} />
-{(page.items.length > 0 || page.isLastPage) && (
+                {(page.items.length > 0 || page.isLastPage) && (
                   <table className="lc-data-table" style={{ marginBottom: page.isLastPage ? '15px' : '8px' }}>
                     <thead>
                       <tr>
@@ -2325,8 +2328,7 @@ ${allPagesHTML}
                     </thead>
                     <tbody>
                       {page.items.map((txn, index) => {
-                        const showDate = txn.date !== lastRenderedDate;
-                        if (showDate) lastRenderedDate = txn.date;
+                        const showDate = txn.forceDate || txn.date !== lastRenderedDate; if (showDate) lastRenderedDate = txn.date;
                         const isGreyRow = index % 2 === 0;
                         return (
                           <tr key={index} className={isGreyRow ? "lc-row-grey" : ""}>
@@ -2340,7 +2342,7 @@ ${allPagesHTML}
                               )}
                             </td>
                             <td>{txn.pensio}</td>
-                            <td style={{textAlign: "left"}}>{txn.room}</td>
+                            <td style={{ textAlign: "left" }}>{txn.room}</td>
                             <td>{txn.voucher}</td>
                             <td className="lc-text-center">{txn.qty}</td>
                             <td className="lc-text-right">{txn.debit ? formatCurrency(txn.debit) : ""}</td>
@@ -2379,14 +2381,22 @@ ${allPagesHTML}
                         <div className="lc-totals-closed-box">
                           <div className="lc-totals-row"><span>Total VAT excluded</span><span>{invoice.totals.netAmount}</span></div>
                           <div className="lc-totals-row"><span>VAT</span><span>{invoice.totals.tva7}</span></div>
-                          <div className="lc-totals-row" style={{paddingTop: "10px"}}><span>Fiscal stamp</span><span>{invoice.totals.stampDuty}</span></div>
+                          <div className="lc-totals-row" style={{ paddingTop: "10px" }}><span>Fiscal stamp</span><span>{invoice.totals.stampDuty}</span></div>
                         </div>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '-13px' }}>
                         <div className="lc-total-container-right">
-                          <div className="lc-invoice-total-row">
+                          <div className="lc-invoice-total-row" style={{ marginBottom: '5px' }}>
                             <div className="lc-total-label-box">Invoice TOTAL</div>
                             <div className="lc-total-value-box">{invoice.totals.balance}</div>
+                          </div>
+                          <div className="lc-invoice-total-row" style={{ marginBottom: '5px' }}>
+                            <div className="lc-total-label-box">Exchange Rate TND</div>
+                            <div className="lc-total-value-box">{invoice.totals.exchangeRate}</div>
+                          </div>
+                          <div className="lc-invoice-total-row" >
+                            <div className="lc-total-label-box">Total In USD</div>
+                            <div className="lc-total-value-box">{invoice.totals.totalInUsd}</div>
                           </div>
                         </div>
                       </div>
@@ -2400,14 +2410,23 @@ ${allPagesHTML}
 
                       {/* CHANGED: stamp image placed to the right of FINANCE DEPARTMENT */}
                       <div className="lc-finance-dept-container">
+                        <div className="lc-invoice-total-row" style={{ fontSize: "13px", fontWeight: "bold" }}>
+                          <div >Exchange Rate TND</div>
+                          <div >&nbsp;{invoice.totals.exchangeRate}</div>
+                        </div>
+                        <div className="lc-invoice-total-row" style={{ fontSize: "13px", fontWeight: "bold" }}>
+                          <div >Total In USD</div>
+                          <div >&nbsp;{invoice.totals.totalInUsd}</div>
+                        </div>
                         <div className="lc-finance-left">
+
                           <div className="lc-finance-line"></div>
                           <div className="lc-footer-dept">FINANCE DEPARTMENT</div>
                         </div>
-                       
+
                       </div>
 
-                      
+
                     </>
                   )}
 

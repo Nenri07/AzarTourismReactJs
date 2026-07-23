@@ -1025,7 +1025,7 @@ const NovotelInvoiceViewEgypt = ({ invoiceData }) => {
               justify-content: flex-end;
               width: 100%;
               margin-top: 20px;
-              padding-right: 188px;
+              padding-right: 182px;
           }
           .totals-table {
               width: 305px;

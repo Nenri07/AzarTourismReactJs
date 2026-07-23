@@ -36,41 +36,165 @@ const formatCurrency = (val) => {
 // API → VIEW SCHEMA MAPPER
 // ─────────────────────────────────────────────────────────────────────────────
 
+// const mapApiDataToInvoice = (data = {}) => {
+//   if (!data) return null;
+
+//   const items = [];
+  
+//   if (data.accommodationDetails && data.accommodationDetails.length > 0) {
+//     data.accommodationDetails.forEach((acc) => {
+//       const dateStr = formatDate(acc.date);
+//       items.push({ 
+//         date: dateStr, 
+//         desc: acc.description || "Accommodation", 
+//         qty: 1,
+//         debit1: acc.debitTnd, 
+//         credit1: "", 
+//         debit2: acc.debitTnd, 
+//         credit2: 0 
+//       });
+//       // Movenpick includes taxes as line items in the example HTML
+//       if (data.showPerNightTax && data.cityTaxPerNight) {
+//         items.push({ date: dateStr, desc: "City Tax", qty: 1, debit1: data.cityTaxPerNight, credit1: "", debit2: data.cityTaxPerNight, credit2: 0 });
+//       }
+//     });
+//   }
+
+//   // Example: Mapping overall stamp fee as a line item if needed based on Movenpick layout
+//   if (data.stampTaxTotal) {
+//     items.push({ date: formatDate(data.invoiceDate), desc: "Stamp Fee", qty: 1, debit1: data.stampTaxTotal, credit1: "", debit2: data.stampTaxTotal, credit2: 0 });
+//   }
+
+//   const finalBalance = Number((data.grandTotalTnd || 0) + (data.cityTaxTotal || 0) + (data.stampTaxTotal || 0));
+
+//   return {
+//     meta: {
+//       date: formatDate(data.invoiceDate),
+//       invoiceNo: data.referenceNo || "53900",
+//       cashier: data.cashierId || "9622",
+//       userId: data.userId || "HB4I1-AADIOU",
+//       vatNo: data.vatNo || "1275809 RAM 00/0",
+//       hotelName: data.hotel || "Mövenpick Hotel Du Lac Tunis",
+//     },
+//     guest: {
+//       name: data.guestName,
+//       company: data.companyName || "Azar Company",
+//       address1: "Algeria Square Building Number 12",
+//       address2: "First Floor, Tripoli, Libya.",
+//       room: data.roomNo,
+//       arrival: formatDate(data.arrivalDate),
+//       departure: formatDate(data.departureDate),
+//       reservationNo: data.confirmationNo || "508322904",
+//       membershipNo: data.membershipNo || ""
+//     },
+//     items,
+//     totals: {
+//       totalDebit: formatCurrency(finalBalance),
+//       totalCredit: formatCurrency(0),
+//       netAmount: formatCurrency(data.totalHorsTaxes || 967.564),
+//       fdcst1: formatCurrency(data.fdcst1Pct || 10.517),
+//       tva7: formatCurrency(data.vat7Pct || 73.619),
+//       cityTax: formatCurrency(data.cityTaxTotal || 3.000),
+//       stampDuty: formatCurrency(data.stampTaxTotal || 1.000),
+//       totalGross: formatCurrency(finalBalance),
+//       balance: formatCurrency(finalBalance),
+//       exchangeRate: formatCurrency(data.sellingRate || 0.000),
+//       totalInEur: formatCurrency(data.balanceUsd || 0.000)
+//     }
+//   };
+// };
+
+
+
 const mapApiDataToInvoice = (data = {}) => {
   if (!data) return null;
 
   const items = [];
-  
+
+  // Find the earliest accommodation date, so Stamp Fee can be anchored to day 1
+  const firstDate = data.accommodationDetails && data.accommodationDetails.length > 0
+    ? data.accommodationDetails[0].date
+    : data.invoiceDate;
+
   if (data.accommodationDetails && data.accommodationDetails.length > 0) {
     data.accommodationDetails.forEach((acc) => {
       const dateStr = formatDate(acc.date);
-      items.push({ 
-        date: dateStr, 
-        desc: acc.description || "Accommodation", 
+
+      // Accommodation row
+      items.push({
+        date: dateStr,
+        rawDate: acc.date,
+        desc: acc.description || "Accommodation",
         qty: 1,
-        debit1: acc.debitTnd, 
-        credit1: "", 
-        debit2: acc.debitTnd, 
-        credit2: 0 
+        debit1: acc.debitTnd,
+        credit1: "",
+        debit2: acc.debitTnd,
+        credit2: 0,
+        sortOrder: 0
       });
-      // Movenpick includes taxes as line items in the example HTML
-      if (data.showPerNightTax && data.cityTaxPerNight) {
-        items.push({ date: dateStr, desc: "City Tax", qty: 1, debit1: data.cityTaxPerNight, credit1: "", debit2: data.cityTaxPerNight, credit2: 0 });
+
+      // City Tax row — match by same date from cityTaxDetails
+      const cityTaxForDay = data.cityTaxDetails?.find((t) => t.date === acc.date);
+      if (cityTaxForDay) {
+        items.push({
+          date: dateStr,
+          rawDate: acc.date,
+          desc: "City Tax",
+          qty: 1,
+          debit1: cityTaxForDay.amount,
+          credit1: "",
+          debit2: cityTaxForDay.amount,
+          credit2: 0,
+          sortOrder: 1
+        });
+      }
+
+      // Stamp Fee — only on the first day, right after that day's City Tax
+      if (acc.date === firstDate && data.stampTaxTotal) {
+        items.push({
+          date: dateStr,
+          rawDate: acc.date,
+          desc: "Stamp Fee",
+          qty: 1,
+          debit1: data.stampTaxTotal,
+          credit1: "",
+          debit2: data.stampTaxTotal,
+          credit2: 0,
+          sortOrder: 2
+        });
       }
     });
   }
 
-  // Example: Mapping overall stamp fee as a line item if needed based on Movenpick layout
-  if (data.stampTaxTotal) {
-    items.push({ date: formatDate(data.invoiceDate), desc: "Stamp Fee", qty: 1, debit1: data.stampTaxTotal, credit1: "", debit2: data.stampTaxTotal, credit2: 0 });
+  // Extra/other services
+  if (data.otherServices && data.otherServices.length > 0) {
+    data.otherServices.forEach((service) => {
+      items.push({
+        date: formatDate(service.date),
+        rawDate: service.date,
+        desc: service.name,
+        qty: 1,
+        debit1: service.amount,
+        credit1: "",
+        debit2: service.amount,
+        credit2: 0,
+        sortOrder: 3
+      });
+    });
   }
 
-  const finalBalance = Number((data.grandTotalTnd || 0) + (data.cityTaxTotal || 0) + (data.stampTaxTotal || 0));
+  // Sort date-wise; same-date ties keep Accommodation -> City Tax -> Stamp Fee -> Service order
+  items.sort((a, b) => {
+    const dateDiff = new Date(a.rawDate) - new Date(b.rawDate);
+    if (dateDiff !== 0) return dateDiff;
+    return a.sortOrder - b.sortOrder;
+  });
+
 
   return {
     meta: {
       date: formatDate(data.invoiceDate),
-      invoiceNo: data.referenceNo || "53900",
+      invoiceNo: data.referenceNo || data.refferenceNo || "53900",
       cashier: data.cashierId || "9622",
       userId: data.userId || "HB4I1-AADIOU",
       vatNo: data.vatNo || "1275809 RAM 00/0",
@@ -79,8 +203,8 @@ const mapApiDataToInvoice = (data = {}) => {
     guest: {
       name: data.guestName,
       company: data.companyName || "Azar Company",
-      address1: "Algeria Square Building Number 12",
-      address2: "First Floor, Tripoli, Libya.",
+      address1: "Tripoli Tower Ground Floor",
+      address2: "Office no 50, Tripoli, Libya.",
       room: data.roomNo,
       arrival: formatDate(data.arrivalDate),
       departure: formatDate(data.departureDate),
@@ -89,21 +213,20 @@ const mapApiDataToInvoice = (data = {}) => {
     },
     items,
     totals: {
-      totalDebit: formatCurrency(finalBalance),
+      totalDebit: formatCurrency(data.totalTtc || 0.000),
       totalCredit: formatCurrency(0),
-      netAmount: formatCurrency(data.totalHorsTaxes || 967.564),
-      fdcst1: formatCurrency(data.fdcst1Pct || 10.517),
-      tva7: formatCurrency(data.vat7Pct || 73.619),
-      cityTax: formatCurrency(data.cityTaxTotal || 3.000),
-      stampDuty: formatCurrency(data.stampTaxTotal || 1.000),
-      totalGross: formatCurrency(finalBalance),
-      balance: formatCurrency(finalBalance),
-      exchangeRate: formatCurrency(data.exchangeRate || 3.3),
-      totalInEur: formatCurrency(data.balanceEur || 319.91)
+      netAmount: formatCurrency(data.totalHorsTaxes || 0.000),
+      fdcst1: formatCurrency(data.fdcst1Pct || 0.000),
+      tva7: formatCurrency(data.vat7Pct || 0.000),
+      cityTax: formatCurrency(data.cityTaxTotal || 0.000),
+      stampDuty: formatCurrency(data.stampTaxTotal || 0.000),
+      totalGross: formatCurrency(data.totalTtc || 0.000),
+      balance: formatCurrency(data.totalTtc || 0.000),
+      exchangeRate: formatCurrency(data.sellingRate || 0.000),
+      totalInEur: formatCurrency(data.balanceUsd || 0.000)
     }
   };
 };
-
 // ─────────────────────────────────────────────────────────────────────────────
 // PAGINATION
 // ─────────────────────────────────────────────────────────────────────────────
@@ -112,7 +235,7 @@ const buildPages = (items = []) => {
   if (items.length === 0) return [{ items: [], isLastPage: true, pageNo: 1, totalPages: 1 }];
 
   const pages = [];
-  const MAX_ROWS_NORMAL = 20; 
+  const MAX_ROWS_NORMAL = 32; 
   const MAX_ROWS_WITH_TOTALS = 15; 
 
   for (let i = 0; i < items.length;) {
@@ -299,7 +422,7 @@ const MovenpickInvoiceView = ({ invoiceData }) => {
     .meta-data { display: flex; justify-content: space-between; margin-bottom: 20px; }
     .meta-group { width: 34.5%; }
     .meta-row { display: flex; }
-    .meta-label { width: 142px; }
+    .meta-label { width: 130px; }
     .meta-labelR{ width: 70px; }
     .meta-value { }
 
@@ -429,7 +552,7 @@ padding-left: 145px;
 
                   {page.isLastPage && (
                     <tr className="total-row">
-                      <td colSpan="2" style={{ textAlign: 'center' }}>Total</td>
+                      <td colSpan="2" style={{ textAlign: 'center', paddingRight: "0px" , paddingLeft: "48px"}}>Total</td>
                       <td></td>
                       <td className="text-right">{invoice.totals.totalDebit}</td>
                       <td className="text-right">{invoice.totals.totalCredit}</td>

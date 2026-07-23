@@ -447,9 +447,9 @@ const RadissonHerbyeInvoiceView = ({ invoiceData }) => {
             </p>
           <p>/</p>
           <p>AZAR TOURISM</p>
-          <p>ALGERIA SQUARE BUILDING NUMBER 12 FIRST FLOOR 12/1</p>
-          <p>1254</p>
-          <p>TRIPOLI - Libya</p>
+          <p>TRIPOLI TOWER GROUND FLOOR OFFICE NO 50</p>
+          <p>TRIPOLI</p>
+          <p>LIBYA</p>
           <div className="inline-info">
             <p><span className="bold">Party</span> {invoice.party}</p>
             <p><span className="bold">Branch</span> {invoice.branch}</p>

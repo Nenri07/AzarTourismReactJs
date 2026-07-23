@@ -142,7 +142,7 @@ const TRYPInvoiceView = ({ invoiceData }) => {
         vatNo: data.vNo || "",
         company: {
           name: "Azar Tourism Services",
-          addressLine1: "Algeria Square Building Number 12 First Floor, ",
+          addressLine1: "Tripoli Tower Ground Floor Office no 50, ",
           cityLine:"Tripoli, Libya."
 
         },

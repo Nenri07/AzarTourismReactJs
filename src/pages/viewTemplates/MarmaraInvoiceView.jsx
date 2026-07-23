@@ -433,10 +433,10 @@ const MarmaraInvoiceView = ({ invoiceData }) => {
       <div className="top-section">
         <div className="left-info">
           <p>AZAR TOURISM</p>
-          <p>ALGERIA SQUARE</p>
-          <p>BUILDING NUMBER 12 FIRST FLOOR,</p>
+          <p>TRIPOLI TOWER GROUND FLOOR</p>
+          <p>OFFICE NO 50,</p>
           <p>TRIPOLI</p>
-          <p>Libyan Arab Jamahiriya</p>
+          <p>Libya</p>
           <p style={{ textTransform: 'uppercase' }}>{invoice.guestName}</p>
           <p>COPY OF INVOICE</p>
 

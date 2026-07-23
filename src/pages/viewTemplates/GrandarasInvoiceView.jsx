@@ -173,7 +173,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
         company: {
           name: "AZAR TOURISM",
           subName: "Azar Tourism Services",
-          addressLine1: "Algeria Square Building Number 12 First Floor, Tripoli, Libya, P.O.BOX Number: 1254",
+          addressLine1: "Tripoli Tower Ground Floor Office no 50, Tripoli, Libya",
 
         },
         hotel: { logoUrl: logo }
@@ -453,7 +453,7 @@ const GrandArasInvoiceView = ({ invoiceData }) => {
             <div className="header-section">
               <div className="company-details">
                 <div className="meta-row">Azar Tourism Services</div>
-                <div className="meta-row">Algeria Square Building Number 12 First Floor,</div>
+                <div className="meta-row">Tripoli Tower Ground Floor Office no 50,</div>
                 <div className="meta-row">Tripoli, Libya</div>
               </div>
               <div className="logo-container">

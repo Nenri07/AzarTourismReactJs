@@ -8,13 +8,14 @@ import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import cairoInvoiceApi from "../../Api/cairoInvoice.api"; 
 import malaysiaInvoiceApi from "../../Api/malaysiaInvoice.api";
 import ukInvoiceApi from "../../Api/ukInvoice.api";
+import {InvoiceViewPage} from "../index";
+
 
 // Views
 import CVKInvoiceView from "./CVKInvoiceView";
 import TRYPInvoiceView from "./TRYPInvoiceView";
 import GrandArasInvoiceView from "./GrandarasInvoiceView";
 import StaybridgeInvoiceView from "./StaybridgeInvoiceView"; 
-import InvoiceViewPage from "./InvoiceViewPage";
 import RaddisonInvoiceView from "./RaddisonInvoiceView";
 import IntercontinentalInvoiceView from "./IntercontinentalInvoiceView";
 import FairmontInvoiceView from "./FairmontInvoiceView";

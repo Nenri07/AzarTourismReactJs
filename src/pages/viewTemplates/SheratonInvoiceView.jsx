@@ -103,13 +103,14 @@ const mapApiDataToInvoice = (data = {}) => {
   if (data.address) {
     data.address.split(',').map(s => s.trim()).forEach(s => clientAddressLines.push(s));
   } else {
-    clientAddressLines.push("Azar Tourism Services", "Tripoli, Libya");
+    clientAddressLines.push("Azar Tourism Services", "Tripoli Tower Ground Floor Office no 50", "Tripoli, Libya");
   }
 
   const calculatedTotalDebit = sortedItems.reduce((acc, curr) => acc + (parseFloat(curr.debit) || 0), 0);
   const calculatedTotalCredit = sortedItems.reduce((acc, curr) => acc + (parseFloat(curr.credit) || 0), 0);
 
   return {
+    referenceNo: data.refferenceNo || "",
     invoiceNo: data.invoiceNo || "",
     billingDate: formatDate(data.invoiceDate) || "",
     roomNo: data.roomNo || "",
@@ -126,6 +127,8 @@ const mapApiDataToInvoice = (data = {}) => {
       balance: calculatedTotalDebit - calculatedTotalCredit,
     },
     taxBreakdown: {
+      totalInUsd: data.balanceUsd || 0,
+      exchangeRate: data.sellingRate || data.usdExchangeRate || 0,
       fdcst1: data.fdcst1Pct || 0,
       vat7: data.vat7Pct || 0,
       totalHorsTaxes: data.totalHorsTaxes || 0,
@@ -211,68 +214,122 @@ const SheratonInvoiceView = ({ invoiceData }) => {
     }
   }, [isPdfDownload, invoice, navigate]);
 
- const handleDownloadPDF = async () => {
-    if (!invoiceRef.current) return;
-    setPdfLoading(true);
 
-    const original = invoiceRef.current;
-    const clone = original.cloneNode(true);
-    clone.classList.add('pdf-export-mode');
+ const sanitizeColorsForCanvas = (root) => {
+  const COLOR_PROPS = [
+    'color', 'backgroundColor', 'borderTopColor', 'borderRightColor',
+    'borderBottomColor', 'borderLeftColor', 'outlineColor',
+    'textDecorationColor', 'boxShadow',
+  ];
 
-    // Position off-screen but keep it in the document so styles resolve
-    clone.style.position = 'fixed';
-    clone.style.top = '-9999px';
-    clone.style.left = '-9999px';
-    clone.style.zIndex = '-1';
-    document.body.appendChild(clone);
+  const all = [root, ...root.querySelectorAll('*')];
 
-    // Strip app stylesheets only for the html2canvas capture window
-    const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
-    headStyles.forEach(s => { if (s.parentNode) s.parentNode.removeChild(s); });
+  all.forEach((el) => {
+    const computed = window.getComputedStyle(el);
+    const inline = {};
 
-    try {
-      // Wait for cloned images to load
-      const images = clone.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
-      }));
-      // Small settle delay for fonts/layout
-      await new Promise(resolve => setTimeout(resolve, 300));
+    COLOR_PROPS.forEach((prop) => {
+      const val = computed[prop];
+      if (val && val !== 'none') inline[prop] = val;
+    });
 
-      const opt = {
-        margin: 0,
-        filename: `Sheraton_Tunis_Invoice_${invoice.invoiceNo || 'Invoice'}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: {
-          scale: 4,
-          useCORS: true,
-          letterRendering: true,
-          scrollY: 0,
-          windowWidth: 794, // A4 at 96dpi
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // Same proven mode as the other hotel views: respects the
-        // page-break-after:always already on .inv-page instead of
-        // requiring pixel-exact 1123px slices.
-        pagebreak: { mode: ['css', 'legacy'] },
-      };
+    Object.assign(el.style, inline);
 
-      await html2pdf().set(opt).from(clone).save();
-      toast.success("PDF Downloaded");
-    } catch (err) {
-      console.error("PDF Error:", err);
-      toast.error("PDF generation failed");
-    } finally {
-      // ALWAYS restore styles and remove the clone, success or failure —
-      // this is what was missing before and left the app permanently
-      // unstyled after any failed export.
-      headStyles.forEach(s => document.head.appendChild(s));
-      if (clone.parentNode) document.body.removeChild(clone);
-      setPdfLoading(false);
+    const bgImage = computed.backgroundImage;
+    if (bgImage && bgImage.includes('oklch')) {
+      el.style.backgroundImage = 'none';
     }
-  };
+  });
+};
 
+const handleDownloadPDF = async () => {
+  if (!invoiceRef.current) return;
+  setPdfLoading(true);
+
+  const headStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
+  headStyles.forEach(s => { if (s.parentNode) s.parentNode.removeChild(s); });
+
+  const original = invoiceRef.current;
+  const clone = original.cloneNode(true);
+  clone.classList.add('pdf-export-mode');
+
+  const host = document.createElement('div');
+  host.style.position = 'fixed';
+  host.style.top = '0';
+  host.style.left = '0';
+  host.style.width = '794px';
+  host.style.zIndex = '-1';
+  host.style.overflow = 'visible';
+  host.style.background = '#fff';
+  host.appendChild(clone);
+  document.body.appendChild(host);
+
+  try {
+    sanitizeColorsForCanvas(clone);
+
+    const images = clone.querySelectorAll('img');
+    await Promise.all(Array.from(images).map(img => {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+    }));
+
+    if (document.fonts?.ready) await document.fonts.ready;
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    // ── Force an EXACT height instead of a measured one ─────────────────────
+    // clone.scrollHeight can come back 1-2px over pages.length*1123 due to
+    // sub-pixel font rendering or border rounding. That tiny overflow is
+    // enough to push html2canvas's canvas past the last real page boundary,
+    // producing one extra blank sliced page. Clipping to the exact expected
+    // height removes the sliver entirely.
+    const expectedPages = paginatedData.length;
+    const exactHeight = expectedPages * 1123;
+    clone.style.height = `${exactHeight}px`;
+    clone.style.maxHeight = `${exactHeight}px`;
+    clone.style.overflow = 'hidden';
+
+    const opt = {
+      margin: 0,
+      filename: `${invoice.referenceNo || 'Invoice'}.pdf`,
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: {
+        scale: 3,
+        useCORS: true,
+        allowTaint: false,
+        letterRendering: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 794,
+        windowHeight: exactHeight, // matches the clipped height exactly
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] },
+    };
+
+    // ── Safety net: if a blank trailing page still sneaks through, drop it ──
+    await html2pdf()
+      .set(opt)
+      .from(clone)
+      .toPdf()
+      .get('pdf')
+      .then((pdf) => {
+        const actualPages = pdf.internal.getNumberOfPages();
+        if (actualPages > expectedPages) {
+          pdf.deletePage(actualPages);
+        }
+      })
+      .save();
+
+    toast.success("PDF Downloaded");
+  } catch (err) {
+    console.error("PDF Error:", err);
+    toast.error("PDF generation failed");
+  } finally {
+    headStyles.forEach(s => document.head.appendChild(s));
+    if (host.parentNode) document.body.removeChild(host);
+    setPdfLoading(false);
+  }
+};
   if (!invoice) return null;
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -464,10 +521,18 @@ margin-left: 50%;
 
     .tax-breakdown-section {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       margin-top: 10px;
     }
     .tax-container-box { width: 45%; }
+    .tax-data-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2.5px 0;
+      font-weight: normal !important;
+      font-size: 11.5px;
+    }
+         .tax-container-box2 { width: 45%; }
     .tax-data-row {
       display: flex;
       justify-content: space-between;
@@ -636,6 +701,17 @@ margin-left: 50%;
                     </div>
 
                     <div className="tax-breakdown-section">
+                      
+                        <div className="tax-container-box" style={{width: "35%" , display: "flex", flexDirection: "column", justifyContent: "flex-end"}}>
+                        <div className="tax-data-row">
+                          <span style={{width: "170px", textAlign:"left"}}>USD Exch. Rate :</span>
+                          <span style={{width: "170px", textAlign:"right", paddingRight: "70px"}}>{formatCurrency(invoice.taxBreakdown.exchangeRate)}</span>
+                        </div>
+                        <div className="tax-data-row">
+                          <span style={{width: "170px", textAlign:"left"}}>Total in USD :</span>
+                          <span style={{width: "170px", textAlign:"right" , paddingRight: "70px"}}>{formatCurrency(invoice.taxBreakdown.totalInUsd)}</span>
+                        </div>
+                      </div>
                       <div className="tax-container-box">
                         <div className="tax-data-row">
                           <span style={{width: "170px", textAlign:"right"}}>FDCST 1%</span>

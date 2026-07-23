@@ -173,7 +173,7 @@ export default function InvoiceViewPage() {
 
             // Company info
             companyName: inv.vd || "Azar Tourism Services",
-            companyAddress: "Algeria Square Building Number 12 First Floor, Tripoli, Libya.",
+            companyAddress: "Tripoli Tower Ground Floor Office no 50, Tripoli, Libya.",
             accountNo: inv.voucher_no || "ARZ2022TOU",
             vatNo: inv.confirmation || "",
             invoiceNo: inv.batch_no || "NOVO-13",

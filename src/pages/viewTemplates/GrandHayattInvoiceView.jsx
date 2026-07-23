@@ -22,7 +22,7 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
   const dummyInvoiceData = {
     guestName: "Alasqaa, Salah",
     companyName: "Azar Tourism",
-    address: "Algazyer Square Building No. 12, First Floor, Tripoli 1254, Libyan Arab Jamahiriya",
+    address: "Tripoli Tower Ground Floor, Office no 50, Tripoli, Libya",
     roomNo: "3114",
     arrivalDate: "2026-01-29",
     departureDate: "2026-02-04",

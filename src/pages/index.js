@@ -76,5 +76,6 @@ export {
     AdamTunisInvoiceView,
     FourSeasonTunisInvoiceView,
     NovotelInvoiceView,
-    ConsordeTunisInvoiceView
+    ConsordeTunisInvoiceView,
+    
 };

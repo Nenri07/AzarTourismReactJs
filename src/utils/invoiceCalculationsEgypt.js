@@ -597,7 +597,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
 
       invoiceNo:  formData.invoice_no || '',
       guestName:  capitalizeWords(formData.guest_name) || 'Guest',
-      address:    'Algeria Square Building Number 12 First Floor, Tripoli, Libya',
+      address:    'Tripoli Tower Ground Floor Office no 50, Tripoli, Libya',
       companyName: formData.company_name,
       referenceNo: formData.reference_no || '',
       arNumber:    formData.ar_number || '',

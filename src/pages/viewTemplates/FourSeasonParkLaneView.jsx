@@ -112,7 +112,7 @@ const FourSeasonParkLaneView = ({ invoiceData }) => {
     return {
       guestName: data.guestName || data.guest_name || "",
       companyNames: data.companyNames || data.company_name || "",
-      companyAddress: "Algeria Square Building Number 12 First Floor\nTripoli Libya",
+      companyAddress: "Tripoli Tower Ground Floor Office no 50\nTripoli Libya",
       roomNo: data.roomNo || data.room_number || "",
       arrivalDate: data.arrivalDate || data.arrival_date || "",
       departureDate: data.departureDate || data.departure_date || "",

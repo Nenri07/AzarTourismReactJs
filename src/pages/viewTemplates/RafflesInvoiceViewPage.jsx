@@ -217,7 +217,7 @@ export default function RafflesInvoiceViewPage({ invoiceData }) {
     return {
       companyName: displayCompanyName,
       referenceNo: data.referenceNo || "",
-      companyAddress: data.companyAddress || "Algeria Square Building Number 12 First Floor",
+      companyAddress: data.companyAddress || "Tripoli Tower Ground Floor Office no 50",
       companyCityAndCountry: data.companyCityAndCountry || "Tripoli, Libya",
       companyCountry: data.companyCountry || "Libya",
       taxOfficeNo: data.taxOfficeNo || `${data.vd || "999"} - ${data.vNo || "009988"}`,

@@ -64,27 +64,57 @@ const numberToEnglishWords = (amount) => {
 const mapApiDataToInvoice = (data = {}) => {
   if (!data) return null;
 
-  const items = [];
   const subDesc = `${data.companyName || ''} => ${data.guestName || ''} #${data.roomNo || ''}`;
+  const rawItems = [];
 
+ // Accommodation + its per-night charges
   if (data.accommodationDetails && data.accommodationDetails.length > 0) {
     data.accommodationDetails.forEach((acc) => {
-      const dateStr = formatDate(acc.date);
-      items.push({ date: dateStr, desc: acc.description || "Package", subDesc, debit: acc.debitTnd, credit: acc.creditTnd });
-      if (data.fdcst1Pct) items.push({ date: dateStr, desc: "FDCST 1%", subDesc, debit: (data.fdcst1Pct / data.nights), credit: "" });
-      if (data.vat7Pct) items.push({ date: dateStr, desc: "VAT 7%", subDesc, debit: (data.vat7Pct / data.nights), credit: "" });
-      if (data.showPerNightTax && data.cityTaxPerNight) items.push({ date: dateStr, desc: "City Tax", subDesc, debit: data.cityTaxPerNight, credit: "" });
+      const roomAmount = data.roomAmountTnd;
+      const fdcstAmount = roomAmount * 0.01;
+      const vatAmount = (roomAmount + fdcstAmount) * 0.07;
+
+      rawItems.push({ rawDate: acc.date, desc: acc.description || "Package", subDesc, debit: roomAmount, credit: acc.creditTnd });
+      if (data.fdcst1Pct) rawItems.push({ rawDate: acc.date, desc: "FDCST 1%", subDesc, debit: fdcstAmount, credit: "" });
+      if (data.vat7Pct) rawItems.push({ rawDate: acc.date, desc: "VAT 7%", subDesc, debit: vatAmount, credit: "" });
+      if (data.showPerNightTax && data.cityTaxPerNight) rawItems.push({ rawDate: acc.date, desc: "City Tax", subDesc, debit: data.cityTaxPerNight, credit: "" });
     });
   }
 
-  if (data.stampTaxTotal) {
-    items.push({ date: formatDate(data.invoiceDate), desc: "Droit de Timbre", subDesc, debit: data.stampTaxTotal, credit: "" });
+  // Stamp duty — use its actual date(s), not invoiceDate
+  if (data.stampTaxDetails && data.stampTaxDetails.length > 0) {
+    data.stampTaxDetails.forEach((st) => {
+      rawItems.push({ rawDate: st.date, desc: st.description || "Droit de Timbre", subDesc, debit: st.amount, credit: "" });
+    });
+  } else if (data.stampTaxTotal) {
+    rawItems.push({ rawDate: data.invoiceDate, desc: "Droit de Timbre", subDesc, debit: data.stampTaxTotal, credit: "" });
   }
 
-  const finalBalance = Number((data.grandTotalTnd || 0) + (data.cityTaxTotal || 0) + (data.stampTaxTotal || 0));
+  // Extra services (Laundry, etc.) — previously never included at all
+  if (data.otherServices && data.otherServices.length > 0) {
+    data.otherServices.forEach((svc) => {
+      rawItems.push({ rawDate: svc.date, desc: svc.name, subDesc, debit: svc.amount, credit: "" });
+    });
+  }
+
+  // Sort chronologically once; stable sort keeps Package/FDCST/VAT/CityTax order within a day
+  rawItems.sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+
+  const items = rawItems.map((it) => ({
+    date: formatDate(it.rawDate),
+    desc: it.desc,
+    subDesc: it.subDesc,
+    debit: it.debit,
+    credit: it.credit,
+  }));
+
+  // totalTtc / grandTotalTnd already = totalHorsTaxes + vat7 + fdcst1 + cityTax + stampTax.
+  // Only otherServices (Laundry etc.) sits outside that figure, so add it — nothing else.
+  const totalServices = data.totalServicesGrossTnd || 0;
+  const finalBalance = Number((data.totalTtc ?? data.grandTotalTnd ?? 0) );
 
   return {
-    meta: {
+    meta: { /* unchanged */
       date: formatDate(data.invoiceDate),
       hotel: {
         name: data.hotel || "Tunis Marriott Hotel",
@@ -97,7 +127,10 @@ const mapApiDataToInvoice = (data = {}) => {
     },
     guest: {
       name: data.guestName,
-      country: "Tunisia",
+      referenceNo: data.referenceNo,
+      companyName: data.companyName || "AZAR TOURISM SERVICES",
+      address: "Tripoli Tower Ground Floor\nOffice no 50\nTripoli\nLibya",
+      factureNo: data.folioNo||"",
       room: data.roomNo,
       arrival: formatDate(data.arrivalDate),
       departure: formatDate(data.departureDate),
@@ -107,6 +140,8 @@ const mapApiDataToInvoice = (data = {}) => {
     },
     items,
     totals: {
+      totalInDollars: formatCurrency(data.balanceEur||0),
+      exchangeRate: formatCurrency(data.exchangeRate||0),
       totalDebit: formatCurrency(finalBalance),
       totalCredit: formatCurrency(0),
       netAmount: formatCurrency(data.totalHorsTaxes),
@@ -129,7 +164,7 @@ const buildPages = (items = []) => {
   if (items.length === 0) return [{ items: [], isLastPage: true, pageNo: 1, totalPages: 1 }];
 
   const pages = [];
-  const MAX_ROWS_NORMAL = 15; 
+  const MAX_ROWS_NORMAL = 9; 
   const MAX_ROWS_WITH_TOTALS = 6; 
 
   for (let i = 0; i < items.length;) {
@@ -224,7 +259,7 @@ const MarriottInvoiceView = ({ invoiceData }) => {
 
       const opt = {
         margin:      0,
-        filename:    `Marriott_Invoice_${invoice.guest.room || 'Room'}.pdf`,
+        filename:    `${invoice.guest.referenceNo|| 'invoiceMarriot'}.pdf`,
         image:       { type: 'jpeg', quality: 3 },
         html2canvas: { scale: 4, useCORS: true, letterRendering: true, scrollY: 0, windowWidth: 794 },
         jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -357,7 +392,10 @@ const MarriottInvoiceView = ({ invoiceData }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div className="m-guest-info" style={{ width: '50%' }}>
           {invoice.guest.name}<br />
-          {invoice.guest.country}
+          {invoice.guest.companyName}<br />
+          {invoice.guest.address.split('\n').map((line, i) => (
+            <React.Fragment key={i}>{line}<br /></React.Fragment>
+          ))}
         </div>
         
         <div style={{ width: '45%' }}>
@@ -387,7 +425,7 @@ const MarriottInvoiceView = ({ invoiceData }) => {
               <col style={{ width: '45%' }} />
             </colgroup>
             <tbody>
-              <tr><td style={{paddingLeft: "70px"}}>Facture No</td><td>:</td></tr>
+              <tr><td style={{paddingLeft: "70px"}}>Facture No</td><td>:</td><td>{invoice.guest.factureNo}</td></tr>
             </tbody>
           </table>
         </div>
@@ -477,6 +515,10 @@ const MarriottInvoiceView = ({ invoiceData }) => {
                         <tr><td style={{ paddingBottom: '3px' }}>TVA 19%</td><td style={{ textAlign: 'right', paddingBottom: '3px' }}>{invoice.totals.tva19} TND</td></tr>
                         <tr><td style={{ paddingBottom: '3px' }}>TX Sejour/City TX</td><td style={{ textAlign: 'right', paddingBottom: '3px' }}>{invoice.totals.cityTax} TND</td></tr>
                         <tr><td style={{ paddingBottom: '3px' }}>Timbre/Stamp Duty</td><td style={{ textAlign: 'right', paddingBottom: '3px' }}>{invoice.totals.stampDuty} TND</td></tr>
+                                                <tr><td style={{ paddingBottom: '3px' }}>USD Amount</td><td style={{ textAlign: 'right', paddingBottom: '3px' }}>{invoice.totals.totalInDollars} USD</td></tr>
+                                                                        <tr><td style={{ paddingBottom: '3px' }}>USD Exch. Rate</td><td style={{ textAlign: 'right', paddingBottom: '3px' }}>{invoice.totals.exchangeRate} TND</td></tr>
+
+
                       </tbody>
                     </table>
                   </div>

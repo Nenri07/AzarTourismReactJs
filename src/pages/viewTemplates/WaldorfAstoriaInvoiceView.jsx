@@ -416,8 +416,8 @@ const WaldorfAstoriaInvoiceView = ({ invoiceData }) => {
               <div style={{ position: 'absolute', top: '80px', left: 0, fontSize: '9pt'}}>
                   <div style={{marginBottom: '15px'}}>{invoice.guestName}</div>
                 <div style={{ fontWeight: 'normal', textTransform: 'uppercase' }}>{invoice.companyName || "AZAR TOURISM SERVICES"}</div>
-                <div>Algeria Square Building Number 12 First</div>
-                <div>Floor, Tripoli 1254 Tripoli</div>
+                <div>Tripoli Tower Ground Floor</div>
+                <div>Office no 50, Tripoli</div>
                 <div>Libya</div>
                 <div style={{ fontSize: '9pt', marginTop: '63px', textTransform: 'uppercase' }}>
                 WALDORF ASTORIA CAIRO {formatDate(invoice.invoiceDate, false)} <span>&nbsp;{invoice.invoiceTime} </span></div>

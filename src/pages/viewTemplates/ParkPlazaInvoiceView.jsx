@@ -363,7 +363,7 @@ const ParkPlazaInvoiceView = ({ invoiceData }) => {
 
                   <div className="billing-address">
                     {invoice.companyName && <>{invoice.companyName}<br /></>}
-                    Algeria Square Building Number 12 First Floor<br />
+                    Tripoli Tower Ground Floor Office no 50<br />
                     Tripoli<br />
                     Libya
                   </div>
