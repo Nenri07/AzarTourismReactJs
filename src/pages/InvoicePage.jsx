@@ -75,7 +75,8 @@ export default function InvoicePage() {
       name.includes("fairmont") || name.includes("fairmount") ||
       name.includes("holiday") ||
       (name.includes("radisson") && name.includes("cairo")) ||
-      (name.includes("intercontinental") && !name.includes("kuala lumpur"))
+      (name.includes("intercontinental") && !name.includes("kuala lumpur"))||
+      name.includes("novotel cairo airport")
     );
   };
 
@@ -96,7 +97,9 @@ export default function InvoicePage() {
       name.includes("radisson blu hotel istanbul sisli") ||
       name.includes("hilton istanbul bosphorus") ||
       name.includes("marmara taksim") || name.includes("yotelair") ||
-      name.includes("cheya") || name.includes("radisson hotel istanbul harbiye")
+      name.includes("cheya") || name.includes("radisson hotel istanbul harbiye")||
+      name.includes("raffles") || name.includes("raffles istanbul")
+
     );
   };
 

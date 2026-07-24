@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from 'html2pdf.js';
@@ -6,9 +6,9 @@ import { InvoiceTemplate } from "../../components";
 import logo from '/concorde-logo.jpeg?url'; 
 import tunisiaInvoiceApi from '../../Api/tunisiainvoice.api';
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // PURE HELPERS  
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
@@ -30,9 +30,9 @@ const formatCurrency = (val) => {
   });
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// API → VIEW SCHEMA MAPPER
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// API â†’ VIEW SCHEMA MAPPER
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const mapApiDataToInvoice = (data = {}) => {
   if (!data) return null;
@@ -60,7 +60,7 @@ const mapApiDataToInvoice = (data = {}) => {
         desc: acc.description || "accommodation", 
         debit: acc.charges || acc.debitTnd, 
         credit: acc.credits || acc.creditTnd,
-        subDesc: acc.subDescription || `  ${data.guestName} #${data.roomNo}=>AZAR TOURISM  #${data.folioNo}`,
+        subDesc: acc.subDescription || `  ${data.guestName} #${data.roomNo}`,
         priority: 1
       });
       
@@ -68,7 +68,7 @@ const mapApiDataToInvoice = (data = {}) => {
         allItems.push({
           date: dateStr,
           time: time,
-          desc: "Taxe de Séjour",
+          desc: "Taxe de SÃ©jour",
           debit: cityTaxPerNight,
           credit: 0,
           priority: 3
@@ -87,7 +87,7 @@ const mapApiDataToInvoice = (data = {}) => {
         desc: svc.name,
         debit: svc.amount,
         credit: 0,
-        subDesc: `Room# ${data.roomNo} : CHECK# ${Math.floor(Math.random() * 1000000).toString().padStart(7, '0')}   ${data.guestName} #${data.roomNo}=>AZAR TOURISM  #${data.folioNo}`,
+        subDesc: `Room# ${data.roomNo}   ${data.guestName}`,
         priority: 2
       });
     });
@@ -101,13 +101,14 @@ const mapApiDataToInvoice = (data = {}) => {
   const finalBalance = Number(data.grandTotalTnd || 0);
 
   return {
+    refferenceNo: data.refferenceNo,
     meta: {
       date: formatDate(data.invoiceDate),
     },
     guest: {
       name: data.guestName,
       companyName: data.companyNames || "AZAR TOURISM",
-      country: "Tunisia",
+      country: "Tripoli Tower Ground Floor\nOffice no 50\nTripoli Libya",
       room: data.roomNo,
       arrival: formatDate(data.arrivalDate),
       departure: formatDate(data.departureDate),
@@ -116,13 +117,18 @@ const mapApiDataToInvoice = (data = {}) => {
       folioNo: data.folioNo,
       cashierId: data.cashierId,
       cashierName: data.cashierName,
-      pax: data.pax
+      paxA: data.adults || 0,
+      paxC: data.children || 0,
+      pax: (data.adults || 0) + (data.children || 0),
+      taxId: data.taxId || ""
     },
     items,
     totals: {
       totalDebit: formatCurrency(finalBalance),
+      usdExchangeRate: formatCurrency(data.sellingRate || 0.00),
       totalCredit: formatCurrency(0),
       netAmount: formatCurrency(data.totalHorsTaxes || 1349.126),
+      totalInUsd: formatCurrency(data.balanceUsd || 0.000),
       fdcst1: formatCurrency(data.fdcst1Pct || 13.491),
       tva7: formatCurrency(data.vat7Pct || 95.383),
       tva19: formatCurrency(data.vat19Pct || 0.000),
@@ -134,16 +140,16 @@ const mapApiDataToInvoice = (data = {}) => {
   };
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // PAGINATION
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const buildPages = (items = []) => {
   if (items.length === 0) return [{ items: [], isLastPage: true, pageNo: 1, totalPages: 1 }];
 
   const pages = [];
-  const ROWS_PER_PAGE = 12;
-  const SAME_PAGE_TOTALS_LIMIT = 6;
+  const ROWS_PER_PAGE = 16;
+  const SAME_PAGE_TOTALS_LIMIT = 9;
 
   for (let i = 0; i < items.length; i += ROWS_PER_PAGE) {
     const pageItems = items.slice(i, i + ROWS_PER_PAGE);
@@ -169,9 +175,9 @@ const buildPages = (items = []) => {
   return pages;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ConsordeTunisInvoiceView = ({ invoiceData }) => {
   const { invoiceId } = useParams();
@@ -267,7 +273,7 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
 
       const opt = {
         margin:      0,
-        filename:    `ConcordeTunis_Invoice_${invoice.guest.room || 'Room'}.pdf`,
+        filename:    `${invoice.refferenceNo}.pdf`,
         image:       { type: 'jpeg', quality: 1 },
         html2canvas: { scale: 4, useCORS: true, letterRendering: true, scrollY: 0, windowWidth: 794 },
         jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -305,6 +311,9 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       padding-bottom: 20px;
+    }
+    .tax-td{
+    padding-bottom:3px;
     }
 
     .inv-page {
@@ -368,7 +377,7 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
   const PageHeader = ({ page }) => (
     <div style={{ position: 'relative', width: '100%', marginBottom: '90px', fontFamily: 'Tahoma, sans-serif' }}>
       <div style={{ position: 'absolute', top: '-10px', left: '0', width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <img src={logo} alt="Concorde Tunis Logo" style={{ height: '80px', objectFit: 'contain' }} />
+        <img src={logo} alt="Concorde Tunis Logo" style={{ height: '85px', objectFit: 'contain' }} />
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '105px' }}>
@@ -382,23 +391,23 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
             <tbody style={{ lineHeight: '1.6' }}>
               <tr>
                 <td style={{padding: '0'}}>Facture &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ Folio: &nbsp;</td>
-                <td style={{padding: '0'}}></td>
+                <td style={{padding: '0'}}>{invoice.guest.folioNo}</td>
               </tr>
               <tr>
                 <td style={{padding: '0'}}>Chambre/ Room: &nbsp;</td>
                 <td style={{padding: '0'}}>{invoice.guest.room}</td>
               </tr>
               <tr>
-                <td style={{padding: '0'}}>Arrivée / Arrival: &nbsp;</td>
+                <td style={{padding: '0'}}>ArrivÃ©e / Arrival: &nbsp;</td>
                 <td style={{padding: '0'}}>{invoice.guest.arrival}</td>
               </tr>
               <tr>
-                <td style={{padding: '0'}}>Départ / Departure:&nbsp;</td>
+                <td style={{padding: '0'}}>DÃ©part / Departure:&nbsp;</td>
                 <td style={{padding: '0'}}>{invoice.guest.departure}</td>
               </tr>
               <tr>
-                <td style={{padding: '0'}}>Nº Pers. / Nº Pax: &nbsp;</td>
-                <td style={{padding: '0'}}>{invoice.guest.pax} &nbsp;&nbsp;&nbsp;/ {invoice.guest.pax}</td>
+                <td style={{padding: '0'}}>NÂº Pers. / NÂº Pax: &nbsp;</td>
+                <td style={{padding: '0'}}>{invoice.guest.paxA} &nbsp;&nbsp;&nbsp;/ {invoice.guest.paxC}</td>
               </tr>
               <tr>
                 <td style={{padding: '0'}}>Page / Page: &nbsp;&nbsp;&nbsp;&nbsp;</td>
@@ -413,33 +422,31 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
                 <td style={{padding: '0'}}>{invoice.meta.date}</td>
               </tr>
               <tr>
-                <td style={{padding: '0'}}>Nº Reserva/Reser.Nº:&nbsp;</td>
+                <td style={{padding: '0'}}>NÂº Reserva/Reser.NÂº:&nbsp;</td>
                 <td style={{padding: '0'}}>{invoice.guest.crsNo}</td>
               </tr>
               <tr>
                 <td style={{padding: '0'}}>Guest / Client :</td>
                 <td style={{padding: '0'}}>{invoice.guest.companyName}</td>
               </tr>
-              <tr>
-                <td style={{padding: '0'}}></td>
-                <td style={{padding: '0'}}>{invoice.guest.country}</td>
-              </tr>
+              
             </tbody>
           </table>
         </div>
         
         {/* Right Side */}
         <div style={{ width: '38%', fontSize: '14px', display: 'flex', flexDirection: 'column', paddingTop: '0px' }}>
-          <div style={{ marginBottom: '106px' }}>
+          <div style={{ marginBottom: '85px' }}>
             <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.2' }}>{invoice.guest.companyName}</div>
             <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.2' }}>{invoice.guest.country}</div>
           </div>
           <div>
-             <span>TAX ID:</span>
-          </div>
+  <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.2' }}>TAX ID : {invoice.guest.taxId}</div>          </div>
           <div style={{ marginTop: '10px' }}>
              <strong style={{ fontSize: '14px', textTransform: 'uppercase' }}>INFORMATION INVOICE</strong>
           </div>
+            <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.2' }}>Guest Name: {invoice.guest.name}</div>
+
         </div>
       </div>
     </div>
@@ -474,8 +481,8 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
                   <tr>
                     <th style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial', paddingLeft: '25px' }}>Date</th>
                     <th style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial', paddingLeft: '25px' }}>Description</th>
-                    <th className="right-align" style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial' }}>Débit TND</th>
-                    <th className="right-align" style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial', paddingRight: '10px' }}>Crédit TND</th>
+                    <th className="right-align" style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial' }}>DÃ©bit TND</th>
+                    <th className="right-align" style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial', paddingRight: '10px' }}>CrÃ©dit TND</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -498,58 +505,82 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
                 </tbody>
               </table>
 
+               {/* UPDATED TOTALS LAYOUT */}
                {page.isLastPage && (
-                 <div style={{ fontSize: '14px', fontFamily: 'Arial', marginTop: '10px', borderTop: '1px solid black' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
                    
-                   <table style={{ width: '63%', marginLeft: '37%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: '14px' }}>
-                     <colgroup>
-                       <col style={{ width: '42%' }} />
-                       <col style={{ width: '25%' }} />
-                       <col style={{ width: '7%' }} />
-                     </colgroup>
-                      <tbody>
-                          <tr>
-                            <td style={{ padding: '6px 0 12px 0' }}>Total</td>
-                            <td className="right-align" style={{ padding: '6px 0 12px 0' }}>{invoice.totals.totalDebit}</td>
-                            <td className="right-align" style={{ padding: '6px 5px 12px 0' }}>{invoice.totals.totalCredit || '0.000'}</td>
-                          </tr>
-                          <tr style={{ borderTop: '3px solid #000' }}>
-                            <td style={{ paddingTop: '6px' }}>Balance en TND :</td>
-                            <td className="right-align" style={{ paddingTop: '6px' }}>{invoice.totals.balance}</td>
-                            <td></td>
-                          </tr>
-                          <tr>
-                            <td colSpan="3" style={{ padding: '0' }}>
-                               <div style={{ height: '14px', backgroundColor: '#555', marginTop: '8px', marginBottom: '8px' }}></div>
-                            </td>
-                          </tr>
-                      </tbody>
-                   </table>
+                   {/* Left Side (37% width) */}
+                   <div style={{ width: '37%', display: 'flex', flexDirection: 'column', fontSize: '14px', fontFamily: 'Arial', justifyContent: 'flex-end', paddingRight: '20px' }}>
+                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                       <tbody style={{ lineHeight: '1.2' }}> 
+                         <tr>
+                           <td >USD Exch. Rate</td>
+                           <td className="right-align">{invoice.totals.usdExchangeRate}</td>
+                         </tr>
+                         <tr >
+                           <td >Total In USD :</td>
+                           <td className="right-align" >{invoice.totals.totalInUsd}</td>
+                         </tr>
+                       </tbody>
+                     </table>
+                   </div>
+                   
+                   {/* Right Side (63% width) - this acts as the 37% left margin offset */}
+                   <div style={{ width: '63%', fontSize: '14px', fontFamily: 'Arial', borderTop: '1px solid black' }}>
+                     
+                     {/* Sub-Total Table */}
+                     <table style={{ width: '100%',  borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: '14px' }}>
+                       <colgroup>
+                         <col style={{ width: '43%' }} />
+                         <col style={{ width: '24%' }} />
+                         <col style={{ width: '33%' }} />
+                       </colgroup>
+                       <tbody>
+                         <tr>
+                           <td style={{ padding: '6px 0 10px 0' }}>Total</td>
+                           <td className="right-align" style={{ padding: '6px 0 10px 0' }}>{invoice.totals.totalDebit}</td>
+                           <td className="right-align" style={{ padding: '6px 5px 10px 0' }}>{invoice.totals.totalCredit || '0.000'}</td>
+                         </tr>
+                         <tr style={{ borderTop: '3px solid #000' }}>
+                           <td style={{ paddingTop: '6px', paddingBottom: '6px' }}>Balance en TND :</td>
+                           <td className="right-align" style={{ paddingTop: '6px', paddingBottom: '6px' }}>{invoice.totals.balance}</td>
+                           <td></td>
+                         </tr>
+                         <tr>
+                           <td colSpan="3" style={{ padding: '0' }}>
+                              <div style={{ height: '14px', backgroundColor: '#555', marginTop: '4px', marginBottom: '8px' }}></div>
+                           </td>
+                         </tr>
+                       </tbody>
+                     </table>
 
-                   <table style={{ width: '45%', marginLeft: '37%', borderCollapse: 'collapse', fontSize: '14px', lineHeight: '1.1' }}>
-                      <colgroup>
-                        <col style={{ width: '32%' }} />
-                        <col style={{ width: '1%' }} />
-                        <col style={{ width: '55%' }} />
-                      </colgroup>
-                      <tbody>
-                        <tr><td>Total Hors Taxes</td><td style={{textAlign: 'center'}}>:</td><td style={{paddingRight: '50px',  textAlign: 'right' }}>{invoice.totals.netAmount} TND</td></tr>
-                        <tr><td>FDCST 1%</td><td style={{textAlign: 'center'}}>:</td><td style={{paddingRight: '50px',  textAlign: 'right' }}>{invoice.totals.fdcst1} TND</td></tr>
-                        <tr><td>TVA 7%</td><td style={{textAlign: 'center'}}>:</td><td style={{paddingRight: '50px',  textAlign: 'right' }}>{invoice.totals.tva7} TND</td></tr>
-                        <tr><td>Timbre Fiscal</td><td style={{textAlign: 'center'}}>:</td><td style={{paddingRight: '50px',  textAlign: 'right' }}>{invoice.totals.stampDuty} TND</td></tr>
-                        <tr><td>TVA 19 %</td><td style={{textAlign: 'center'}}>:</td><td style={{paddingRight: '50px',  textAlign: 'right' }}>{invoice.totals.tva19} TND</td></tr>
-                        <tr><td>Taxe de Séjour</td><td style={{textAlign: 'center'}}>:</td><td style={{paddingRight: '50px',  textAlign: 'right' }}>{invoice.totals.cityTax} TND</td></tr>
-                        <tr><td style={{ paddingTop: '5px' }}>Total TTC</td><td style={{textAlign: 'center', paddingTop: '5px'}}>:</td><td style={{paddingRight: '50px', paddingTop: '5px', textAlign: 'right' }}>{invoice.totals.grossAmount} TND</td></tr>
-                        <tr><td>Net a Payer</td><td style={{textAlign: 'center'}}>:</td><td style={{paddingRight: '50px',  textAlign: 'right' }}>{invoice.totals.balance} TND</td></tr>
-                      </tbody>
-                   </table>
+                     {/* Tax Breakdown Table */}
+                     <table style={{ width: '75%', borderCollapse: 'collapse', fontSize: '13px', lineHeight: '1.1' }}>
+                       <colgroup>
+                         <col style={{ width: '40%' }} />
+                         <col style={{ width: '5%' }} />
+                         <col style={{ width: '55%' }} />
+                       </colgroup>
+                       <tbody style={{ lineHeight: 1 }}>
+                         <tr><td className="tax-td">Total Hors Taxes</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.netAmount} TND</td></tr>
+                         <tr><td className="tax-td">FDCST 1%</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.fdcst1} TND</td></tr>
+                         <tr><td className="tax-td">TVA 7%</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.tva7} TND</td></tr>
+                         <tr><td className="tax-td">Timbre Fiscal</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.stampDuty} TND</td></tr>
+                         <tr><td className="tax-td">TVA 19 %</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.tva19} TND</td></tr>
+                         <tr><td className="tax-td">Taxe de SÃ©jour</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.cityTax} TND</td></tr>
+                         <tr><td className="tax-td">Total TTC</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.grossAmount} TND</td></tr>
+                         <tr><td className="tax-td">Net a Payer</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.balance} TND</td></tr>
+                       </tbody>
+                     </table>
+
+                   </div>
                  </div>
                )}
 
                <div style={{ flexGrow: 1 }} />
  
                <div className="m-ending-footer" style={{ borderTop: 'none', textAlign: 'center', fontSize: '12px', fontFamily: 'Tahoma', marginTop: 'auto', lineHieght: '1.2' }}>
-                 Hôtel Concorde Les Berges du Lac - RIB : 10112107105061978820<br />
+                 HÃ´tel Concorde Les Berges du Lac - RIB : 10112107105061978820<br />
                  STE Touristique et Hoteliere El Hammam Boulevard Mohamed Bouazizi 1080 | Tunis<br />
                  Tax ID : 0020078KA M000
                </div>

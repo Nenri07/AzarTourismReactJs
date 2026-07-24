@@ -84,7 +84,7 @@ const mapApiDataToInvoice = (data) => {
       name: data.guestName || "",
       company: data.companyName || "",
       /* Requested hardcoded address with line breaks for split */
-      address: "Algeria Square Building\nNumber 12 First Floor, Tripoli\nLibyan Arab Jamahiriya"
+      address: "Tripoli Tower Ground Floor\nOffice no 50, Tripoli\nLibya"
     },
     meta: {
       roomNo: data.roomNo || "",
@@ -347,8 +347,8 @@ const PerdanaInvoiceViewPage = ({ invoiceData }) => {
                     {idx < arr.length - 1 && <br />}
                   </React.Fragment>
                 ))} */}
-                <strong>Algeria Square Building</strong><br />
-                <strong>Number 12 First Floor</strong><br />
+                <strong>Tripoli Tower Ground Floor</strong><br />
+                <strong>Office no 50</strong><br />
                 <strong>Tripoli, Libya</strong>
               </div>
               <div className="meta-block">

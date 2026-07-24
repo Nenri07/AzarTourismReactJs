@@ -1,3 +1,393 @@
+// "use client";
+
+// import { useState, useEffect } from "react";
+// import { useNavigate, useParams } from "react-router-dom";
+// import { ArrowLeft, Loader2, AlertCircle, Save } from "lucide-react";
+// import toast from "react-hot-toast";
+
+// import { getHotelConfigById, getHotelConfigs } from "../Api/hotelConfig.api";
+// import tunisiainvoiceApi from "../Api/tunisiainvoice.api";
+// import { DynamicFormSection, SuccessModal } from '../components';
+// import TunisiaConditionalSection from '../components/TunisaDynamicComponents/TunisiaConditionalSection';
+// import TunisiaSummarySection from '../components/TunisaDynamicComponents/TunisiaSummarySection';
+
+// import {
+//   calculateFinalSummaryTunisia,
+//   mapToBackendSchemaTunisia,
+//   detectHotelTypeTunisia,
+//   HOTEL_CONFIGS_TUNISIA,
+// } from '../utils/InvoiceCalculationsTunisia';
+
+// export default function DynamicInvoiceFormPageTunisia() {
+//   const navigate = useNavigate();
+//   const params = useParams();
+
+//   const isDuplicateMode = window.location.pathname.includes('/duplicate/');
+//   const isEditMode = Boolean(params.invoiceId && !params.hotelId && !isDuplicateMode);
+//   const invoiceId = params.invoiceId;
+//   const hotelIdFromRoute = params.hotelId;
+
+//   const [loading, setLoading]         = useState(true);
+//   const [error, setError]             = useState(null);
+//   const [hotelConfig, setHotelConfig] = useState(null);
+//   const [isSaving, setIsSaving]       = useState(false);
+//   const [dateError, setDateError]     = useState("");
+//   const [formData, setFormData]       = useState({});
+//   const [savedInvoiceData, setSavedInvoiceData] = useState(null);
+//   const [summary, setSummary]         = useState(null);
+
+//   // ── Load ──────────────────────────────────────────────────────────────────
+//   useEffect(() => {
+//     if ((isEditMode || isDuplicateMode) && invoiceId) {
+//       loadInvoiceAndConfig();
+//     } else if (hotelIdFromRoute) {
+//       loadHotelConfig(hotelIdFromRoute);
+//     }
+//   }, [isEditMode, isDuplicateMode, invoiceId, hotelIdFromRoute]);
+
+//   // ── Date validator ────────────────────────────────────────────────────────
+//   useEffect(() => {
+//     if (!formData.arrival_date || !formData.departure_date) return;
+//     const arrival   = new Date(formData.arrival_date);
+//     const departure = new Date(formData.departure_date);
+//     if (departure <= arrival) {
+//       setDateError("Departure date must be after arrival date");
+//       if (formData.accommodation_details?.total_nights) {
+//         setFormData(prev => ({
+//           ...prev,
+//           accommodation_details: { ...prev.accommodation_details, total_nights: 0 },
+//         }));
+//       }
+//       return;
+//     }
+//     setDateError("");
+//     const diffDays = Math.ceil((departure - arrival) / (1000 * 60 * 60 * 24));
+//     if (formData.accommodation_details) {
+//       setFormData(prev => ({
+//         ...prev,
+//         accommodation_details: { ...prev.accommodation_details, total_nights: diffDays },
+//       }));
+//     }
+//   }, [formData.arrival_date, formData.departure_date]);
+
+//   // ── Live summary ──────────────────────────────────────────────────────────
+//   useEffect(() => {
+//     if (!hotelConfig) return;
+//     const hotelType = detectHotelTypeTunisia(hotelConfig);
+//     try {
+//       const newSummary = calculateFinalSummaryTunisia(formData, hotelType);
+//       setSummary(newSummary);
+//     } catch (err) {
+//       console.error("Summary calc error:", err);
+//     }
+//   }, [
+//     formData.accommodation_details,
+//     formData.other_services,
+//     formData.nb_persons,
+//     hotelConfig,
+//   ]);
+
+//   // ── Loaders ───────────────────────────────────────────────────────────────
+//   const loadInvoiceAndConfig = async () => {
+//     setLoading(true); setError(null);
+//     try {
+//       const invoiceResponse = await tunisiainvoiceApi.getInvoiceById(invoiceId);
+//       let invoiceData = invoiceResponse?.data || invoiceResponse;
+//       if (invoiceData?.data?.data) invoiceData = invoiceData.data;
+//       const data = invoiceData?.data || invoiceData;
+
+//       const hotelName = data.hotel || '';
+//       const allConfigs = (await getHotelConfigs())?.data || [];
+//       let loadedConfig = allConfigs.find(c => c.hotel_name === hotelName) || allConfigs[0];
+//       if (!loadedConfig) throw new Error('No hotel configuration found');
+
+//       setHotelConfig(loadedConfig);
+//       setFormData(mapInvoiceToForm(data, loadedConfig));
+//       toast.success(isDuplicateMode ? "Loaded for duplication" : "Invoice loaded", { duration: 2000 });
+//     } catch (err) {
+//       setError(err.message || "Failed to load invoice");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const loadHotelConfig = async (hotelId) => {
+//     setLoading(true); setError(null);
+//     try {
+//       const response = await getHotelConfigById(hotelId);
+//       setHotelConfig(response);
+//       initializeFormData(response);
+//     } catch (err) {
+//       setError(err.message || "Failed to load config");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // ── Map saved invoice → form ──────────────────────────────────────────────
+//   const mapInvoiceToForm = (data, cfg) => {
+//     const hotelType = detectHotelTypeTunisia(cfg);
+//     const hCfg = HOTEL_CONFIGS_TUNISIA[hotelType] || HOTEL_CONFIGS_TUNISIA.OTHER_TUNISIA;
+
+//     return {
+//      reference_no:      data.refferenceNo || data.referenceNo || '',
+//       hotel_name:        data.hotel || cfg.hotel_name || '',
+//       currency:          'TND',
+//       invoice_no:        data.invoiceNo || '',
+//       folio_no:          data.folioNo || '',
+//       confirmation_no:   data.confirmationNo || '',
+//       guest_name:        data.guestName || '',
+//       room_number:       data.roomNo || '',
+//       nb_persons:        String(data.nbPersons || 1),
+//         selling_rate:       data.sellingRate || '',      // NEW
+
+//       nb_adults:         String(data.adults || 1),
+//       nb_children:       String(data.children || 0),
+//       arrangement_rate:  data.arrangementRate || '',
+//       ar_account:        data.arAccount || '',
+//       tax_id:            data.taxId || '',
+//       vat_no:            data.vatNo || '',
+//       membership_no:     data.membershipNo || '',
+//       user_id:           data.userId || '',
+//       cashier_id:        data.cashierId || '',
+//       cashier_name:      data.cashierName || '',
+//       arrival_date:      data.arrivalDate || '',
+//       departure_date:    data.departureDate || '',
+//       invoice_date:      data.invoiceDate || '',
+//       invoice_time:      data.invoiceTime || '',
+
+//       // Le Corail refs — preserved on edit/duplicate
+//       accommodation_ref_id: data.accommodationRefId || '',
+//       services_ref_id:      data.servicesRefId || '',
+
+//       accommodation_details: {
+//         total_nights:       data.nights || 0,
+//         room_amount_tnd:    data.roomAmountTnd || '',   // TND hotels
+//         eur_amount:         data.eurAmount || '',        // EUR hotels
+//         exchange_rate:      data.exchangeRate || '',     // EUR→TND
+//         exchange_usd_rate:  data.exchangeUsdRate || '',  // TND→USD
+//         city_tax_per_person: data.cityTaxPerPerson || 3,
+//         stamp_tax:          data.stampTax || 1,
+//         nb_persons:         data.nbPersons || 1,
+//       },
+//       other_services: (data.otherServices || []).map(s => ({
+//         id: Date.now() + Math.random(),
+//         service_name: s.name || '',
+//         service_date: s.date || '',
+//         gross_amount: s.amount || '',
+//       })),
+
+//       status: data.status || 'pending',
+//       note:   data.note || '',
+//     };
+//   };
+
+//   // ── Initialize blank form ─────────────────────────────────────────────────
+//   const initializeFormData = (config) => {
+//     const now = new Date();
+//     const hh = String(now.getHours()).padStart(2, '0');
+//     const mm = String(now.getMinutes()).padStart(2, '0');
+
+//     const initialData = {
+//       hotel_name:   config.hotel_name,
+//       currency:     'TND',
+//       status:       'pending',
+//       note:         '',
+//       invoice_time: `${hh}:${mm}`,
+//       nb_persons:   '1',
+//       nb_adults:    '1',
+//       nb_children:  '0',
+//       accommodation_details: {
+//         total_nights:        0,
+//         room_amount_tnd:     '',
+//         eur_amount:          '',
+//         exchange_rate:       '',
+//         exchange_usd_rate:   '',
+//         city_tax_per_person: 3,
+//         stamp_tax:           1,
+//         nb_persons:          1,
+//       },
+//       other_services: [],
+//     };
+
+//     config.form_fields?.forEach(field => {
+//       if (field.field_id !== 'invoice_time') initialData[field.field_id] = '';
+//     });
+
+//     setFormData(initialData);
+//   };
+
+//   // ── Field change handler ──────────────────────────────────────────────────
+//   const handleFieldChange = (fieldPath, value) => {
+//     setFormData(prev => {
+//       const newData = { ...prev };
+//       const parts = fieldPath.split('.');
+//       if (parts.length === 1) {
+//         newData[parts[0]] = value;
+//       } else {
+//         if (!newData[parts[0]]) newData[parts[0]] = {};
+//         newData[parts[0]] = { ...newData[parts[0]], [parts[1]]: value };
+//       }
+//       return newData;
+//     });
+//   };
+
+//   // ── Save ──────────────────────────────────────────────────────────────────
+//   const handleSave = async () => {
+//     if (dateError || !formData.arrival_date || !formData.departure_date || !formData.guest_name) {
+//       toast.error("Please fix validation errors before saving", { position: "top-center" });
+//       return;
+//     }
+//     setIsSaving(true);
+//     const loadingToast = toast.loading("Saving Tunisia invoice...", { position: "top-center" });
+//     try {
+//       const payload = mapToBackendSchemaTunisia(formData, hotelConfig);
+//       if (isEditMode) {
+//         await tunisiainvoiceApi.updateInvoice(invoiceId, payload);
+//       } else {
+//         await tunisiainvoiceApi.createInvoice(payload);
+//       }
+//       toast.dismiss(loadingToast);
+//       setSavedInvoiceData({
+//         isEdit: isEditMode,
+//         invoiceNumber: formData.invoice_no || formData.folio_no || 'NEW',
+//         status: formData.status,
+//         grandTotal: summary?.grand_total_tnd || 0,
+//         currency: 'TND',
+//       });
+//       setTimeout(() => {
+//         const modal = document.getElementById('success_modal');
+//         if (modal) modal.showModal();
+//         else { toast.success("Invoice saved!"); navigate("/invoices"); }
+//       }, 100);
+//     } catch (err) {
+//       toast.dismiss(loadingToast);
+//       toast.error("Failed to save invoice", { duration: 6000 });
+//     } finally {
+//       setIsSaving(false);
+//     }
+//   };
+
+//   // ── Render ────────────────────────────────────────────────────────────────
+//   if (loading) return (
+//     <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
+//       <Loader2 size={48} className="animate-spin text-[#003d7a]" />
+//     </div>
+//   );
+//   if (error) return (
+//     <div className="min-h-screen bg-[#f8fafc] p-6 text-red-600">Error: {error}</div>
+//   );
+//   if (!hotelConfig) return null;
+
+//   return (
+//     <div className="min-h-screen bg-[#f8fafc] pb-32">
+//       <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 font-sans text-slate-800">
+
+//         {/* Header */}
+//         <div className="mb-6 md:mb-8 flex justify-between items-center">
+//           <div>
+//             <button onClick={() => navigate("/invoices")} className="flex items-center gap-2 text-slate-600 mb-4">
+//               <ArrowLeft size={20} /> Back
+//             </button>
+//             <h1 className="text-xl md:text-2xl font-bold">
+//               {isEditMode ? "Edit Invoice" : "Create New Invoice"}
+//             </h1>
+//             <p className="text-slate-500 text-sm mt-1">{hotelConfig.hotel_name}</p>
+//           </div>
+//         </div>
+
+//         {/* Date error */}
+//         {dateError && (
+//           <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+//             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+//             <p className="text-red-800 font-medium text-sm">{dateError}</p>
+//           </div>
+//         )}
+
+//         {/* Duplicate banner */}
+//         {isDuplicateMode && (
+//           <div className="mb-4 bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-start gap-3">
+//             <AlertCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+//             <p className="text-purple-800 font-medium text-sm">
+//               You are creating a duplicate. Please update the invoice/folio number before saving.
+//             </p>
+//           </div>
+//         )}
+
+//         <div className="space-y-4 md:space-y-6">
+//           {/* Standard form fields from hotel config */}
+//           <DynamicFormSection
+//             title="Invoice Information"
+//             fields={hotelConfig.form_fields || []}
+//             formData={formData}
+//             onFieldChange={handleFieldChange}
+//           />
+
+//           {/* Tunisia-specific accommodation + services */}
+//           <TunisiaConditionalSection
+//             formData={formData}
+//             setFormData={setFormData}
+//             hotelConfig={hotelConfig}
+//             onFieldChange={handleFieldChange}
+//           />
+
+//           {/* Summary */}
+//           <TunisiaSummarySection
+//             config={hotelConfig}
+//             formData={formData}
+//             summary={summary}
+//             onStatusChange={(val) => handleFieldChange('status', val)}
+//             onNoteChange={(val) => handleFieldChange('note', val)}
+//           />
+//         </div>
+
+//         {/* Sticky footer */}
+//         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-20">
+//           <div className="flex justify-end gap-4 max-w-7xl mx-auto">
+//             <button
+//               onClick={() => navigate("/invoices")}
+//               disabled={isSaving}
+//               className="w-full sm:w-auto bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-6 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+//             >
+//               Cancel
+//             </button>
+//             <button
+//               onClick={handleSave}
+//               disabled={isSaving || !!dateError}
+//               className="w-full sm:w-auto bg-[#002a5c] hover:bg-[#001a3c] text-white px-6 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+//             >
+//               {isSaving ? (
+//                 <>
+//                   <Loader2 size={16} className="animate-spin" />
+//                   {isDuplicateMode ? "Creating Duplicate..." : isEditMode ? "Updating..." : "Saving..."}
+//                 </>
+//               ) : (
+//                 <>
+//                   <Save size={16} />
+//                   {isDuplicateMode ? "Create Duplicate" : isEditMode ? "Update Invoice" : "Save Invoice"}
+//                 </>
+//               )}
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+
+//       {savedInvoiceData && (
+//         <SuccessModal
+//           isEdit={savedInvoiceData.isEdit}
+//           invoiceNumber={savedInvoiceData.invoiceNumber}
+//           status={savedInvoiceData.status}
+//           grandTotal={savedInvoiceData.grandTotal}
+//           currency={savedInvoiceData.currency}
+//           onClose={() => navigate("/invoices")}
+//         />
+//       )}
+//     </div>
+//   );
+// }
+
+
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -27,14 +417,14 @@ export default function DynamicInvoiceFormPageTunisia() {
   const invoiceId = params.invoiceId;
   const hotelIdFromRoute = params.hotelId;
 
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [hotelConfig, setHotelConfig] = useState(null);
-  const [isSaving, setIsSaving]       = useState(false);
-  const [dateError, setDateError]     = useState("");
-  const [formData, setFormData]       = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [dateError, setDateError] = useState("");
+  const [formData, setFormData] = useState({});
   const [savedInvoiceData, setSavedInvoiceData] = useState(null);
-  const [summary, setSummary]         = useState(null);
+  const [summary, setSummary] = useState(null);
 
   // ── Load ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -48,7 +438,7 @@ export default function DynamicInvoiceFormPageTunisia() {
   // ── Date validator ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!formData.arrival_date || !formData.departure_date) return;
-    const arrival   = new Date(formData.arrival_date);
+    const arrival = new Date(formData.arrival_date);
     const departure = new Date(formData.departure_date);
     if (departure <= arrival) {
       setDateError("Departure date must be after arrival date");
@@ -124,59 +514,94 @@ export default function DynamicInvoiceFormPageTunisia() {
     }
   };
 
-  // ── Map saved invoice → form ──────────────────────────────────────────────
+  // ── Map saved invoice → form (Dynamic Mapping) ────────────────────────────
   const mapInvoiceToForm = (data, cfg) => {
-    const hotelType = detectHotelTypeTunisia(cfg);
-    const hCfg = HOTEL_CONFIGS_TUNISIA[hotelType] || HOTEL_CONFIGS_TUNISIA.OTHER_TUNISIA;
+    const accommodationDetails = {};
+    const accConfig = cfg?.conditional_sections?.accommodation_details;
+
+    if (accConfig?.fields) {
+      accConfig.fields.forEach((field) => {
+        const fieldId = field.field_id;
+        if (fieldId === "total_nights")
+          accommodationDetails[fieldId] = data.nights || data.total_nights || 0;
+        else if (fieldId === "room_amount_tnd")
+          accommodationDetails[fieldId] = data.roomAmountTnd || "";
+        else if (fieldId === "selling_rate")
+          accommodationDetails[fieldId] = data.sellingRate || "";
+        else if (fieldId === "eur_amount")
+          accommodationDetails[fieldId] = data.eurAmount || "";
+        else if (fieldId === "exchange_rate")
+          accommodationDetails[fieldId] = data.exchangeRate || "";
+        else if (fieldId === "exchange_usd_rate")
+          accommodationDetails[fieldId] = data.exchangeUsdRate || "";
+        else if (fieldId === "city_tax_per_person")
+          accommodationDetails[fieldId] = data.cityTaxPerPerson || 3;
+        else if (fieldId === "stamp_tax")
+          accommodationDetails[fieldId] = data.stampTax || 1;
+        else
+          accommodationDetails[fieldId] = data[fieldId] !== undefined ? data[fieldId] : "";
+      });
+    }
+
+    const otherServices = [];
+    const servicesConfig = cfg?.conditional_sections?.other_services;
+
+ if (servicesConfig?.fields && Array.isArray(data.otherServices)) {
+      data.otherServices.forEach((service) => {
+        const mappedService = { id: Date.now() + Math.random() };
+        servicesConfig.fields.forEach((field) => {
+          const fieldId = field.field_id;
+          if (fieldId === "service_name")
+            mappedService[fieldId] = service.name || service.service_type || "";
+          else if (fieldId === "service_description")
+            mappedService[fieldId] = service.description || "";
+          else if (fieldId === "quantity")
+            mappedService[fieldId] = service.quantity ?? 1;
+          else if (fieldId === "service_voucher")
+            mappedService[fieldId] = service.voucher || "";
+          else if (fieldId === "service_date")
+            mappedService[fieldId] = service.date || "";
+          else if (fieldId === "gross_amount")
+            mappedService[fieldId] = service.amount || service.gross_amount || "";
+          else mappedService[fieldId] = service[fieldId] || "";
+        });
+        otherServices.push(mappedService);
+      });
+    }
 
     return {
-     reference_no:      data.refferenceNo || data.referenceNo || '',
-      hotel_name:        data.hotel || cfg.hotel_name || '',
-      currency:          'TND',
-      invoice_no:        data.invoiceNo || '',
-      folio_no:          data.folioNo || '',
-      confirmation_no:   data.confirmationNo || '',
-      guest_name:        data.guestName || '',
-      room_number:       data.roomNo || '',
-      nb_persons:        String(data.nbPersons || 1),
-      nb_adults:         String(data.adults || 1),
-      nb_children:       String(data.children || 0),
-      arrangement_rate:  data.arrangementRate || '',
-      ar_account:        data.arAccount || '',
-      tax_id:            data.taxId || '',
-      vat_no:            data.vatNo || '',
-      membership_no:     data.membershipNo || '',
-      user_id:           data.userId || '',
-      cashier_id:        data.cashierId || '',
-      cashier_name:      data.cashierName || '',
-      arrival_date:      data.arrivalDate || '',
-      departure_date:    data.departureDate || '',
-      invoice_date:      data.invoiceDate || '',
-      invoice_time:      data.invoiceTime || '',
+      reference_no: data.refferenceNo || data.referenceNo || '',
+      hotel_name: data.hotel || cfg.hotel_name || '',
+      currency: 'TND',
+      invoice_no: data.invoiceNo || '',
+      folio_no: data.folioNo || '',
+      confirmation_no: data.confirmationNo || '',
+      guest_name: data.guestName || '',
+      room_number: data.roomNo || '',
+      nb_persons: String(data.nbPersons || 1),
+      nb_adults: String(data.adults || 1),
+      nb_children: String(data.children || 0),
+      arrangement_rate: data.arrangementRate || '',
+      ar_account: data.arAccount || '',
+      tax_id: data.taxId || '',
+      vat_no: data.vatNo || '',
+      membership_no: data.membershipNo || '',
+      user_id: data.userId || '',
+      cashier_id: data.cashierId || '',
+      cashier_name: data.cashierName || '',
+      arrival_date: data.arrivalDate || '',
+      departure_date: data.departureDate || '',
+      invoice_date: data.invoiceDate || '',
+      invoice_time: data.invoiceTime || '',
 
-      // Le Corail refs — preserved on edit/duplicate
       accommodation_ref_id: data.accommodationRefId || '',
-      services_ref_id:      data.servicesRefId || '',
+      services_ref_id: data.servicesRefId || '',
 
-      accommodation_details: {
-        total_nights:       data.nights || 0,
-        room_amount_tnd:    data.roomAmountTnd || '',   // TND hotels
-        eur_amount:         data.eurAmount || '',        // EUR hotels
-        exchange_rate:      data.exchangeRate || '',     // EUR→TND
-        exchange_usd_rate:  data.exchangeUsdRate || '',  // TND→USD
-        city_tax_per_person: data.cityTaxPerPerson || 3,
-        stamp_tax:          data.stampTax || 1,
-        nb_persons:         data.nbPersons || 1,
-      },
-      other_services: (data.otherServices || []).map(s => ({
-        id: Date.now() + Math.random(),
-        service_name: s.name || '',
-        service_date: s.date || '',
-        gross_amount: s.amount || '',
-      })),
+      accommodation_details: accommodationDetails,
+      other_services: otherServices,
 
       status: data.status || 'pending',
-      note:   data.note || '',
+      note: data.note || '',
     };
   };
 
@@ -187,30 +612,37 @@ export default function DynamicInvoiceFormPageTunisia() {
     const mm = String(now.getMinutes()).padStart(2, '0');
 
     const initialData = {
-      hotel_name:   config.hotel_name,
-      currency:     'TND',
-      status:       'pending',
-      note:         '',
+      hotel_name: config.hotel_name,
+      currency: 'TND',
+      status: 'pending',
+      note: '',
       invoice_time: `${hh}:${mm}`,
-      nb_persons:   '1',
-      nb_adults:    '1',
-      nb_children:  '0',
-      accommodation_details: {
-        total_nights:        0,
-        room_amount_tnd:     '',
-        eur_amount:          '',
-        exchange_rate:       '',
-        exchange_usd_rate:   '',
-        city_tax_per_person: 3,
-        stamp_tax:           1,
-        nb_persons:          1,
-      },
-      other_services: [],
+      nb_persons: '1',
+      nb_adults: '1',
+      nb_children: '0',
     };
 
     config.form_fields?.forEach(field => {
-      if (field.field_id !== 'invoice_time') initialData[field.field_id] = '';
+      if (field.field_id !== 'invoice_time') {
+        initialData[field.field_id] = field.default_value || '';
+      }
     });
+
+    // Initialize conditional sections dynamically based on JSON
+    Object.entries(config.conditional_sections || {}).forEach(
+      ([sectionKey, section]) => {
+        if (section.enabled) {
+          if (section.multiple_entries) {
+            initialData[sectionKey] = [];
+          } else {
+            initialData[sectionKey] = {};
+            section.fields?.forEach((field) => {
+              initialData[sectionKey][field.field_id] = field.default_value || "";
+            });
+          }
+        }
+      }
+    );
 
     setFormData(initialData);
   };
@@ -321,13 +753,23 @@ export default function DynamicInvoiceFormPageTunisia() {
             onFieldChange={handleFieldChange}
           />
 
-          {/* Tunisia-specific accommodation + services */}
-          <TunisiaConditionalSection
-            formData={formData}
-            setFormData={setFormData}
-            hotelConfig={hotelConfig}
-            onFieldChange={handleFieldChange}
-          />
+          {/* Tunisia-specific conditional sections (mapped dynamically) */}
+          {Object.entries(hotelConfig.conditional_sections || {}).map(
+            ([sectionKey, section]) => {
+              if (!section.enabled) return null;
+              return (
+                <TunisiaConditionalSection
+                  key={sectionKey}
+                  sectionKey={sectionKey}
+                  section={section}
+                  formData={formData}
+                  onFieldChange={handleFieldChange}
+                  setFormData={setFormData}
+                  hotelConfig={hotelConfig}
+                />
+              );
+            }
+          )}
 
           {/* Summary */}
           <TunisiaSummarySection
@@ -383,3 +825,373 @@ export default function DynamicInvoiceFormPageTunisia() {
     </div>
   );
 }
+
+
+// "use client";
+
+// import { useState, useEffect } from "react";
+// import { useNavigate, useParams } from "react-router-dom";
+// import { ArrowLeft, Loader2, AlertCircle, Save } from "lucide-react";
+// import toast from "react-hot-toast";
+
+// import { getHotelConfigById, getHotelConfigs } from "../Api/hotelConfig.api";
+// import tunisiainvoiceApi from "../Api/tunisiainvoice.api";
+// import { DynamicFormSection, SuccessModal } from '../components';
+// import TunisiaConditionalSection from '../components/TunisaDynamicComponents/TunisiaConditionalSection';
+// import TunisiaSummarySection from '../components/TunisaDynamicComponents/TunisiaSummarySection';
+
+// import {
+//   calculateFinalSummaryTunisia,
+//   mapToBackendSchemaTunisia,
+//   detectHotelTypeTunisia,
+//   HOTEL_CONFIGS_TUNISIA,
+// } from '../utils/InvoiceCalculationsTunisia';
+
+// export default function DynamicInvoiceFormPageTunisia() {
+//   const navigate = useNavigate();
+//   const params = useParams();
+
+//   const isDuplicateMode = window.location.pathname.includes('/duplicate/');
+//   const isEditMode = Boolean(params.invoiceId && !params.hotelId && !isDuplicateMode);
+//   const invoiceId = params.invoiceId;
+//   const hotelIdFromRoute = params.hotelId;
+
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [hotelConfig, setHotelConfig] = useState(null);
+//   const [isSaving, setIsSaving] = useState(false);
+//   const [dateError, setDateError] = useState("");
+//   const [formData, setFormData] = useState({});
+//   const [savedInvoiceData, setSavedInvoiceData] = useState(null);
+//   const [summary, setSummary] = useState(null);
+
+//   useEffect(() => {
+//     if ((isEditMode || isDuplicateMode) && invoiceId) {
+//       loadInvoiceAndConfig();
+//     } else if (hotelIdFromRoute) {
+//       loadHotelConfig(hotelIdFromRoute);
+//     }
+//   }, [isEditMode, isDuplicateMode, invoiceId, hotelIdFromRoute]);
+
+//   useEffect(() => {
+//     if (!formData.arrival_date || !formData.departure_date) return;
+//     const arrival = new Date(formData.arrival_date);
+//     const departure = new Date(formData.departure_date);
+//     if (departure <= arrival) {
+//       setDateError("Departure date must be after arrival date");
+//       if (formData.accommodation_details?.total_nights) {
+//         setFormData(prev => ({
+//           ...prev,
+//           accommodation_details: { ...prev.accommodation_details, total_nights: 0 },
+//         }));
+//       }
+//       return;
+//     }
+//     setDateError("");
+//     const diffDays = Math.ceil((departure - arrival) / (1000 * 60 * 60 * 24));
+//     if (formData.accommodation_details) {
+//       setFormData(prev => ({
+//         ...prev,
+//         accommodation_details: { ...prev.accommodation_details, total_nights: diffDays },
+//       }));
+//     }
+//   }, [formData.arrival_date, formData.departure_date]);
+
+//   useEffect(() => {
+//     if (!hotelConfig) return;
+//     const hotelType = detectHotelTypeTunisia(hotelConfig);
+//     try {
+//       const newSummary = calculateFinalSummaryTunisia(formData, hotelType);
+//       setSummary(newSummary);
+//     } catch (err) {
+//       console.error("Summary calc error:", err);
+//     }
+//   }, [
+//     formData.accommodation_details,
+//     formData.other_services,
+//     formData.nb_persons,
+//     hotelConfig,
+//   ]);
+
+//   const loadInvoiceAndConfig = async () => {
+//     setLoading(true); setError(null);
+//     try {
+//       const invoiceResponse = await tunisiainvoiceApi.getInvoiceById(invoiceId);
+//       let invoiceData = invoiceResponse?.data || invoiceResponse;
+//       if (invoiceData?.data?.data) invoiceData = invoiceData.data;
+//       const data = invoiceData?.data || invoiceData;
+
+//       const hotelName = data.hotel || '';
+//       const allConfigs = (await getHotelConfigs())?.data || [];
+//       let loadedConfig = allConfigs.find(c => c.hotel_name === hotelName) || allConfigs[0];
+//       if (!loadedConfig) throw new Error('No hotel configuration found');
+
+//       setHotelConfig(loadedConfig);
+//       setFormData(mapInvoiceToForm(data, loadedConfig));
+//       toast.success(isDuplicateMode ? "Loaded for duplication" : "Invoice loaded", { duration: 2000 });
+//     } catch (err) {
+//       setError(err.message || "Failed to load invoice");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const loadHotelConfig = async (hotelId) => {
+//     setLoading(true); setError(null);
+//     try {
+//       const response = await getHotelConfigById(hotelId);
+//       setHotelConfig(response);
+//       initializeFormData(response);
+//     } catch (err) {
+//       setError(err.message || "Failed to load config");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const mapInvoiceToForm = (data, cfg) => {
+//     return {
+//       reference_no: data.refferenceNo || data.referenceNo || '',
+//       hotel_name: data.hotel || cfg.hotel_name || '',
+//       currency: 'TND',
+//       invoice_no: data.invoiceNo || '',
+//       folio_no: data.folioNo || '',
+//       confirmation_no: data.confirmationNo || '',
+//       guest_name: data.guestName || '',
+//       room_number: data.roomNo || '',
+//       nb_persons: String(data.nbPersons || 1),
+//       nb_adults: String(data.adults || 1),
+//       nb_children: String(data.children || 0),
+//       arrangement_rate: data.arrangementRate || '',
+//       ar_account: data.arAccount || '',
+//       tax_id: data.taxId || '',
+//       vat_no: data.vatNo || '',
+//       membership_no: data.membershipNo || '',
+//       user_id: data.userId || '',
+//       cashier_id: data.cashierId || '',
+//       cashier_name: data.cashierName || '',
+//       arrival_date: data.arrivalDate || '',
+//       departure_date: data.departureDate || '',
+//       invoice_date: data.invoiceDate || '',
+//       invoice_time: data.invoiceTime || '',
+
+//       accommodation_ref_id: data.accommodationRefId || '',
+//       services_ref_id: data.servicesRefId || '',
+
+//       accommodation_details: {
+//         total_nights: data.nights || 0,
+//         room_amount_tnd: data.roomAmountTnd || '',
+//         selling_rate: data.sellingRate || '',
+//         eur_amount: data.eurAmount || '',
+//         exchange_rate: data.exchangeRate || '',
+//         city_tax_per_person: data.cityTaxPerPerson || 3,
+//         stamp_tax: data.stampTax || 1,
+//         nb_persons: data.nbPersons || 1,
+//       },
+//       other_services: (data.otherServices || []).map(s => ({
+//         id: Date.now() + Math.random(),
+//         service_name: s.name || '',
+//         service_date: s.date || '',
+//         gross_amount: s.amount || '',
+//         quantity: s.quantity || 1,
+//         description: s.description || '',
+//         code: s.code || '',
+//       })),
+
+//       status: data.status || 'pending',
+//       note: data.note || '',
+//     };
+//   };
+
+//   const initializeFormData = (config) => {
+//     const now = new Date();
+//     const hh = String(now.getHours()).padStart(2, '0');
+//     const mm = String(now.getMinutes()).padStart(2, '0');
+
+//     const initialData = {
+//       hotel_name: config.hotel_name,
+//       currency: 'TND',
+//       status: 'pending',
+//       note: '',
+//       invoice_time: `${hh}:${mm}`,
+//       nb_persons: '1',
+//       nb_adults: '1',
+//       nb_children: '0',
+//       accommodation_details: {
+//         total_nights: 0,
+//         room_amount_tnd: '',
+//         selling_rate: '',
+//         eur_amount: '',
+//         exchange_rate: '',
+//         city_tax_per_person: 3,
+//         stamp_tax: 1,
+//         nb_persons: 1,
+//       },
+//       other_services: [],
+//     };
+
+//     config.form_fields?.forEach(field => {
+//       if (field.field_id !== 'invoice_time') initialData[field.field_id] = '';
+//     });
+
+//     setFormData(initialData);
+//   };
+
+//   const handleFieldChange = (fieldPath, value) => {
+//     setFormData(prev => {
+//       const newData = { ...prev };
+//       const parts = fieldPath.split('.');
+//       if (parts.length === 1) {
+//         newData[parts[0]] = value;
+//       } else {
+//         if (!newData[parts[0]]) newData[parts[0]] = {};
+//         newData[parts[0]] = { ...newData[parts[0]], [parts[1]]: value };
+//       }
+//       return newData;
+//     });
+//   };
+
+//   const handleSave = async () => {
+//     if (dateError || !formData.arrival_date || !formData.departure_date || !formData.guest_name) {
+//       toast.error("Please fix validation errors before saving", { position: "top-center" });
+//       return;
+//     }
+//     setIsSaving(true);
+//     const loadingToast = toast.loading("Saving Tunisia invoice...", { position: "top-center" });
+//     try {
+//       const payload = mapToBackendSchemaTunisia(formData, hotelConfig);
+//       if (isEditMode) {
+//         await tunisiainvoiceApi.updateInvoice(invoiceId, payload);
+//       } else {
+//         await tunisiainvoiceApi.createInvoice(payload);
+//       }
+//       toast.dismiss(loadingToast);
+//       setSavedInvoiceData({
+//         isEdit: isEditMode,
+//         invoiceNumber: formData.invoice_no || formData.folio_no || 'NEW',
+//         status: formData.status,
+//         grandTotal: summary?.grand_total_tnd || 0,
+//         currency: 'TND',
+//       });
+//       setTimeout(() => {
+//         const modal = document.getElementById('success_modal');
+//         if (modal) modal.showModal();
+//         else { toast.success("Invoice saved!"); navigate("/invoices"); }
+//       }, 100);
+//     } catch (err) {
+//       toast.dismiss(loadingToast);
+//       toast.error("Failed to save invoice", { duration: 6000 });
+//     } finally {
+//       setIsSaving(false);
+//     }
+//   };
+
+//   if (loading) return (
+//     <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
+//       <Loader2 size={48} className="animate-spin text-[#003d7a]" />
+//     </div>
+//   );
+//   if (error) return (
+//     <div className="min-h-screen bg-[#f8fafc] p-6 text-red-600">Error: {error}</div>
+//   );
+//   if (!hotelConfig) return null;
+
+//   return (
+//     <div className="min-h-screen bg-[#f8fafc] pb-32">
+//       <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 font-sans text-slate-800">
+
+//         <div className="mb-6 md:mb-8 flex justify-between items-center">
+//           <div>
+//             <button onClick={() => navigate("/invoices")} className="flex items-center gap-2 text-slate-600 mb-4">
+//               <ArrowLeft size={20} /> Back
+//             </button>
+//             <h1 className="text-xl md:text-2xl font-bold">
+//               {isEditMode ? "Edit Invoice" : "Create New Invoice"}
+//             </h1>
+//             <p className="text-slate-500 text-sm mt-1">{hotelConfig.hotel_name}</p>
+//           </div>
+//         </div>
+
+//         {dateError && (
+//           <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+//             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+//             <p className="text-red-800 font-medium text-sm">{dateError}</p>
+//           </div>
+//         )}
+
+//         {isDuplicateMode && (
+//           <div className="mb-4 bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-start gap-3">
+//             <AlertCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+//             <p className="text-purple-800 font-medium text-sm">
+//               You are creating a duplicate. Please update the invoice/folio number before saving.
+//             </p>
+//           </div>
+//         )}
+
+//         <div className="space-y-4 md:space-y-6">
+//           <DynamicFormSection
+//             title="Invoice Information"
+//             fields={hotelConfig.form_fields || []}
+//             formData={formData}
+//             onFieldChange={handleFieldChange}
+//           />
+
+//           <TunisiaConditionalSection
+//             formData={formData}
+//             setFormData={setFormData}
+//             hotelConfig={hotelConfig}
+//             onFieldChange={handleFieldChange}
+//           />
+
+//           <TunisiaSummarySection
+//             config={hotelConfig}
+//             formData={formData}
+//             summary={summary}
+//             onStatusChange={(val) => handleFieldChange('status', val)}
+//             onNoteChange={(val) => handleFieldChange('note', val)}
+//           />
+//         </div>
+
+//         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-20">
+//           <div className="flex justify-end gap-4 max-w-7xl mx-auto">
+//             <button
+//               onClick={() => navigate("/invoices")}
+//               disabled={isSaving}
+//               className="w-full sm:w-auto bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-6 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+//             >
+//               Cancel
+//             </button>
+//             <button
+//               onClick={handleSave}
+//               disabled={isSaving || !!dateError}
+//               className="w-full sm:w-auto bg-[#002a5c] hover:bg-[#001a3c] text-white px-6 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+//             >
+//               {isSaving ? (
+//                 <>
+//                   <Loader2 size={16} className="animate-spin" />
+//                   {isDuplicateMode ? "Creating Duplicate..." : isEditMode ? "Updating..." : "Saving..."}
+//                 </>
+//               ) : (
+//                 <>
+//                   <Save size={16} />
+//                   {isDuplicateMode ? "Create Duplicate" : isEditMode ? "Update Invoice" : "Save Invoice"}
+//                 </>
+//               )}
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+
+//       {savedInvoiceData && (
+//         <SuccessModal
+//           isEdit={savedInvoiceData.isEdit}
+//           invoiceNumber={savedInvoiceData.invoiceNumber}
+//           status={savedInvoiceData.status}
+//           grandTotal={savedInvoiceData.grandTotal}
+//           currency={savedInvoiceData.currency}
+//           onClose={() => navigate("/invoices")}
+//         />
+//       )}
+//     </div>
+//   );
+// }

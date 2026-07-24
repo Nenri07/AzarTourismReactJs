@@ -461,7 +461,7 @@ const FairmontInvoiceView = ({ invoiceData }) => {
               <div className="fm-guest-details">
                 {invoice.guestName}<br />
                 {invoice.companyName || "Azar Tourism"}<br />
-                Algeria Square Building Number 12 First Floor,<br />
+                Tripoli Tower Ground Floor Office no 50,<br />
                 Tripoli, Libya<br /><br />
                 <table className="fm-info-table">
                   <tbody>

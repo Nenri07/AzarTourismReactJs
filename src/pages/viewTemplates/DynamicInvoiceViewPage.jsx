@@ -8,13 +8,14 @@ import turkeyInvoiceApi from "../../Api/turkeyInvoice.api";
 import cairoInvoiceApi from "../../Api/cairoInvoice.api"; 
 import malaysiaInvoiceApi from "../../Api/malaysiaInvoice.api";
 import ukInvoiceApi from "../../Api/ukInvoice.api";
+import {InvoiceViewPage} from "../index";
+
 
 // Views
 import CVKInvoiceView from "./CVKInvoiceView";
 import TRYPInvoiceView from "./TRYPInvoiceView";
 import GrandArasInvoiceView from "./GrandarasInvoiceView";
 import StaybridgeInvoiceView from "./StaybridgeInvoiceView"; 
-import InvoiceViewPage from "./InvoiceViewPage";
 import RaddisonInvoiceView from "./RaddisonInvoiceView";
 import IntercontinentalInvoiceView from "./IntercontinentalInvoiceView";
 import FairmontInvoiceView from "./FairmontInvoiceView";
@@ -36,6 +37,7 @@ import TrillionSuitesInvoiceView from "./TrillionSuitesInvoiceView";
 import IntercontinentalInvoiceViewMalaysia from "./IntercontinentalInvoiceViewMalaysia";
 import MarmaraInvoiceView from "./MarmaraInvoiceView";
 import HiltonIstanbulInvoiceView from "./HiltonIstanbulInvoiceView";
+import RafflesInvoiceViewPage from "./RafflesInvoiceViewPage";
 import tunisiainvoiceApi from "../../Api/tunisiainvoice.api";
 import { HiltonIstambulInvoiceView, RadissonBlueSisli, RadissonCollection , RadissonHerbyeInvoiceView ,MarriotInvoiceView, MandarinInvoiceView, ParkPlazaInvoiceView, MarriotTunisInvoiceView, NovotelInvoiceView} from "..";
 import YotelairInvoiceView from "./YotelInvoiceView";
@@ -50,8 +52,8 @@ import RadissonTunisInvoiceView from "./RaddisonTunisInvoiceView";
 import MovenpickInvoiceView from "./MovenPickInvoiceView";
 import LeCorailInvoiceView from "./LeCorailInvoiceView";
 import SheratonInvoiceView from "./SheratonInvoiceView";
-
-
+import NovotelInvoiceViewEgypt from "./NovotelInvoiceViewEgypt";
+import HiltonMetropolaneInvoiceView from "./HiltonMetropolaneInvoiceView";
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
@@ -136,12 +138,15 @@ export default function DynamicInvoiceViewPage() {
       
       let detectedType = "GrandAras"; // Default fallback
       
-      if (hotelName.includes("hilton") && hotelName.includes("park lane")) {
+      if (hotelName.includes("london hilton") && hotelName.includes("park lane")) {
         detectedType = "HiltonParkLane";
       }
 
         else if (hotelName.includes("radisson blu hotel & convention center tunis")) {
         detectedType = "Radisson_Tunis";
+      }
+        else if (hotelName.includes("hilton london metropole")) {
+        detectedType = "HiltonMetropolane";
       }
         else if (hotelName.includes("sheraton tunis hotel")) {
         detectedType = "Sheraton_Tunis";
@@ -170,12 +175,15 @@ export default function DynamicInvoiceViewPage() {
         detectedType = "TRYP";
       } else if (hotelName.includes("novotel") && isTunisiaRoute) {
         detectedType = "NovotelTunis";
-      } else if (hotelName.includes("novotel")) {
-        detectedType = "Novotel";
+      } else if (hotelName.includes("novotel cairo airport")) {
+        detectedType = "NovotelCairo";
       } else if (hotelName.includes("staybridge") ) {
         detectedType = "Staybridge"; 
       } else if (hotelName.includes("radisson residences cairo heliopolis") || hotelName.includes("radisson residence") || hotelName.includes("radisson residance") || hotelName.includes("radisson residencies")) {
         detectedType = "Raddison1";
+      }
+      else if(hotelName.includes("raffles")){
+        detectedType = "Raffles"
       }
       else if (hotelName.includes("intercontinental kuala lumpur") || (hotelName.includes("intercontinental") && isMalaysiaRoute)) {
         detectedType = "IntercontinentalMalaysia";
@@ -463,6 +471,15 @@ else if (hotelType === "Sheraton_Tunis") {
 }
 else if (hotelType === "LECROIL") {
   return <LeCorailInvoiceView invoiceData={invoice} />;
+}
+else if(hotelType=="Raffles"){
+  return <RafflesInvoiceViewPage invoiceData={invoice}/>
+}
+else if(hotelType=="NovotelCairo"){
+ return <NovotelInvoiceViewEgypt invoiceData={invoice} />
+}
+else if(hotelType=="HiltonMetropolane"){
+ return <HiltonMetropolaneInvoiceView invoiceData={invoice} />
 }
   else {
     // Default fallback

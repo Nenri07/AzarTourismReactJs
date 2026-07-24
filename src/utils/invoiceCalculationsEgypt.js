@@ -9,6 +9,9 @@ export const parseNum = (value, decimals = 2) => {
 // To add a new hotel: add one entry here. Zero changes anywhere else.
 // ─────────────────────────────────────────────────────────────────────────────
 
+
+
+
 export const HOTEL_CONFIGS = {
 
   // ── 1. STAYBRIDGE ──────────────────────────────────────────────────────────
@@ -69,6 +72,7 @@ export const HOTEL_CONFIGS = {
       };
     },
     buildRow: ({ date, breakdown }) => ({
+
       date,
       description:   'Accommodation',
       baseRate:      parseNum(breakdown.a),
@@ -593,7 +597,7 @@ export const mapToBackendSchema = (formData, hotelConfig) => {
 
       invoiceNo:  formData.invoice_no || '',
       guestName:  capitalizeWords(formData.guest_name) || 'Guest',
-      address:    'Algeria Square Building Number 12 First Floor, Tripoli, Libya',
+      address:    'Tripoli Tower Ground Floor Office no 50, Tripoli, Libya',
       companyName: formData.company_name,
       referenceNo: formData.reference_no || '',
       arNumber:    formData.ar_number || '',

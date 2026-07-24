@@ -34,43 +34,39 @@ const formatCurrency = (val) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // API → VIEW SCHEMA MAPPER
 // ─────────────────────────────────────────────────────────────────────────────
-
 const mapApiDataToInvoice = (data = {}) => {
   if (!data) return null;
 
   const items = [];
 
-  // MAPPING ACCOMMODATION / SERVICES
-  if (data.accommodationDetails && data.accommodationDetails.length > 0) {
-    data.accommodationDetails.forEach((acc) => {
-      items.push({
-        isMainStay: true, // Custom flag to render the underlined sub-text for stay
-        prestation: acc.description || "BED AND BREAKFAST",
-        stayDates: `STAY FROM ${formatDate(data.arrivalDate)} TO ${formatDate(data.departureDate)}`,
-        guestName: data.guestName || "",
-        qty: 1,
-        days: data.nights || 5,
-        pu: acc.debitTnd / (data.nights || 5), // Calculate per unit
-        total: acc.debitTnd,
-      });
-    });
-  }
+  // ── Accommodation: ONE summary row for the whole stay, not one per night ──
+if (data.accommodationDetails && data.accommodationDetails.length > 0) {
+  items.push({
+    isMainStay: true,
+    prestation: data.accommodationDetails[0].prestation || "BED AND BREAKFAST",
+    stayDates: `STAY FROM ${formatDate(data.arrivalDate)} TO ${formatDate(data.departureDate)}`,
+    guestName: data.guestName || "",
+    qty: 1,
+    days: data.nights || data.accommodationDetails.length,
+    pu: data.roomAmountTnd || 0,
+    total: data.totalRoomGrossTnd || 0,
+  });
+}
 
-  // Example for extra items like LAUNDRY
-  if (data.extraServices && data.extraServices.length > 0) {
-    data.extraServices.forEach((extra) => {
-      items.push({
-        isMainStay: false,
-        prestation: extra.description || "LAUBDRY",
-        qty: extra.qty || 1,
-        days: extra.days || 1,
-        pu: extra.unitPrice,
-        total: extra.total,
-      });
+if (data.otherServices && data.otherServices.length > 0) {
+  data.otherServices.forEach((service) => {
+    items.push({
+      isMainStay: false,
+      prestation: service.name || "SERVICE",
+      qty: service.qty || 1,
+      days: service.days || 1,
+      pu: service.amount,
+      total: service.amount,
     });
-  }
+  });
+}
 
-  // Default fallback if no data provided for exact visual match testing
+  // Fallback for testing when nothing is passed
   if (items.length === 0) {
     items.push({
       isMainStay: true,
@@ -82,46 +78,35 @@ const mapApiDataToInvoice = (data = {}) => {
       pu: 725.000,
       total: 3625.000,
     });
-
-
-
-    items.push({
-      isMainStay: false,
-      prestation: "LAUBDRY",
-      qty: 1,
-      days: 1,
-      pu: 124.000,
-      total: 124.000,
-    });
   }
 
-  const finalBalance = Number((data.grandTotalTnd || 3802.000));
+  const finalBalance = Number(data.grandTotalTnd || 3802.000);
 
   return {
     meta: {
       date: formatDate(data.invoiceDate) || "17/02/2026",
-      factureNo: data.referenceNo || "ANV6A02713",
+      factureNo: data.referenceNo || data.refferenceNo || "ANV6A02713",
     },
     guest: {
       companyCode: data.companyCode || "3000178582",
       companyName: data.companyName || "AZAR TOURISM",
-      address1: data.address1 || "ALGERIA SQUARE BUILDING NUMBER 12",
-      address2: data.address2 || "FIRST FLOOR 12/1 1254 TRIPOLI LIBYA",
+      address1: data.address1 || "TRIPOLI TOWER GROUND FLOOR",
+      address2: data.address2 || "OFFICE NO 50, TRIPOLI, LIBYA",
     },
     hotel: {
       matriculeFiscal: data.vatNo || "12894 PAM 000"
     },
     items,
     totals: {
-      totalHorsTaxe: formatCurrency(data.totalHorsTaxes || 3469.048),
-      fdcst: formatCurrency(data.fdcst1Pct || 34.690),
-      tva7: formatCurrency(data.vat7Pct || 245.262),
-      totalroom:formatCurrency(data.totalRoomGrossTnd || 0),
-      PuAmount:formatCurrency(data.roomAmountTnd || 0),
-      taxeSejour: formatCurrency(data.cityTaxTotal || 51.000),
-      timbre: formatCurrency(data.stampTaxTotal || 2.000),
+      totalHorsTaxe: formatCurrency(data.totalHorsTaxes || 0.000),
+      fdcst: formatCurrency(data.fdcst1Pct || 0.000),
+      tva7: formatCurrency(data.vat7Pct || 0.000),
+      totalroom: formatCurrency(data.totalRoomGrossTnd || 0),
+      PuAmount: formatCurrency(data.roomAmountTnd || 0),
+      taxeSejour: formatCurrency(data.cityTaxTotal || 0.000),
+      timbre: formatCurrency(data.stampTaxTotal || 0.000),
       totalTtc: formatCurrency(finalBalance),
-      cash: formatCurrency(data.paidAmount || 3802.000),
+      cash: formatCurrency(data.paidAmount || 0.000),
       aPayer: formatCurrency(data.balanceDue || 0.000)
     }
   };
@@ -255,6 +240,7 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
     @page { size: A4 portrait; margin: 0; }
     * { box-sizing: border-box; }
 
+
     .invoice-box {
       width: 100%;
       font-family: Arial, Helvetica, sans-serif;
@@ -303,23 +289,36 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
        page-break-after: avoid !important;
        page-break-inside: avoid !important;
     }
-
+   
     /* Radisson Exact Styling */
     .logo-section { text-align: center; margin-bottom: 30px;     justify-content: center;     display: flex }
-    .logo-section img { width: 480px; }
+    .logo-section img { width: 500px; }
 
     .header-info { position: relative; height: 35px; font-weight: bold; font-size: 11px; margin-bottom: 15px; }
-    .header-info .date { position: absolute; left: 0; top: 0; }
-    .header-info .facture { position: absolute; left: 50%; transform: translateX(-40%); top: 15px; }
+    .header-info .date { position: absolute; left: 0; top: 0; font-size: 12px; }
+    .header-info .facture { position: absolute; left: 50%; transform: translateX(-40%); top: 15px; font-size: 13px; }
 
     .boxes-container { display: flex; justify-content: space-between; margin-bottom: 46px; }
     
     .box { border: 4px double #000; padding: 15px 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-    .box-left { width: 46%; height: 131px; font-weight: bold; }
-    .box-left .title { font-size: 13px; margin-bottom: 8px; }
-    .box-left .address { font-size: 11px; line-height: 1.4; text-transform: uppercase;}
+    .box-left { width: 46%; height: 131px; font-weight: bold; padding-top: 55px; }
+    .box-left .title { font-size: 13px; margin-bottom: 3px; font-size: 15.5px; line-height: 1}
+    .box-left .address { font-size: 11px; line-height: 1.4; text-transform: uppercase; font-size: 13px;}
     
-    .box-right { width: 46%; height: 131px; font-weight: bold; font-size: 10px; line-height: 1.8; }
+    .box-right {
+    display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+   padding-bottom: 4px;
+    padding-top: 0;
+    padding-left: 1px;
+    width: 46%;
+    min-height: 131px;
+    font-weight: bold;
+    font-size: 13px;
+    padding-right: 0px;
+    }
 
     .table-container { width: 100%; margin-bottom: 10px; }
 .main-table{
@@ -341,14 +340,14 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
     .underline { text-decoration: underline; }
 
     .totals-container { display: flex; justify-content: flex-end; }
-    .main-table{ width: 100%; border: 2px solid  #000; border-collapse: separate; }
+    .main-table{ width: 100%; border: 1px solid  #000; border-collapse: separate; }
     .totals-table { width: 45%; border: 2px solid  #000; border-collapse: separate; }
     .col-tot-label { width: 110px; }
     .col-tot-val { width: 110px; }
-    .totals-table td { border: 2px double #000; padding: 3px 6px; font-weight: bold; font-size: 11px; border-collapse: separate; }
+    .totals-table td { border: 2px double #000; padding: 0.2px 2px 0.2px 6px; font-weight: bold; font-size: 13px; border-collapse: separate; }
 
-    .main-table td { border: 2px double #000; padding: 3px 6px; font-weight: bold; font-size: 11px; border-collapse: separate; }
-.main-table th { border: 2px double #000; padding: 3px 6px; font-weight: bold; font-size: 11px; border-collapse: separate; }
+    .main-table td { border: 1px double #000; padding: 3px 6px; font-weight: bold; font-size: 13px; border-collapse: separate; vertical-align: bottom; }
+.main-table th { border: 1px double #000; padding: 3px 6px; font-weight: bold; font-size: 11px; border-collapse: separate; }
 
     .stamp-container { position: absolute; bottom: 120px; left: 55%; transform: translateX(-50%); pointer-events: none; opacity: 0.7; }
 
@@ -398,10 +397,10 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
                 </div>
                 
                 <div className="box box-right">
-                  STC RADISSON BLU<br />
-                  HOTEL & CONVENTION<br />
-                  TUNIS CENTER<br /><br />
-                  MATRICULE FISCAL: {invoice.hotel.matriculeFiscal}
+                  <span>STC RADISSON BLU</span>
+                  <span>HOTEL & CONVENTION</span>
+                  <span>TUNIS CENTER</span>
+                  <span style={{textAlign: "left" , paddingTop: "5px"}}>MATRICULE FISCAL: {invoice.hotel.matriculeFiscal}</span>
                 </div>
               </div>
 
@@ -417,40 +416,65 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
 
     <thead>
       <tr>
-        <th className="text-left" style={{ paddingLeft: '30px' }}>PRESTATION</th>
+        <th className="text-left" style={{ textAlign: "center", fontSize: "13px"}}>PRESTATION</th>
         <th className="text-center">QTE</th>
         <th className="text-center">NB JOURS</th>
         <th className="text-center">PU</th>
         <th className="text-center">TOTAL</th>
       </tr>
     </thead>
+<tbody>
+  {page.items.length > 0 && (
+    <tr>
+      <td className="text-left valign-bottom">
+        <span className="underline">{page.items[0].stayDates}</span><br />
+        <span className="underline">{page.items[0].guestName}</span><br />
+        {page.items.map((row, idx) => (
+          <React.Fragment key={idx}>
+            {row.prestation}
+            {idx < page.items.length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </td>
 
-    <tbody>
-      {page.items.length > 0 && (
-        (() => {
-          const item = page.items[0]; 
-   
-          // ✅ sirf first item use hoga
+      <td className="text-center">
+        {page.items.map((row, idx) => (
+          <React.Fragment key={idx}>
+            {row.qty}
+            {idx < page.items.length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </td>
 
-          return (
-            <tr>
-              <td className={`text-left ${item.isMainStay ? 'valign-bottom' : ''}`}>
-                <>
-                  <span className="underline">{item.stayDates}</span><br />
-                  <span className="underline">{item.guestName}</span><br />
-                  {item.prestation}
-                </>
-              </td>
+      <td className="text-center">
+        {page.items.map((row, idx) => (
+          <React.Fragment key={idx}>
+            {row.days}
+            {idx < page.items.length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </td>
 
-              <td className="text-center">{item.qty}</td>
-              <td className="text-center">{item.days}</td>
-              <td className="text-right">{formatCurrency(invoice.totals.PuAmount)}</td>
-              <td className="text-right">{(invoice.totals.totalroom)}</td>
-            </tr>
-          );
-        })()
-      )}
-    </tbody>
+      <td className="text-right" style={{ paddingRight: "2px" }}>
+        {page.items.map((row, idx) => (
+          <React.Fragment key={idx}>
+            {formatCurrency(row.pu)}
+            {idx < page.items.length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </td>
+
+      <td className="text-right" style={{ paddingRight: "2px" }}>
+        {page.items.map((row, idx) => (
+          <React.Fragment key={idx}>
+            {formatCurrency(row.total)}
+            {idx < page.items.length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </td>
+    </tr>
+  )}
+</tbody>
   </table>
 </div>
               {page.isLastPage && (

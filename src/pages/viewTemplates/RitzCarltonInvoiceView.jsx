@@ -401,8 +401,8 @@ const RitzCarltonInvoiceView = ({ invoiceData }) => {
                 <div style={{ marginBottom: "8px" }}>{invoice.guestName}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <div>Azar Tourism Services</div>
-                  <div>Algeria Square Building Number 12,</div>
-                  <div>First Floor, Tripoli, Libya</div>
+                  <div>Tripoli Tower Ground Floor</div>
+                  <div>Office no 50, Tripoli, Libya</div>
                 </div>
 
                 <div className="ritz-title">INFORMATION INVOICE</div>

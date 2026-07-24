@@ -110,15 +110,26 @@ const mapApiDataToInvoice = (data = {}) => {
     });
   }
 
-  if (data.stampTaxTotal) {
+ if (data.stampTaxTotal) {
+    let stampDate = new Date(data.invoiceDate);
+    
+    // Find the max date in the existing items and add 1 day
+    if (items.length > 0) {
+      const maxDate = new Date(Math.max(...items.map(i => i.rawDate.getTime())));
+      if (!isNaN(maxDate.getTime())) {
+        stampDate = new Date(maxDate);
+        stampDate.setDate(stampDate.getDate() + 1);
+      }
+    }
+
     items.push({ 
-      date: formatDate(data.invoiceDate), 
-      rawDate: new Date(data.invoiceDate),
-      desc: "Stamp Tax", 
+      date: formatDate(stampDate), 
+      rawDate: stampDate,
+      desc: "Timbre Fiscal", // Or "Stamp Tax"
       subDesc: "", 
       debit: data.stampTaxTotal, 
       credit: "",
-      order: 3 // Stamp tax last
+      order: 9999 // Forces it to the absolute bottom during sorting
     });
   }
 
@@ -129,13 +140,17 @@ const mapApiDataToInvoice = (data = {}) => {
     return a.order - b.order;
   });
 
-  const finalBalance = Number((data.grandTotalTnd || 0) + (data.cityTaxTotal || 0) + (data.stampTaxTotal || 0));
-
+  const finalBalance = Number((data.totalTtc || 0) )
+  const exchangeRateVal = parseFloat(data.sellingRate || data.usdExchangeRate) || 0;
+  const balanceUsdVal = parseFloat(data.balanceUsd) || (exchangeRateVal > 0 ? (finalBalance / exchangeRateVal) : 0);
   return {
+    referenceNo: data.refferenceNo,
+    arNumber: data.arAccount||"",
     meta: {
       date: formatDate(data.invoiceDate),
     },
     guest: {
+
       name: data.guestName,
       country: "Libya",
       companyName: data.companyName || "AZAR TOURISM SERVICES",
@@ -153,7 +168,9 @@ const mapApiDataToInvoice = (data = {}) => {
     },
     items,
     totals: {
-      totalDebit: formatCurrency(finalBalance),
+      exchangeRate: exchangeRateVal ? formatCurrency(exchangeRateVal) : "",
+      balanceUsd: balanceUsdVal ? formatCurrency(balanceUsdVal) : "",
+      totalDebit: formatCurrency(data.totalTtc),
       totalCredit: formatCurrency(0),
       netAmount: formatCurrency(data.totalHorsTaxes),
       tva7: formatCurrency(data.vat7Pct),
@@ -296,7 +313,7 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
 
       const opt = {
         margin:      0,
-        filename:    `ADAM_Invoice_${invoice.guest.room || 'Room'}.pdf`,
+        filename:    `${invoice.referenceNo || 'invoice'}.pdf`,
         image:       { type: 'jpeg', quality: 1 },
         html2canvas: { scale: 4, useCORS: true, letterRendering: true, scrollY: 0, windowWidth: 794 },
         jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -419,7 +436,7 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
         </div>
         
         {/* Right Side */}
-        <div style={{ width: '48%', fontSize: '13.5px', marginTop: '8px'}}>
+        <div style={{ width: '51%', fontSize: '14px', marginTop: '8px'}}>
           <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <colgroup>
                <col style={{ width: '27%' }} />
@@ -433,7 +450,7 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
               <tr><td style={{padding: '1px 0'}}>Arrivée / Arrival</td><td>:</td><td>{invoice.guest.arrival}</td></tr>
               <tr><td style={{padding: '1px 0'}}>Départ / Departure</td><td>:</td><td>{invoice.guest.departure}</td></tr>
               <tr><td style={{padding: '1px 0'}}>Confirmation</td><td>:</td><td>{invoice.guest.crsNo}</td></tr>
-              <tr><td style={{padding: '1px 0'}}>N° Débiteur / A/R No</td><td>:</td><td>{invoice.guest.debtorNo}</td></tr>
+              <tr><td style={{padding: '1px 0'}}>N° Débiteur / A/R No</td><td>:</td><td>{invoice.arNumber}</td></tr>
               <tr><td colSpan="3" style={{ height: '14px' }}></td></tr>
               <tr><td style={{padding: '1px 0'}}>Agence/ Agent</td><td>:</td><td style={{textTransform: 'uppercase'}}>{invoice.guest.agent}</td></tr>
               <tr><td style={{padding: '1px 0'}}>Facture/Invoice</td><td>:</td><td>{invoice.guest.invoiceNo}</td></tr>
@@ -475,7 +492,7 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th style={{paddingLeft: '15px'}}>Description</th>
+                    <th style={{paddingLeft: '25px'}}>Description</th>
                     <th className="right-align">Débit TND</th>
                     <th className="right-align">Crédit TND</th>
                   </tr>
@@ -485,7 +502,7 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
                     <React.Fragment key={index}>
                       <tr>
                         <td>{txn.date}</td>
-                        <td>{txn.desc}</td>
+                        <td style={{ paddingLeft: '10px' }}>{txn.desc}</td>
                         <td className="right-align">{formatCurrency(txn.debit)}</td>
                         <td className="right-align"></td>
                       </tr>
@@ -514,29 +531,37 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
                       <tr>
                         <td colSpan="4" style={{ borderTop: '1.5px solid #000', paddingTop: '5px' }}></td>
                       </tr>
-                      <tr style={{ fontWeight: 'normal',  }}>
+                      <tr style={{ fontWeight: 'normal' }}>
                         <td></td>
-                        <td style={{ padding: '4px 0',  borderBottom: '2px solid #000' }}>Total</td>
-                        <td className="right-align" style={{ padding: '4px 0',  borderBottom: '2px solid #000'  }}>{invoice.totals.totalDebit}</td>
-                        <td className="right-align" style={{ padding: '4px 0',  borderBottom: '2px solid #000'  }}>{invoice.totals.totalCredit}</td>
+                        <td style={{ padding: '2px 0 11px 0', borderBottom: '2px solid #000' }}>Total</td>
+                        <td className="right-align" style={{ padding: '4px 0 11px 0', borderBottom: '2px solid #000' }}>{invoice.totals.totalDebit}</td>
+                        <td className="right-align" style={{ padding: '4px 0 11px 0', borderBottom: '2px solid #000' }}>{invoice.totals.totalCredit}</td>
                       </tr>
-                      {/* <tr>
-                        <td colSpan="4" style={{ borderTop: '1.5px solid #000' }}></td>
-                      </tr> */}
                     <tr>
-                      {/* Left: Bank Details */}
-                      <td rowSpan="2" style={{ verticalAlign: 'top', paddingRight: '10px' }}>
-                        <div style={{ lineHeight: '1.2', fontFamily: 'times new roman' }}>
-                          <span style={{ fontWeight: 'bold', borderBottom: '1.2px solid #000', display: 'inline-block' }}>Détails Bancaire:</span><br />
-                          AMEN BANK<br />
-                          Agence Mohamed V (Tunis)<br />
-                          <span style={{ fontWeight: 'bold', borderBottom: '1.2px solid #000', display: 'inline-block', marginTop: '2px' }}>Compte en dinars :</span><br />
-                          RIB : 07 807 0081 101 115447 15
-                        </div>
+                      {/* Left: USD Conversion Details */}
+                      <td rowSpan="2" style={{ verticalAlign: 'bottom', paddingRight: '45px' }}>
+                        {invoice.totals.exchangeRate && (
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                            <tbody style={{ lineHeight: '1.2' }}>
+                              <tr>
+                                <td style={{ padding: '1px 0' }}>USD Exch. Rate:</td>
+                                <td style={{ textAlign: 'right', padding: '1px 0' }}>
+                                  {invoice.totals.exchangeRate} TND
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style={{ padding: '0px 0' }}>Total in USD:</td>
+                                <td style={{ textAlign: 'right', padding: '0px 0' }}>
+                                  {invoice.totals.balanceUsd} USD
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        )}
                       </td>
 
-                      {/* Right: Balance row */}
-                      <td style={{ padding: '4px 0' }}>Balance en TND :</td>
+                      {/* Right: Balance row (DUPLICATES REMOVED) */}
+                      <td style={{ padding: '4px 0 8px 0' }}>Balance en TND :</td>
                       <td className="right-align" style={{ padding: '4px 0' }}>{invoice.totals.balance}</td>
                       <td></td>
                     </tr>
@@ -545,21 +570,22 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
                       <td colSpan="3" style={{ verticalAlign: 'top' }}>
                         <div style={{ height: '14px', backgroundColor: '#777', width: '100%', margin: '2px 0 8px 0' }}></div>
                         
-                        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: '13px', lineHeight: '1.1' }}>
+                       <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: '13px', lineHeight: '1.1' }}>
                            <colgroup>
-                             <col style={{ width: '9%' }} />
-                             <col style={{ width: '5%' }} />
-                             <col style={{ width: '5%' }} />
-                             <col style={{ width: '21.4%' }} />
+                             <col style={{ width: '46%' }} />
+                             <col style={{ width: '4%' }} />
+                             <col style={{ width: '35%' }} />
+                             <col style={{ width: '15%' }} />
                            </colgroup>
                            <tbody>
-                             <tr><td style={{padding: '1px 0'}}>Total Hors Taxes</td><td>:</td><td className="right-align" style={{textAlign: 'right'}}>{invoice.totals.netAmount}</td><td style={{ paddingLeft: '8px' }}>TND</td></tr>
-                             <tr><td style={{padding: '1px 0'}}>FDCST 1%</td><td>:</td><td className="right-align" style={{textAlign: 'right'}}>{invoice.totals.fdcst1}</td><td style={{ paddingLeft: '8px' }}>TND</td></tr>
-                             <tr><td style={{padding: '1px 0'}}>TVA 7%</td><td>:</td><td className="right-align" style={{textAlign: 'right'}}>{invoice.totals.tva7}</td><td style={{ paddingLeft: '8px' }}>TND</td></tr>
-                             <tr><td style={{padding: '1px 0'}}>Timbre Fiscal</td><td>:</td><td className="right-align" style={{textAlign: 'right'}}>{invoice.totals.stampDuty}</td><td style={{ paddingLeft: '8px' }}>TND</td></tr>
-                             <tr><td style={{padding: '1px 0'}}>TVA 19 %</td><td>:</td><td className="right-align" style={{textAlign: 'right'}}>{invoice.totals.tva19}</td><td style={{ paddingLeft: '8px' }}>TND</td></tr>
-                             <tr><td style={{padding: '1px 0'}}>Total TTC</td><td>:</td><td className="right-align" style={{textAlign: 'right'}}>{invoice.totals.totalDebit}</td><td style={{ paddingLeft: '8px' }}>TND</td></tr>
-                             <tr><td style={{padding: '1px 0'}}>Net a Payer</td><td>:</td><td className="right-align" style={{textAlign: 'right'}}>{invoice.totals.balance}</td><td style={{ paddingLeft: '8px' }}>TND</td></tr>
+                             <tr><td style={{padding: '1px 0'}}>Total Hors Taxes</td><td>:</td><td className="right-align" style={{textAlign: 'right', paddingRight: '8px'}}>{invoice.totals.netAmount}</td><td>TND</td></tr>
+                             <tr><td style={{padding: '1px 0'}}>FDCST 1%</td><td>:</td><td className="right-align" style={{textAlign: 'right', paddingRight: '8px'}}>{invoice.totals.fdcst1}</td><td>TND</td></tr>
+                             <tr><td style={{padding: '1px 0'}}>TVA 7%</td><td>:</td><td className="right-align" style={{textAlign: 'right', paddingRight: '8px'}}>{invoice.totals.tva7}</td><td>TND</td></tr>
+                             <tr><td style={{padding: '1px 0'}}>Timbre Fiscal</td><td>:</td><td className="right-align" style={{textAlign: 'right', paddingRight: '8px'}}>{invoice.totals.stampDuty}</td><td>TND</td></tr>
+                             <tr><td style={{padding: '1px 0'}}>TVA 19 %</td><td>:</td><td className="right-align" style={{textAlign: 'right', paddingRight: '8px'}}>{invoice.totals.tva19}</td><td>TND</td></tr>
+                             <tr><td style={{padding: '1px 0'}}>City Taxe</td><td>:</td><td className="right-align" style={{textAlign: 'right', paddingRight: '8px'}}>{invoice.totals.cityTax}</td><td>TND</td></tr>
+                             <tr><td style={{padding: '1px 0'}}>Total TTC</td><td>:</td><td className="right-align" style={{textAlign: 'right', paddingRight: '8px'}}>{invoice.totals.totalDebit}</td><td>TND</td></tr>
+                             <tr><td style={{padding: '1px 0'}}>Net a Payer</td><td>:</td><td className="right-align" style={{textAlign: 'right', paddingRight: '8px'}}>0.00</td><td>TND</td></tr>
                            </tbody>
                         </table>
                       </td>
@@ -575,7 +601,6 @@ const AdamTunisInvoiceView = ({ invoiceData }) => {
                   ADAM Hotel Suites<br />
                   Cité les Pins- Les Berges du Lac 2, 1053 Tunis - Tunisia<br />
                   T: +216 36 049 000 F: +216 36 048 000<br />
-                  Email : Info@adamhotelsuites.com
                 </div>
               )}
 

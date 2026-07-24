@@ -114,7 +114,7 @@ const mapApiDataToInvoice = (data) => {
     guest: {
       name: data.guestName || "",
       company: data.companyName || "",
-      address: "Algeria Square Building Number 12 First Floor\nTripoli\nLibya",
+      address: "Tripoli Tower Ground Floor\nOffice no 50, Tripoli\nLibya",
       attention: "",
     },
     meta: {

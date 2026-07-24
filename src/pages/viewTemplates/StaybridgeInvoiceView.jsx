@@ -488,7 +488,7 @@ const StaybridgeInvoiceView = ({ invoiceData }) => {
                 </div>
                 <div className="sb-info-row">
                   <span className="sb-label">Address:</span>
-                  <span className="sb-value"><span>Algeria Square Building Number 12 First Floor,</span><span>Tripoli, Libya</span></span>
+                  <span className="sb-value"><span>Tripoli Tower Ground Floor Office no 50,</span><span>Tripoli, Libya</span></span>
                 </div>
                 <div className="sb-info-row" style={{ marginTop: '9mm' }}>
                   <span className="sb-label">Company Name:</span>

@@ -90,7 +90,7 @@ const MarriotInvoiceView = ({ invoiceData }) => {
             items.push({
                 date: formatDate(service.date),
                 rawDate: new Date(service.date),
-                text: service.text || service.name || service.service_type || "",
+                text: service.text?.toUpperCase() || service.name || service.service_type || "",
                 chargesGBP: charge ? formatCurrency(charge) : "",
                 creditsGBP: credit ? formatCurrency(credit) : "",
                 rawCredit: credit, 
@@ -447,7 +447,7 @@ const MarriotInvoiceView = ({ invoiceData }) => {
                                 <tr>
                                     <td className="label-col">User ID</td>
                                     <td className="colon-col">:</td>
-                                    <td>{safeStr(invoice.userId)}</td>
+                                    <td>{safeStr(invoice.honorsNo)}</td>
                                 </tr>
                                 <tr>
                                     <td className="label-col">VAT No.</td>

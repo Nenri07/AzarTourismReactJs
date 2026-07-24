@@ -238,6 +238,16 @@ HILTON_BOSPHORUS: {
       };
     },
   },
+// ── 8. RAFFLES ISTANBUL ───────────────────────────────────────────────────
+  RAFFLES: {
+    detect: (name) => name.includes('raffles') || name.includes('raffles istambul'),
+    accommodationDescription: 'Accommodation',
+    currency: 'TRY',
+    isRadisson: false,
+    calculateNightlyRate: ({ eurAmount, exchangeRate }) => ({ roomAmountTry: eurAmount * exchangeRate }),
+    buildRow: ({ date, roomAmountTry }) => ({ date, description: 'Accommodation', rate: parseNum(roomAmountTry) }),
+  },
+
 
   // ── EXISTING HOTELS ───────────────────────────────────────────────────────
   CVK: {
@@ -287,6 +297,8 @@ const PRIORITY_ORDER = [
   'RADISSON_BLU_SISLI',
   'RADISSON_COLLECTION',
   'RADISSON_HARBIYE',
+    'RAFFLES',
+
   'CHEYA',
   'MARMARA_TAKSIM',
   'YOTELAIR',
