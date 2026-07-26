@@ -322,13 +322,9 @@ const FourSeasonsInvoiceView = ({ invoiceData }) => {
                 <div style={{ paddingBottom: '10px' }}>{invoice.guestName}</div>
                 <div className="company-name">{invoice.companyNames || "Azar Tourism Services"}</div>
                 <div style={{ maxWidth: '280px' }}>
-                  {invoice.companyAddress ? invoice.companyAddress : (
-                    <>
-                      Tripoli Tower Ground Floor<br />
-                      Office no 50, Tripoli<br />
-                      Libya
-                    </>
-                  )}
+                    Tripoli Tower Ground Floor<br />
+                    Office no 50, Tripoli<br />
+                    Libya
                 </div>
                 <div className="invoice-title">INFORMATION INVOICE</div>
               </div>

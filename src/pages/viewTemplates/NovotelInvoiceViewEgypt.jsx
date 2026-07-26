@@ -856,8 +856,7 @@ const NovotelInvoiceViewEgypt = ({ invoiceData }) => {
   }
 
   // Address Formatting
-  const addressParts = invoice.address ? invoice.address.split(',') : [];
-  const addressLines = addressParts.map(part => part.trim()).filter(part => part.length > 0);
+  const addressLines = ["Tripoli Tower Ground Floor Office no 50", "Tripoli, Libya"];
 
   // Totals calculations
   const totalChargesEGP = invoice.grandTotalEgp || 0;

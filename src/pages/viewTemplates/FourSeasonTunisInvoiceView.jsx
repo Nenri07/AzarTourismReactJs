@@ -127,7 +127,7 @@ const mapApiDataToInvoice = (data = {}) => {
     guest: {
       name: data.guestName,
       companyName: data.companyNames || "Azar Tourism",
-      companyAddress: data.addresss || "Tripoli Tower Ground Floor Office no 50\nTripoli\nLibya",
+      companyAddress: "Tripoli Tower Ground Floor Office no 50\nTripoli\nLibya",
       room: data.roomNo,
       arrival: formatDate(data.arrivalDate),
       departure: formatDate(data.departureDate),

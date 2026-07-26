@@ -333,8 +333,7 @@ const GrandHayattInvoiceView = ({ invoiceData }) => {
       );
   }
 
-  const addressParts = invoice.address ? invoice.address.split(',') : [];
-  const addressLines = addressParts.map(part => part.trim()).filter(p => p);
+  const addressLines = ["Tripoli Tower Ground Floor", "Office no 50", "Tripoli, Libya"];
 
   return (
     <InvoiceTemplate

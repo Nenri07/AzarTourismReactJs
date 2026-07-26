@@ -77,7 +77,7 @@ const OasiaInvoiceView = ({ invoiceData }) => {
       arrivalDate: formatDate(data.arrivalDate),
       departureDate: formatDate(data.departureDate),
       guestName: data.guestName || "",
-      address: data.address || "",
+      address: "Tripoli Tower Ground Floor Office no 50, Tripoli, Libya",
       country: data.nationality || "",
       
       arNo: data.arNumber || "",

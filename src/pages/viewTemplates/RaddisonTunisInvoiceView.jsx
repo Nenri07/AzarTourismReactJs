@@ -90,8 +90,8 @@ if (data.otherServices && data.otherServices.length > 0) {
     guest: {
       companyCode: data.companyCode || "3000178582",
       companyName: data.companyName || "AZAR TOURISM",
-      address1: data.address1 || "TRIPOLI TOWER GROUND FLOOR",
-      address2: data.address2 || "OFFICE NO 50, TRIPOLI, LIBYA",
+      address1: "TRIPOLI TOWER GROUND FLOOR",
+      address2: "OFFICE NO 50, TRIPOLI, LIBYA",
     },
     hotel: {
       matriculeFiscal: data.vatNo || "12894 PAM 000"

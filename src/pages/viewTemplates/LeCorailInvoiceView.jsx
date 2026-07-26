@@ -1677,10 +1677,9 @@ const mapApiDataToInvoice = (data = {}) => {
     date: formatDate(item.rawDate)
   }));
 
-  const addressParts = data.address ? data.address.split(',').map(s => s.trim()) : [];
-  const compAddr1 = addressParts[0] || "";
-  const compAddr2 = addressParts[1] || "";
-  const compAddr3 = addressParts.slice(2).join(', ') || "";
+  const compAddr1 = "Tripoli Tower Ground Floor";
+  const compAddr2 = "Office no 50";
+  const compAddr3 = "Tripoli, Libya";
 
   return {
     meta: {

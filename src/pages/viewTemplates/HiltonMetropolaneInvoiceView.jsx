@@ -243,9 +243,8 @@ const HiltonMetropolaneInvoiceView = ({ invoiceData }) => {
         <div className="guest-address-block">
             {safeStr(invoice.guestName)}<br/>
             {safeStr(invoice.companyName)}<br/>
-            {invoice.address ? invoice.address.split(',').map((line, i) => (
-                <React.Fragment key={i}>{line.trim()}<br/></React.Fragment>
-            )) : ""}
+            Tripoli Tower Ground Floor Office no 50<br/>
+            Tripoli, Libya<br/>
         </div>
 
         <div className="room-details-block">

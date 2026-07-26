@@ -1147,7 +1147,7 @@ const IntercontinentalInvoiceViewMalaysia = ({ invoiceData }) => {
 
         return {
             guestName:     data.guestName     || "",
-            address:       data.address       || "",
+            address:       "Tripoli Tower Ground Floor Office no 50, Tripoli, Libya",
             country:       data.nationality   || "",
             invoiceNo:     data.invoiceNo     || "",
             roomNo:        data.roomNo        || "",

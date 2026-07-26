@@ -129,7 +129,7 @@ const DusitThaniInvoiceView = ({ invoiceData }) => {
       ...data,
       guestName: data.guestName || "",
       companyName: data.companyName || "",
-      address: data.address || "",
+      address: "Tripoli Tower Ground Floor Office no 50,\nTripoli, Libya",
       roomNo: data.roomNo || "",
       confNo: data.confNo || "",
       crsNo: data.crsNo || "",

@@ -763,9 +763,7 @@ export default function NovotelInvoiceView({ invoiceData }) {
 
             // Company / billing info - real field names from the saved schema
             companyName: data.companyName || "Azar Tourism Services",
-            companyAddress:
-                data.address ||
-                "Tripoli Tower Ground Floor Office no 50, Tripoli, Libya.",
+            companyAddress: "Tripoli Tower Ground Floor Office no 50, Tripoli, Libya.",
             accountNo: data.arAccount || "",
             vatNo: data.vatNo || "",
             invoiceNo: data.invoiceNo || "",

@@ -107,7 +107,7 @@ const mapApiDataToInvoice = (data) => {
       company: data.companyName || "",
       phone: data.hotelPhone || data.guestPhone || data.hotel_phone || "",
       email: data.hotelEmail || data.guestEmail || data.hotel_email || "",
-      address: data.address || "",
+      address: "Tripoli Tower Ground Floor Office no 50, Tripoli, Libya",
       uuid: data.uuid || ""
     },
     meta: {

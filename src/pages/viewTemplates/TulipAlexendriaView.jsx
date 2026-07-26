@@ -88,9 +88,8 @@ const TolipAlexandriaView = ({ invoiceData }) => {
   const transformInvoiceData = (data) => {
     if (!data) return null;
 
-    const addressParts = data.address ? data.address.split(',') : [];
-    const addressLine1 = addressParts[0] ? addressParts[0].trim() : "";
-    const addressLine2 = addressParts.slice(1).join(',').trim();
+    const addressLine1 = "Tripoli Tower Ground Floor Office no 50";
+    const addressLine2 = "Tripoli, Libya";
 
     const transactions = [];
     let txId = 1;

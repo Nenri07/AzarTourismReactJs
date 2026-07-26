@@ -360,9 +360,9 @@ const MarriotInvoiceView = ({ invoiceData }) => {
                     <div style={{ paddingTop: '65px' }}>
                         <div style={{ color: '#000066', fontSize: '14px', lineHeight: '1.2', fontWeight: 'bold' }}>
                             <div>{safeStr(invoice.companyName)}</div>
-                            {invoice.address ? invoice.address.split(',').map((line, i) => (
-                                <React.Fragment key={i}>{line.trim()}<br/></React.Fragment>
-                            )) : ""}
+                            Tripoli Tower Ground Floor<br/>
+                            Office no 50<br/>
+                            Tripoli, Libya<br/>
                         </div>
                     </div>
 

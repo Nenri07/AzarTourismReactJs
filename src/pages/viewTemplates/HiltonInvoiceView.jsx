@@ -145,10 +145,9 @@ const HiltonInvoiceViewPage = ({ invoiceData }) => {
       return row;
     });
 
-    // Extract dynamic address to replace hardcoded strings
-    const addressParts = data.address ? data.address.split(',') : [];
-    const addressLine1 = addressParts[0] ? addressParts[0].trim() : 'Tripoli Tower Ground Floor Office no 50,';
-    const addressLine2 = addressParts.slice(1).join(',').trim() || 'Tripoli, Libya';
+    // Hardcoded address
+    const addressLine1 = 'Tripoli Tower Ground Floor Office no 50,';
+    const addressLine2 = 'Tripoli, Libya';
 
     return {
       // Hotel header block

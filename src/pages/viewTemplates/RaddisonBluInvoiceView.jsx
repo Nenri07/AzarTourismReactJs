@@ -237,9 +237,9 @@ const RaddisonBluInvoiceView = ({ invoiceData }) => {
       );
   }
 
-  const addressParts = invoice.address ? invoice.address.split(',') : [];
-  const addressLine1 = addressParts[0] ? addressParts[0].trim() : "";
-  const addressLine2 = addressParts.slice(1).join(',').trim();
+  const addressParts = ['Tripoli Tower Ground Floor Office no 50', 'Tripoli, Libya'];
+  const addressLine1 = addressParts[0];
+  const addressLine2 = addressParts[1];
 
   return (
     <InvoiceTemplate

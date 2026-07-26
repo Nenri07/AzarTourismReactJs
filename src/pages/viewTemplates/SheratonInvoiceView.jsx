@@ -100,11 +100,7 @@ const mapApiDataToInvoice = (data = {}) => {
 
   const clientAddressLines = [];
   if (data.companyName) clientAddressLines.push(data.companyName);
-  if (data.address) {
-    data.address.split(',').map(s => s.trim()).forEach(s => clientAddressLines.push(s));
-  } else {
-    clientAddressLines.push("Azar Tourism Services", "Tripoli Tower Ground Floor Office no 50", "Tripoli, Libya");
-  }
+  clientAddressLines.push("Tripoli Tower Ground Floor Office no 50", "Tripoli, Libya");
 
   const calculatedTotalDebit = sortedItems.reduce((acc, curr) => acc + (parseFloat(curr.debit) || 0), 0);
   const calculatedTotalCredit = sortedItems.reduce((acc, curr) => acc + (parseFloat(curr.credit) || 0), 0);

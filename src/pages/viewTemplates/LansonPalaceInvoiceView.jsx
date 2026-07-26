@@ -55,7 +55,7 @@ const mapApiDataToInvoice = (data) => {
     guestName:      data.guestName     || "",
     attention:      data.guestName     || "",
     company:        data.companyName   || "",
-    address:        data.address       || "",
+    address:        "Tripoli Tower Ground Floor Office no 50, Tripoli, Libya",
     confirmationNo: data.confNo        || "",
     roomNo:         data.roomNo        || "",
     crsOtaNo:       data.crsNo         || "",
