@@ -578,8 +578,8 @@ export default function DynamicInvoiceFormPageTunisia() {
       confirmation_no: data.confirmationNo || '',
       guest_name: data.guestName || '',
       room_number: data.roomNo || '',
-      nb_persons: String(data.nbPersons || 1),
-      nb_adults: String(data.adults || 1),
+      nb_persons: String(data.nbPersons || 0),
+      nb_adults: String(data.adults || 0),
       nb_children: String(data.children || 0),
       arrangement_rate: data.arrangementRate || '',
       ar_account: data.arAccount || '',
@@ -617,8 +617,8 @@ export default function DynamicInvoiceFormPageTunisia() {
       status: 'pending',
       note: '',
       invoice_time: `${hh}:${mm}`,
-      nb_persons: '1',
-      nb_adults: '1',
+      nb_persons: '0',
+      nb_adults: '0',
       nb_children: '0',
     };
 

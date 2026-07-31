@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -33,49 +31,79 @@ const formatCurrency = (val) => {
   });
 };
 
-const parseDateForSort = (dateStr) => {
-  if (!dateStr) return 0;
-  const d = new Date(dateStr);
-  return isNaN(d.getTime()) ? 0 : d.getTime();
-};
-
 // ─────────────────────────────────────────────────────────────────────────────
 // API → VIEW SCHEMA MAPPER
 // ─────────────────────────────────────────────────────────────────────────────
+//
+// Row-breakdown + sorting now mirrors the Marriott view exactly:
+//   1. Build one FLAT array of raw rows (rawDate kept as the original string).
+//   2. Push rows in the order they should appear on a given day:
+//        Package/Accommodation -> FDCST 1% -> VAT 7% -> City Tax
+//      then stamp duty rows, then other-service rows.
+//   3. Do ONE stable sort: rawItems.sort((a,b) => new Date(a.rawDate) - new Date(b.rawDate))
+//      Because Array.prototype.sort is stable, same-day rows keep the push
+//      order above (Package, FDCST, VAT, City Tax) — no manual +1/+2
+//      timestamp offsets needed anymore.
+// ─────────────────────────────────────────────────────────────────────────────
 
 const mapApiDataToInvoice = (data = {}) => {
-  const ledgerItems = [];
+  const subRouteInfo = `${data.guestName || ''} #${data.roomNo || ''}=>${data.companyName || ''} . #${data.roomNo || ''}`;
+  const rawItems = [];
 
+  // Accommodation + its per-night charges (Package, FDCST 1%, VAT 7%, City Tax)
   (data.accommodationDetails || []).forEach((acc, idx) => {
-    const baseTimestamp = parseDateForSort(acc.date);
-    ledgerItems.push({
+    const roomAmount = parseFloat(acc.debitTnd) || 0;
+    const fdcstAmount = roomAmount * 0.01;
+    const vatAmount = (roomAmount + fdcstAmount) * 0.07;
+
+    rawItems.push({
       id: `acc_${acc.day || idx}`,
-      rawDate: baseTimestamp,
-      date: formatDate(acc.date),
+      rawDate: acc.date,
       desc: acc.texte || "Accommodation",
       subRouteInfo: "",
       debit: acc.debitTnd || "",
       credit: acc.creditTnd || "",
     });
 
+    if (data.fdcst1Pct) {
+      rawItems.push({
+        id: `fdcst_${acc.day || idx}`,
+        rawDate: acc.date,
+        desc: "FDCST 1%",
+        subRouteInfo: "",
+        debit: fdcstAmount,
+        credit: "",
+      });
+    }
+
+    if (data.vat7Pct) {
+      rawItems.push({
+        id: `vat_${acc.day || idx}`,
+        rawDate: acc.date,
+        desc: "VAT 7%",
+        subRouteInfo: "",
+        debit: vatAmount,
+        credit: "",
+      });
+    }
+
     if (data.showPerNightTax && data.cityTaxPerNight > 0) {
-      ledgerItems.push({
+      rawItems.push({
         id: `citytax_${acc.day || idx}`,
-        rawDate: baseTimestamp + 1,
-        date: formatDate(acc.date),
+        rawDate: acc.date,
         desc: "City Tax",
-        subRouteInfo: `${data.guestName || ''} #${data.roomNo || ''}=>${data.companyName || ''} . #${data.roomNo || ''}`,
+        subRouteInfo,
         debit: data.cityTaxPerNight,
         credit: "",
       });
     }
   });
 
+  // Other services (Laundry, Minibar, etc.)
   (data.otherServices || []).forEach((svc, idx) => {
-    ledgerItems.push({
+    rawItems.push({
       id: `svc_${idx}`,
-      rawDate: parseDateForSort(svc.date),
-      date: formatDate(svc.date),
+      rawDate: svc.date,
       desc: svc.name || "Other Service",
       subRouteInfo: "",
       debit: svc.amount || "",
@@ -83,12 +111,23 @@ const mapApiDataToInvoice = (data = {}) => {
     });
   });
 
-  if (data.stampTaxTotal > 0) {
-    const finalDate = data.departureDate || data.invoiceDate;
-    ledgerItems.push({
+  // Stamp duty — prefer per-date entries (like Marriott's stampTaxDetails),
+  // fall back to a single total on the departure/invoice date.
+  if (data.stampTaxDetails && data.stampTaxDetails.length > 0) {
+    data.stampTaxDetails.forEach((st, idx) => {
+      rawItems.push({
+        id: `stamp_${idx}`,
+        rawDate: st.date,
+        desc:  "Stamp Tax",
+        subRouteInfo: "",
+        debit: st.amount,
+        credit: "",
+      });
+    });
+  } else if (data.stampTaxTotal > 0) {
+    rawItems.push({
       id: "stamp_tax",
-      rawDate: parseDateForSort(finalDate) + 2,
-      date: formatDate(finalDate),
+      rawDate: data.departureDate || data.invoiceDate,
       desc: "Droit de Timbre",
       subRouteInfo: "",
       debit: data.stampTaxTotal,
@@ -96,7 +135,17 @@ const mapApiDataToInvoice = (data = {}) => {
     });
   }
 
-  const sortedItems = ledgerItems.sort((a, b) => a.rawDate - b.rawDate);
+  // Single stable sort by actual date — same mechanism as Marriott.
+  rawItems.sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+
+  const sortedItems = rawItems.map((it) => ({
+    id: it.id,
+    date: formatDate(it.rawDate),
+    desc: it.desc,
+    subRouteInfo: it.subRouteInfo,
+    debit: it.debit,
+    credit: it.credit,
+  }));
 
   const clientAddressLines = [];
   if (data.companyName) clientAddressLines.push(data.companyName);
@@ -123,8 +172,8 @@ const mapApiDataToInvoice = (data = {}) => {
       balance: calculatedTotalDebit - calculatedTotalCredit,
     },
     taxBreakdown: {
-      totalInUsd: data.balanceUsd || 0,
-      exchangeRate: data.sellingRate || data.usdExchangeRate || 0,
+      totalInUsd: data.balanceEur || 0,
+      exchangeRate: data.exchangeRate || data.usdExchangeRate || 0,
       fdcst1: data.fdcst1Pct || 0,
       vat7: data.vat7Pct || 0,
       totalHorsTaxes: data.totalHorsTaxes || 0,

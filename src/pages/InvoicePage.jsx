@@ -23,40 +23,51 @@ export default function InvoicePage() {
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [availableCountries, setAvailableCountries] = useState([]);
-  const [loadingCountries, setLoadingCountries]     = useState(true);
-  const [hotels, setHotels]                         = useState([]);
-  const [loadingHotels, setLoadingHotels]           = useState(false);
-  const [invoices, setInvoices]                     = useState([]);
-  const [loading, setLoading]                       = useState(true);
-  const [searchLoading, setSearchLoading]           = useState(false);
-  const [deleteLoading, setDeleteLoading]           = useState(null);
+  const [loadingCountries, setLoadingCountries] = useState(true);
+  const [hotels, setHotels] = useState([]);
+  const [loadingHotels, setLoadingHotels] = useState(false);
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(null);
   const [selectedHotelTemplate, setSelectedHotelTemplate] = useState("");
-  const [showCalendar, setShowCalendar]             = useState(false);
-  const [selectedStartDate, setSelectedStartDate]   = useState(null);
-  const [selectedEndDate, setSelectedEndDate]       = useState(null);
-  const [dateSelectionMode, setDateSelectionMode]   = useState("start");
-  const [searchTerm, setSearchTerm]                 = useState("");
-  const [filterStatus, setFilterStatus]             = useState("");
-  const [filterHotel, setFilterHotel]               = useState("");
-  const [currentDate, setCurrentDate]               = useState(new Date());
-  const [showDeleteModal, setShowDeleteModal]       = useState(false);
-  const [invoiceToDelete, setInvoiceToDelete]       = useState(null);
-  const [invoicePage, setInvoicePage]               = useState(1);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedStartDate, setSelectedStartDate] = useState(null);
+  const [selectedEndDate, setSelectedEndDate] = useState(null);
+  const [dateSelectionMode, setDateSelectionMode] = useState("start");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterHotel, setFilterHotel] = useState("");
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+  const [invoicePage, setInvoicePage] = useState(1);
 
   // Cascading searchable dropdowns
-  const [selectedCountry, setSelectedCountry]       = useState("");
-  const [hotelSearchTerm, setHotelSearchTerm]       = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [hotelSearchTerm, setHotelSearchTerm] = useState("");
   const [isHotelDropdownOpen, setIsHotelDropdownOpen] = useState(false);
-  const [activeHotelIndex, setActiveHotelIndex]     = useState(0);
+  const [activeHotelIndex, setActiveHotelIndex] = useState(0);
 
-  const daysInMonth    = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const daysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
+
+  const isGlobal = (hotelName, country, currency) => {
+    const name = (hotelName || "").toLowerCase();
+    const c = (country || "").toLowerCase();
+    const cur = (currency || "").toUpperCase();
+
+    if (c === "global" || cur === "EUR") return true;
+    return (
+      name.includes("booking express")
+    )
+  }
   // ─── Hotel type detectors (UNCHANGED) ────────────────────────────────────
   const isUKInvoice = (hotelName, country, currency) => {
     const name = (hotelName || "").toLowerCase();
-    const c    = (country   || "").toLowerCase();
-    const cur  = (currency  || "").toUpperCase();
+    const c = (country || "").toLowerCase();
+    const cur = (currency || "").toUpperCase();
     if (c === "uk" || c === "united kingdom" || cur === "GBP") return true;
     return (
       name.includes("hilton london") || name.includes("london hilton") ||
@@ -75,7 +86,7 @@ export default function InvoicePage() {
       name.includes("fairmont") || name.includes("fairmount") ||
       name.includes("holiday") ||
       (name.includes("radisson") && name.includes("cairo")) ||
-      (name.includes("intercontinental") && !name.includes("kuala lumpur"))||
+      (name.includes("intercontinental") && !name.includes("kuala lumpur")) ||
       name.includes("novotel cairo airport")
     );
   };
@@ -96,8 +107,10 @@ export default function InvoicePage() {
       name.includes("radisson collection") ||
       name.includes("radisson blu hotel istanbul sisli") ||
       name.includes("hilton istanbul bosphorus") ||
+      name.includes("hilton istanbul bomonti hotel & conference center") ||
+
       name.includes("marmara taksim") || name.includes("yotelair") ||
-      name.includes("cheya") || name.includes("radisson hotel istanbul harbiye")||
+      name.includes("cheya") || name.includes("radisson hotel istanbul harbiye") ||
       name.includes("raffles") || name.includes("raffles istanbul")
 
     );
@@ -105,8 +118,8 @@ export default function InvoicePage() {
 
   const isTunisiaInvoice = (hotelName, country, currency) => {
     const name = (hotelName || "").toLowerCase();
-    const c    = (country   || "").toLowerCase();
-    const cur  = (currency  || "").toUpperCase();
+    const c = (country || "").toLowerCase();
+    const cur = (currency || "").toUpperCase();
     if (c === "tunisia" || c === "tunis" || cur === "TND") return true;
     return (
       name.includes("novotel tunis") || name.includes("adam hotel") ||
@@ -119,23 +132,25 @@ export default function InvoicePage() {
 
   // ─── resolveInvoiceType (UNCHANGED) ──────────────────────────────────────
   const resolveInvoiceType = useCallback((invoice) => {
-    if (invoice.invoiceType === "uk")       return "uk";
+    if (invoice.invoiceType === "uk") return "uk";
     if (invoice.invoiceType === "malaysia") return "malaysia";
-    if (invoice.invoiceType === "egypt")    return "egypt";
-    if (invoice.invoiceType === "tunisia")  return "tunisia";
-    if (invoice.invoiceType === "turkey")   return "turkey";
-    if (invoice.invoiceType === "turkey2")  return "turkey2";
+    if (invoice.invoiceType === "global") return "global";
+
+    if (invoice.invoiceType === "egypt") return "egypt";
+    if (invoice.invoiceType === "tunisia") return "tunisia";
+    if (invoice.invoiceType === "turkey") return "turkey";
+    if (invoice.invoiceType === "turkey2") return "turkey2";
 
     const hotelConfig = hotels.find((h) => h.name === invoice.hotelName);
-    const country  = (hotelConfig?.country  || "").toLowerCase();
+    const country = (hotelConfig?.country || "").toLowerCase();
     const currency = (invoice.currency || hotelConfig?.currency || "").toUpperCase();
-    const name     = (invoice.hotelName || "").toLowerCase();
-
-    if (isUKInvoice(name, country, currency))                                    return "uk";
-    if (isTurkey2Invoice(name))                                                  return "turkey2";
+    const name = (invoice.hotelName || "").toLowerCase();
+    if (isGlobal(name, country, currency)) return "global"; // ← add, before isUKInvoice
+    if (isUKInvoice(name, country, currency)) return "uk";
+    if (isTurkey2Invoice(name)) return "turkey2";
     if (country === "malaysia" || currency === "MYR" || isMalaysiaInvoice(name)) return "malaysia";
-    if (country === "egypt"    || currency === "EGP" || isEgyptInvoice(name))    return "egypt";
-    if (isTunisiaInvoice(name, country, currency))                               return "tunisia";
+    if (country === "egypt" || currency === "EGP" || isEgyptInvoice(name)) return "egypt";
+    if (isTunisiaInvoice(name, country, currency)) return "tunisia";
     return "turkey";
   }, [hotels]);
 
@@ -167,11 +182,11 @@ export default function InvoicePage() {
       const response = await getHotelsByCountry(country);
       const raw = response?.data || response || [];
       const transformed = raw.map((config) => ({
-        id:       config.id,
-        name:     config.hotel_name,
-        code:     config.currency || "TRY",
+        id: config.id,
+        name: config.hotel_name,
+        code: config.currency || "TRY",
         currency: config.currency || "TRY",
-        country:  config.country  || country,
+        country: config.country || country,
       }));
       setHotels(transformed);
     } catch (err) {
@@ -239,7 +254,7 @@ export default function InvoicePage() {
             if (d.data && typeof d.data === "object") d = d.data;
             invoicesList.push({
               id: invoice.id || invoice._id || `tunisia-${index}`,
-              invoiceNumber: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || d.confirmationNo || `TUN-${(invoice.id||"").substring(0,8)}`,
+              invoiceNumber: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || d.confirmationNo || `TUN-${(invoice.id || "").substring(0, 8)}`,
               reference: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || "",
               hotelName: d.hotel || "Unknown Hotel", guestName: d.guestName || "Guest",
               roomNumber: d.roomNo || "N/A",
@@ -257,21 +272,21 @@ export default function InvoicePage() {
           response.data.turkey_hotels.records.forEach((invoice, index) => {
             let d = invoice.data || {};
             if (d.data && typeof d.data === "object") d = d.data;
-              const hotelName = d.hotel || d.hotelName || "Unknown Hotel";
-              invoicesList.push({
-                id: invoice.id || invoice._id || `turkey-${index}`,
-                invoiceNumber: d.referenceNo || d.voucherNo || d.reference_no || `INV-${(invoice.id||invoice._id||"").substring(0,8)}`,
-                reference: d.referenceNo || d.voucherNo || d.reference_no || `REF-${(invoice.id||invoice._id||"").substring(0,8)}`,
-                hotelName: hotelName, guestName: d.guestName || "Guest",
-                roomNumber: d.roomNo || d.room_number || "N/A",
-                arrivalDate: d.arrivalDate || d.arrival_date || new Date().toISOString(),
-                departureDate: d.departureDate || d.departure_date || new Date().toISOString(),
-                nights: d.nights || 0, grandTotal: parseFloat(d.grandTotal || d.total || 0),
-                currency: d.currency || "TRY", status: d.status || "ready",
-                pdfPath: d.pdfPath || null,
-                createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
-                rawData: invoice, invoiceType: isTurkey2Invoice(hotelName) ? "turkey2" : "turkey",
-              });
+            const hotelName = d.hotel || d.hotelName || "Unknown Hotel";
+            invoicesList.push({
+              id: invoice.id || invoice._id || `turkey-${index}`,
+              invoiceNumber: d.referenceNo || d.voucherNo || d.reference_no || `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              reference: d.referenceNo || d.voucherNo || d.reference_no || `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              hotelName: hotelName, guestName: d.guestName || "Guest",
+              roomNumber: d.roomNo || d.room_number || "N/A",
+              arrivalDate: d.arrivalDate || d.arrival_date || new Date().toISOString(),
+              departureDate: d.departureDate || d.departure_date || new Date().toISOString(),
+              nights: d.nights || 0, grandTotal: parseFloat(d.grandTotal || d.total || 0),
+              currency: d.currency || "TRY", status: d.status || "ready",
+              pdfPath: d.pdfPath || null,
+              createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
+              rawData: invoice, invoiceType: isTurkey2Invoice(hotelName) ? "turkey2" : "turkey",
+            });
           });
         }
         // 4. Egypt
@@ -281,8 +296,8 @@ export default function InvoicePage() {
             if (d.data && typeof d.data === "object") d = d.data;
             invoicesList.push({
               id: invoice.id || invoice._id || `egypt-${index}`,
-              invoiceNumber: d.referenceNo || d.voucherNo || d.reference_no || `INV-${(invoice.id||invoice._id||"").substring(0,8)}`,
-              reference: d.referenceNo || d.voucherNo || d.reference_no || `REF-${(invoice.id||invoice._id||"").substring(0,8)}`,
+              invoiceNumber: d.referenceNo || d.voucherNo || d.reference_no || `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+              reference: d.referenceNo || d.voucherNo || d.reference_no || `REF-${(invoice.id || invoice._id || "").substring(0, 8)}`,
               hotelName: d.hotel || d.hotelName || "Unknown Hotel", guestName: d.guestName || "Guest",
               roomNumber: d.roomNo || d.room_number || "N/A",
               arrivalDate: d.arrivalDate || d.arrival_date || new Date().toISOString(),
@@ -302,7 +317,7 @@ export default function InvoicePage() {
             if (d.data && typeof d.data === "object") d = d.data;
             invoicesList.push({
               id: invoice.id || invoice._id || `malaysia-${index}`,
-              invoiceNumber: d.referenceNo || d.reference_no || `INV-${(invoice.id||invoice._id||"").substring(0,8)}`,
+              invoiceNumber: d.referenceNo || d.reference_no || `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
               referenceNo: d.referenceNo || d.reference_no || "",
               hotelName: d.hotel || d.hotelName || "Unknown Hotel",
               guestName: d.guestName || d.attention || "Guest",
@@ -318,27 +333,78 @@ export default function InvoicePage() {
           });
         }
         // 6. UK
-        if (response.data.uk_hotels?.records) {
-          response.data.uk_hotels.records.forEach((invoice, index) => {
-            let d = invoice.data || {};
-            if (d.data && typeof d.data === "object") d = d.data;
-            invoicesList.push({
-              id: invoice.id || invoice._id || `uk-${index}`,
-              invoiceNumber: d.referenceNo || d.vatInvoiceNo || d.invoiceNo || `INV-${(invoice.id||invoice._id||"").substring(0,8)}`,
-              reference: d.referenceNo || d.vatInvoiceNo || d.invoiceNo || "",
-              hotelName: d.hotel || d.hotelName || "Unknown Hotel", guestName: d.guestName || "Guest",
-              roomNumber: d.roomNo || d.room_number || "N/A",
-              arrivalDate: d.arrivalDate || d.arrival_date || new Date().toISOString(),
-              departureDate: d.departureDate || d.departure_date || new Date().toISOString(),
-              nights: d.nights || 0,
-              grandTotal: parseFloat(d.totalAmountPayable || d.grandTotalGbp || d.total || 0),
-              currency: d.currency || "GBP", status: d.status || "ready",
-              pdfPath: d.pdfPath || null,
-              createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
-              rawData: invoice, invoiceType: "uk",
-            });
-          });
-        }
+      if (response.data.uk_hotels?.records) {
+  response.data.uk_hotels.records.forEach((invoice, index) => {
+    let d = invoice.data || {};
+    if (d.data && typeof d.data === "object") d = d.data;
+
+    const isGlobalRecord = d.invoiceSource === "global";
+
+    if (isGlobalRecord) {
+      // Booking Express / global records use their own snake_case field set
+      invoicesList.push({
+        id: invoice.id || invoice._id || `uk-${index}`,
+        invoiceNumber: d.refference_no || `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+        reference: d.refference_no || "",
+        hotelName: d.hotel || "Unknown Hotel",
+        guestName: d.guest_name || "Guest",
+        roomNumber: d.roomNo || d.room_number || "N/A",
+        arrivalDate: d.check_in_date || d.booking_date || new Date().toISOString(),
+        departureDate: d.check_out_date || new Date().toISOString(),
+        nights: d.nights || 0,
+        grandTotal: parseFloat(d.grandTotal || d.grandTotalGbp || 0),
+        currency: d.currency || "GBP",
+        status: d.status || "ready",
+        pdfPath: d.pdfPath || null,
+        createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
+        rawData: invoice,
+        invoiceType: "global",
+      });
+      return; // skip the UK branch below for this record
+    }
+
+    // ── Unchanged UK invoice path ──────────────────────────────────────
+    invoicesList.push({
+      id: invoice.id || invoice._id || `uk-${index}`,
+      invoiceNumber: d.referenceNo || d.vatInvoiceNo || `INV-${(invoice.id || invoice._id || "").substring(0, 8)}`,
+      reference:  d.referenceNo || d.vatInvoiceNo || "",
+      hotelName: d.hotel || d.hotelName || "Unknown Hotel",
+      guestName: d.guestName || "Guest",
+      roomNumber: d.roomNo || d.room_number || "N/A",
+      arrivalDate: d.arrivalDate || d.arrival_date || d.checkInDate || new Date().toISOString(),
+      departureDate: d.departureDate || d.departure_date || d.checkOutDate || new Date().toISOString(),
+      nights: d.nights || 0,
+      grandTotal: parseFloat(d.grandTotal || d.totalAmountPayable || d.grandTotalGbp || d.total || 0),
+      currency: d.currency || "GBP",
+      status: d.status || "ready",
+      pdfPath: d.pdfPath || null,
+      createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
+      rawData: invoice,
+      invoiceType: "uk",
+    });
+  });
+}
+        // if (response.data.uk_hotels?.records) {
+        //   response.data.uk_hotels.records.forEach((invoice, index) => {
+        //     let d = invoice.data || {};
+        //     if (d.data && typeof d.data === "object") d = d.data;
+        //     invoicesList.push({
+        //       id: invoice.id || invoice._id || `uk-${index}`,
+        //       invoiceNumber: d.referenceNo || d.vatInvoiceNo || d.invoiceNo || `INV-${(invoice.id||invoice._id||"").substring(0,8)}`,
+        //       reference: d.referenceNo || d.vatInvoiceNo || d.invoiceNo || "",
+        //       hotelName: d.hotel || d.hotelName || "Unknown Hotel", guestName: d.guestName || "Guest",
+        //       roomNumber: d.roomNo || d.room_number || "N/A",
+        //       arrivalDate: d.arrivalDate || d.arrival_date || new Date().toISOString(),
+        //       departureDate: d.departureDate || d.departure_date || new Date().toISOString(),
+        //       nights: d.nights || 0,
+        //       grandTotal: parseFloat(d.totalAmountPayable || d.grandTotalGbp || d.total || 0),
+        //       currency: d.currency || "GBP", status: d.status || "ready",
+        //       pdfPath: d.pdfPath || null,
+        //       createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
+        //       rawData: invoice, invoiceType: "uk",
+        //     });
+        //   });
+        // }
 
         // 7. Tunisia (Explicit Fetch from dedicated API)
         try {
@@ -348,27 +414,27 @@ export default function InvoicePage() {
             tounisData.forEach((invoice, index) => {
               let d = invoice.data || invoice;
               if (d.data && typeof d.data === "object") d = d.data;
-              
+
               // Avoid duplicates if already in dashboard response
               const invId = invoice.id || invoice._id;
               if (invoicesList.some(inv => inv.id === invId)) return;
 
               invoicesList.push({
                 id: invId || `tounis-${index}`,
-                invoiceNumber: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || d.confirmationNo || `TUN-${(String(invId)||"").substring(0,8)}`,
+                invoiceNumber: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || d.confirmationNo || `TUN-${(String(invId) || "").substring(0, 8)}`,
                 reference: d.refferenceNo || d.referenceNo || d.reference_no || d.invoiceNo || d.folioNo || "",
-                hotelName: d.hotel || d.hotelName || "Unknown Hotel", 
+                hotelName: d.hotel || d.hotelName || "Unknown Hotel",
                 guestName: d.guestName || "Guest",
                 roomNumber: d.roomNo || "N/A",
                 arrivalDate: d.arrivalDate || new Date().toISOString(),
                 departureDate: d.departureDate || new Date().toISOString(),
-                nights: d.nights || 0, 
+                nights: d.nights || 0,
                 grandTotal: parseFloat(d.grandTotalTnd || d.totalTtc || d.grandTotal || 0),
-                currency: "TND", 
-                status: d.status || "ready", 
+                currency: "TND",
+                status: d.status || "ready",
                 pdfPath: d.pdfPath || null,
                 createdAt: invoice.created_at || invoice.createdAt || new Date().toISOString(),
-                rawData: invoice, 
+                rawData: invoice,
                 invoiceType: "tunisia",
               });
             });
@@ -426,11 +492,11 @@ export default function InvoicePage() {
         inv.roomNumber.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus = filterStatus === "" || inv.status === filterStatus;
-      const matchesHotel  = filterHotel  === "" || inv.hotelName === filterHotel;
+      const matchesHotel = filterHotel === "" || inv.hotelName === filterHotel;
 
       let matchesDateRange = true;
       if (selectedStartDate || selectedEndDate) {
-        const arrival   = new Date(inv.arrivalDate).setHours(0, 0, 0, 0);
+        const arrival = new Date(inv.arrivalDate).setHours(0, 0, 0, 0);
         const departure = new Date(inv.departureDate).setHours(0, 0, 0, 0);
         if (selectedStartDate && selectedEndDate) {
           matchesDateRange = arrival <= selectedEndDate.getTime() && departure >= selectedStartDate.getTime();
@@ -472,58 +538,62 @@ export default function InvoicePage() {
   const handleCreateInvoice = () => {
     if (!selectedHotelTemplate) { toast.error("Please select a hotel", { duration: 2000 }); return; }
     const selectedHotel = hotels.find((h) => String(h.id) === String(selectedHotelTemplate));
-    const hotelName     = (selectedHotel?.name    || "").toLowerCase();
-    const hotelCountry  = (selectedHotel?.country || "").toLowerCase();
-    const hotelCurrency = (selectedHotel?.currency|| "").toUpperCase();
-
-    if (isUKInvoice(hotelName, hotelCountry, hotelCurrency))                                    navigate(`/uk-invoice/create/${selectedHotelTemplate}`);
-    else if (isTurkey2Invoice(hotelName))                                                        navigate(`/turkey-invoice/create/${selectedHotelTemplate}`);
+    const hotelName = (selectedHotel?.name || "").toLowerCase();
+    const hotelCountry = (selectedHotel?.country || "").toLowerCase();
+    const hotelCurrency = (selectedHotel?.currency || "").toUpperCase();
+    if (isGlobal(hotelName, hotelCountry, hotelCurrency)) navigate(`/booking-express-invoice/create/${selectedHotelTemplate}`);
+    else if (isUKInvoice(hotelName, hotelCountry, hotelCurrency)) navigate(`/uk-invoice/create/${selectedHotelTemplate}`);
+    else if (isTurkey2Invoice(hotelName)) navigate(`/turkey-invoice/create/${selectedHotelTemplate}`);
     else if (hotelCountry === "malaysia" || hotelCurrency === "MYR" || isMalaysiaInvoice(hotelName)) navigate(`/malaysia-invoice/create/${selectedHotelTemplate}`);
-    else if (hotelCountry === "egypt"    || hotelCurrency === "EGP" || isEgyptInvoice(hotelName))    navigate(`/egypt-invoice/create/${selectedHotelTemplate}`);
-    else if (isTunisiaInvoice(hotelName, hotelCountry, hotelCurrency))                           navigate(`/tunisia-invoice/create/${selectedHotelTemplate}`);
-    else                                                                                          navigate(`/invoice/create/${selectedHotelTemplate}`);
+    else if (hotelCountry === "egypt" || hotelCurrency === "EGP" || isEgyptInvoice(hotelName)) navigate(`/egypt-invoice/create/${selectedHotelTemplate}`);
+    else if (isTunisiaInvoice(hotelName, hotelCountry, hotelCurrency)) navigate(`/tunisia-invoice/create/${selectedHotelTemplate}`);
+    else navigate(`/invoice/create/${selectedHotelTemplate}`);
   };
 
   const handleViewInvoice = (invoiceId) => {
     const invoice = invoices.find((inv) => inv.id === invoiceId);
     if (!invoice) return toast.error("Invoice not found");
     const type = resolveInvoiceType(invoice);
-    if      (type === "uk")       navigate(`/uk-invoice/view/${invoiceId}`);
-    else if (type === "turkey2")  navigate(`/turkey-invoice/view/${invoiceId}`);
+    if (type === "global") navigate(`/booking-express-invoice/view/${invoiceId}`);
+    else if (type === "uk") navigate(`/uk-invoice/view/${invoiceId}`);
+    else if (type === "turkey2") navigate(`/turkey-invoice/view/${invoiceId}`);
     else if (type === "malaysia") navigate(`/malaysia-invoice/view/${invoiceId}`);
-    else if (type === "egypt")    navigate(`/egypt-invoice/view/${invoiceId}`);
-    else if (type === "tunisia")  navigate(`/tunisia-invoice/view/${invoiceId}`);
-    else                          navigate(`/invoice/view/${invoiceId}`);
+    else if (type === "egypt") navigate(`/egypt-invoice/view/${invoiceId}`);
+    else if (type === "tunisia") navigate(`/tunisia-invoice/view/${invoiceId}`);
+    else navigate(`/invoice/view/${invoiceId}`);
   };
 
   const handleEditInvoice = (invoice) => {
     const type = resolveInvoiceType(invoice);
-    if      (type === "uk")       navigate(`/uk-invoice/edit/${invoice.id}`);
-    else if (type === "turkey2")  navigate(`/turkey-invoice/edit/${invoice.id}`);
+    if (type === "global") navigate(`/booking-express-invoice/edit/${invoice.id}`);
+    else if (type === "uk") navigate(`/uk-invoice/edit/${invoice.id}`);
+    else if (type === "turkey2") navigate(`/turkey-invoice/edit/${invoice.id}`);
     else if (type === "malaysia") navigate(`/malaysia-invoice/edit/${invoice.id}`);
-    else if (type === "egypt")    navigate(`/egypt-invoice/edit/${invoice.id}`);
-    else if (type === "tunisia")  navigate(`/tunisia-invoice/edit/${invoice.id}`);
-    else                          navigate(`/invoices/edit/${invoice.id}`);
+    else if (type === "egypt") navigate(`/egypt-invoice/edit/${invoice.id}`);
+    else if (type === "tunisia") navigate(`/tunisia-invoice/edit/${invoice.id}`);
+    else navigate(`/invoices/edit/${invoice.id}`);
   };
 
   const handleDownloadPDF = (invoice) => {
     const type = resolveInvoiceType(invoice);
-    if      (type === "uk")       navigate(`/uk-invoice/download-pdf/${invoice.id}`);
-    else if (type === "turkey2")  navigate(`/turkey-invoice/download-pdf/${invoice.id}`);
+    if (type === "global") navigate(`/booking-express-invoice/download-pdf/${invoice.id}`);
+    else if (type === "uk") navigate(`/uk-invoice/download-pdf/${invoice.id}`);
+    else if (type === "turkey2") navigate(`/turkey-invoice/download-pdf/${invoice.id}`);
     else if (type === "malaysia") navigate(`/malaysia-invoice/download-pdf/${invoice.id}`);
-    else if (type === "egypt")    navigate(`/egypt-invoice/download-pdf/${invoice.id}`);
-    else if (type === "tunisia")  navigate(`/tunisia-invoice/download-pdf/${invoice.id}`);
-    else                          navigate(`/invoices/download-pdf/${invoice.id}`);
+    else if (type === "egypt") navigate(`/egypt-invoice/download-pdf/${invoice.id}`);
+    else if (type === "tunisia") navigate(`/tunisia-invoice/download-pdf/${invoice.id}`);
+    else navigate(`/invoices/download-pdf/${invoice.id}`);
   };
 
   const handleDuplicateInvoice = (inv) => {
     const type = resolveInvoiceType(inv);
-    if      (type === "uk")       navigate(`/uk-invoice/duplicate/${inv.id}`);
-    else if (type === "turkey2")  navigate(`/turkey-invoice/duplicate/${inv.id}`);
+    if (type === "global") navigate(`/booking-express-invoice/duplicate/${inv.id}`);
+    else if (type === "uk") navigate(`/uk-invoice/duplicate/${inv.id}`);
+    else if (type === "turkey2") navigate(`/turkey-invoice/duplicate/${inv.id}`);
     else if (type === "malaysia") navigate(`/malaysia-invoice/duplicate/${inv.id}`);
-    else if (type === "egypt")    navigate(`/egypt-invoice/duplicate/${inv.id}`);
-    else if (type === "tunisia")  navigate(`/tunisia-invoice/duplicate/${inv.id}`);
-    else                          navigate(`/invoices/duplicate/${inv.id}`);
+    else if (type === "egypt") navigate(`/egypt-invoice/duplicate/${inv.id}`);
+    else if (type === "tunisia") navigate(`/tunisia-invoice/duplicate/${inv.id}`);
+    else navigate(`/invoices/duplicate/${inv.id}`);
   };
 
   // ─── Delete (UNCHANGED) ───────────────────────────────────────────────────
@@ -535,12 +605,14 @@ export default function InvoicePage() {
     setShowDeleteModal(false);
     try {
       const type = resolveInvoiceType(invoiceToDelete);
-      if      (type === "uk")       await ukInvoiceApi.deleteInvoice(invoiceToDelete.id);
+      if (type === "uk" || type === "global") await ukInvoiceApi.deleteInvoice(invoiceToDelete.id);  // ← merge global in here
+
+      else if (type === "uk") await ukInvoiceApi.deleteInvoice(invoiceToDelete.id);
       else if (type === "malaysia") await malaysiaInvoiceApi.deleteInvoice(invoiceToDelete.id);
-      else if (type === "egypt")    await cairoInvoiceApi.deleteInvoice(invoiceToDelete.id);
-      else if (type === "tunisia")  await tunisiainvoiceApi.deleteInvoice(invoiceToDelete.id);
-      else if (type === "turkey2" || type === "turkey")  await turkeyInvoiceApi.deleteInvoice(invoiceToDelete.id);
-      else                          await invoiceApi.deleteInvoice(invoiceToDelete.id);
+      else if (type === "egypt") await cairoInvoiceApi.deleteInvoice(invoiceToDelete.id);
+      else if (type === "tunisia") await tunisiainvoiceApi.deleteInvoice(invoiceToDelete.id);
+      else if (type === "turkey2" || type === "turkey") await turkeyInvoiceApi.deleteInvoice(invoiceToDelete.id);
+      else await invoiceApi.deleteInvoice(invoiceToDelete.id);
       setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceToDelete.id));
       toast.success(`Invoice ${invoiceToDelete.invoiceNumber} deleted successfully!`);
     } catch (error) {
@@ -565,9 +637,9 @@ export default function InvoicePage() {
 
   const getStatusStyle = (status) => {
     switch (status?.toLowerCase()) {
-      case "ready":   return "bg-green-100 text-green-700 border border-green-200";
+      case "ready": return "bg-green-100 text-green-700 border border-green-200";
       case "pending": return "bg-amber-100 text-amber-700 border border-amber-200";
-      default:        return "bg-slate-100 text-slate-600 border border-slate-200";
+      default: return "bg-slate-100 text-slate-600 border border-slate-200";
     }
   };
 
@@ -593,7 +665,7 @@ export default function InvoicePage() {
     return selectedStartDate && selectedEndDate && date >= selectedStartDate.getTime() && date <= selectedEndDate.getTime();
   };
   const isStartDate = (day) => selectedStartDate && new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString() === selectedStartDate.toDateString();
-  const isEndDate   = (day) => selectedEndDate   && new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString() === selectedEndDate.toDateString();
+  const isEndDate = (day) => selectedEndDate && new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString() === selectedEndDate.toDateString();
   const changeMonth = (offset) => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1));
 
   const getDateDisplayText = () => {
@@ -667,8 +739,8 @@ export default function InvoicePage() {
                 {loadingHotels
                   ? "Loading hotels..."
                   : selectedHotelTemplate
-                  ? hotels.find((h) => String(h.id) === String(selectedHotelTemplate))?.name
-                  : selectedCountry ? "Choose hotel..." : "Select country first..."}
+                    ? hotels.find((h) => String(h.id) === String(selectedHotelTemplate))?.name
+                    : selectedCountry ? "Choose hotel..." : "Select country first..."}
               </span>
               {loadingHotels
                 ? <Loader2 size={14} className="animate-spin text-slate-400" />
@@ -774,7 +846,7 @@ export default function InvoicePage() {
                 </div>
                 <div className="text-xs text-center mb-2 text-slate-500">{dateSelectionMode === "start" ? "Select start date" : "Select end date"}</div>
                 <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                  {["S","M","T","W","T","F","S"].map((d, i) => <span key={i} className="text-xs font-bold text-slate-400">{d}</span>)}
+                  {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => <span key={i} className="text-xs font-bold text-slate-400">{d}</span>)}
                 </div>
                 <div className="grid grid-cols-7 gap-1">
                   {Array.from({ length: firstDayOfMonth(currentDate) }).map((_, i) => <div key={`e-${i}`} />)}
@@ -782,19 +854,18 @@ export default function InvoicePage() {
                     const day = i + 1;
                     return (
                       <button key={day} onClick={() => handleDateClick(day)}
-                        className={`w-9 h-9 flex items-center justify-center text-sm rounded-full transition-colors ${
-                          isStartDate(day) || isEndDate(day) ? "bg-[#003d7a] text-white font-bold"
-                          : isDateInRange(day) ? "bg-[#003d7a]/20 text-[#003d7a]"
-                          : "hover:bg-[#003d7a] hover:text-white"}`}>
+                        className={`w-9 h-9 flex items-center justify-center text-sm rounded-full transition-colors ${isStartDate(day) || isEndDate(day) ? "bg-[#003d7a] text-white font-bold"
+                            : isDateInRange(day) ? "bg-[#003d7a]/20 text-[#003d7a]"
+                              : "hover:bg-[#003d7a] hover:text-white"}`}>
                         {day}
                       </button>
                     );
                   })}
                 </div>
                 <div className="flex gap-1 mt-3 pt-3 border-t border-slate-200">
-                  <button onClick={() => { const t=new Date(); t.setHours(0,0,0,0); setSelectedStartDate(t); setSelectedEndDate(t); setShowCalendar(false); toast.success("Today selected"); }} className="btn btn-ghost btn-xs flex-1 text-xs">Today</button>
-                  <button onClick={() => { const t=new Date(); const w=new Date(t-7*864e5); w.setHours(0,0,0,0); t.setHours(0,0,0,0); setSelectedStartDate(w); setSelectedEndDate(t); setShowCalendar(false); toast.success("Last 7 days"); }} className="btn btn-ghost btn-xs flex-1 text-xs">7 days</button>
-                  <button onClick={() => { const t=new Date(); const m=new Date(t-30*864e5); m.setHours(0,0,0,0); t.setHours(0,0,0,0); setSelectedStartDate(m); setSelectedEndDate(t); setShowCalendar(false); toast.success("Last 30 days"); }} className="btn btn-ghost btn-xs flex-1 text-xs">30 days</button>
+                  <button onClick={() => { const t = new Date(); t.setHours(0, 0, 0, 0); setSelectedStartDate(t); setSelectedEndDate(t); setShowCalendar(false); toast.success("Today selected"); }} className="btn btn-ghost btn-xs flex-1 text-xs">Today</button>
+                  <button onClick={() => { const t = new Date(); const w = new Date(t - 7 * 864e5); w.setHours(0, 0, 0, 0); t.setHours(0, 0, 0, 0); setSelectedStartDate(w); setSelectedEndDate(t); setShowCalendar(false); toast.success("Last 7 days"); }} className="btn btn-ghost btn-xs flex-1 text-xs">7 days</button>
+                  <button onClick={() => { const t = new Date(); const m = new Date(t - 30 * 864e5); m.setHours(0, 0, 0, 0); t.setHours(0, 0, 0, 0); setSelectedStartDate(m); setSelectedEndDate(t); setShowCalendar(false); toast.success("Last 30 days"); }} className="btn btn-ghost btn-xs flex-1 text-xs">30 days</button>
                 </div>
               </div>
             )}

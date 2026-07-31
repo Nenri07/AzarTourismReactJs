@@ -53,21 +53,48 @@ const mapApiDataToInvoice = (data = {}) => {
   // Accommodation
   if (data.accommodationDetails && data.accommodationDetails.length > 0) {
     const cityTaxPerNight = data.cityTaxTotal ? (Number(data.cityTaxTotal) / data.accommodationDetails.length) : 3.000;
-    
+
     data.accommodationDetails.forEach((acc) => {
       const dateStr = formatDate(acc.date);
       const time = getNormalizedTime(acc.date);
+      const roomAmount = acc.charges || acc.debitTnd || 0;
+      const fdcstAmount = roomAmount * 0.01;
+      const vatAmount = (roomAmount + fdcstAmount) * 0.07;
 
       // Priority 1: Accommodation
-      allItems.push({ 
-        date: dateStr, 
+      allItems.push({
+        date: dateStr,
         time: time,
-        desc: acc.description || "Accommodation", 
-        debit: acc.charges || acc.debitTnd, 
+        desc: acc.description || "Accommodation",
+        debit: acc.charges || acc.debitTnd,
         credit: acc.credits || acc.creditTnd,
         priority: 1
       });
-      
+
+      // Priority 1.1: FDCST 1% — display-only per-night breakdown (same technique as Marriott)
+      if (data.fdcst1Pct) {
+        allItems.push({
+          date: dateStr,
+          time: time,
+          desc: "FDCST 1%",
+          debit: fdcstAmount,
+          credit: 0,
+          priority: 1.1
+        });
+      }
+
+      // Priority 1.2: VAT 7% — display-only per-night breakdown (same technique as Marriott)
+      if (data.vat7Pct) {
+        allItems.push({
+          date: dateStr,
+          time: time,
+          desc: "VAT 7%",
+          debit: vatAmount,
+          credit: 0,
+          priority: 1.2
+        });
+      }
+
       // Priority 3: City Tax
       allItems.push({
         date: dateStr,
@@ -79,7 +106,6 @@ const mapApiDataToInvoice = (data = {}) => {
       });
     });
   }
-
   // Other Services (e.g., Laundry, Restaurant)
   if (data.otherServices && data.otherServices.length > 0) {
     data.otherServices.forEach((svc) => {

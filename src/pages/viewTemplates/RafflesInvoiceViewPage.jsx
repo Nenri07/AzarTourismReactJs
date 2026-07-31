@@ -220,7 +220,7 @@ export default function RafflesInvoiceViewPage({ invoiceData }) {
       companyAddress: "Tripoli Tower Ground Floor Office no 50",
       companyCityAndCountry: "Tripoli, Libya",
       companyCountry: "Libya",
-      taxOfficeNo: data.taxOfficeNo || `${data.vd || "999"} - ${data.vNo || "009988"}`,
+      taxOfficeNo: data.taxOfficeNo || `${data.vD || ""} - ${data.vNo || ""}`,
       guestName: data.guestName || "",
       invoiceDate: formatDate(data.invoiceDate || data.billingDate || ""),
       arrivalDate: formatDate(data.arrivalDate || ""),
@@ -797,7 +797,7 @@ const handleDownloadPDF = async () => {
                   <tr key={index}>
                     <td className="col-desc">{transaction.description}</td>
                     <td className="col-date" style={{paddingLeft: "15px"}}>{transaction.date}</td>
-                    <td className="col-debit" style={{paddingLeft: "15px"}}>{transaction.debit}</td>
+                    <td className="col-debit" style={{paddingLeft: "20px"}}>{transaction.debit}</td>
                     <td className="col-credit" style={{textAlign: "right"}}>{transaction.credit}</td>
                   </tr>
                 ))}

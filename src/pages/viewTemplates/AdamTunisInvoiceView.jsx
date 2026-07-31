@@ -105,7 +105,7 @@ const mapApiDataToInvoice = (data = {}) => {
         subDesc: "",
         debit: svc.amount,
         credit: "",
-        order: 0 // Other services before lodging on same day (as per screenshot Laundry before Lodging)
+        order: 3 // Other services before lodging on same day (as per screenshot Laundry before Lodging)
       });
     });
   }
@@ -125,7 +125,7 @@ const mapApiDataToInvoice = (data = {}) => {
     items.push({ 
       date: formatDate(stampDate), 
       rawDate: stampDate,
-      desc: "Timbre Fiscal", // Or "Stamp Tax"
+      desc: "Stamp Tax", // Or "Stamp Tax"
       subDesc: "", 
       debit: data.stampTaxTotal, 
       credit: "",
@@ -141,7 +141,7 @@ const mapApiDataToInvoice = (data = {}) => {
   });
 
   const finalBalance = Number((data.totalTtc || 0) )
-  const exchangeRateVal = parseFloat(data.sellingRate || data.usdExchangeRate) || 0;
+  const exchangeRateVal = parseFloat(data.exchangeRate || data.usdExchangeRate) || 0;
   const balanceUsdVal = parseFloat(data.balanceUsd) || (exchangeRateVal > 0 ? (finalBalance / exchangeRateVal) : 0);
   return {
     referenceNo: data.refferenceNo,
@@ -154,7 +154,7 @@ const mapApiDataToInvoice = (data = {}) => {
       name: data.guestName,
       country: "Libya",
       companyName: data.companyName || "AZAR TOURISM SERVICES",
-      companyCountry: "Tunisia",
+      companyCountry: " ",
       room: data.roomNo,
       pax: `Adults : ${data.adults} \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 /Chld : ${data.children}`,
       rateCode: data.arrangementRate,

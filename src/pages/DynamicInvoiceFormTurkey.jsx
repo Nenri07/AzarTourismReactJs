@@ -94,6 +94,8 @@ const EXTRA_FIELD_LABELS = {
   confirmation_number: "Confirmation Number",
   iata_number:         "IATA Number",
   number_of_guests:    "Number of Guests",
+  v_d:                 "V.D.",
+  v_no:                "V.No.",
 };
 
 // Fields that should render as <input type="date">

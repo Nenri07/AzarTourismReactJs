@@ -165,7 +165,7 @@ const buildPages = (items = []) => {
 
   const pages = [];
   const MAX_ROWS_NORMAL = 9; 
-  const MAX_ROWS_WITH_TOTALS = 6; 
+  const MAX_ROWS_WITH_TOTALS = 4; 
 
   for (let i = 0; i < items.length;) {
     const remaining = items.length - i;
@@ -478,7 +478,7 @@ const MarriottInvoiceView = ({ invoiceData }) => {
                         <td>{txn.date}</td>
                         <td>{txn.desc}</td>
                         <td className="right-align" style={{ paddingRight: '20px' }}>{formatCurrency(txn.debit)}</td>
-                        <td className="right-align" style={{ paddingRight: '20px' }}>{formatCurrency(txn.credit)}</td>
+                        {/* <td className="right-align" style={{ paddingRight: '20px' }}>{formatCurrency(txn.credit)}</td> */}
                       </tr>
                       {txn.subDesc && (
                         <tr>

@@ -57,7 +57,7 @@ const mapApiDataToInvoice = (data = {}) => {
       allItems.push({ 
         date: dateStr, 
         time: time,
-        desc: acc.description || "accommodation", 
+        desc: acc.description || "Accommodation", 
         debit: acc.charges || acc.debitTnd, 
         credit: acc.credits || acc.creditTnd,
         subDesc: acc.subDescription || `  ${data.guestName} #${data.roomNo}`,
@@ -68,7 +68,7 @@ const mapApiDataToInvoice = (data = {}) => {
         allItems.push({
           date: dateStr,
           time: time,
-          desc: "Taxe de SÃ©jour",
+          desc: "City Tax",
           debit: cityTaxPerNight,
           credit: 0,
           priority: 3
@@ -125,12 +125,12 @@ const mapApiDataToInvoice = (data = {}) => {
     items,
     totals: {
       totalDebit: formatCurrency(finalBalance),
-      usdExchangeRate: formatCurrency(data.sellingRate || 0.00),
+      usdExchangeRate: formatCurrency(data.exchangeRate || 0.00),
       totalCredit: formatCurrency(0),
-      netAmount: formatCurrency(data.totalHorsTaxes || 1349.126),
+      netAmount: formatCurrency(data.totalHorsTaxes || 0.000),
       totalInUsd: formatCurrency(data.balanceUsd || 0.000),
-      fdcst1: formatCurrency(data.fdcst1Pct || 13.491),
-      tva7: formatCurrency(data.vat7Pct || 95.383),
+      fdcst1: formatCurrency(data.fdcst1Pct || 0.000),
+      tva7: formatCurrency(data.vat7Pct || 0.000),
       tva19: formatCurrency(data.vat19Pct || 0.000),
       cityTax: formatCurrency(data.cityTaxTotal || 0.000),
       stampDuty: formatCurrency(data.stampTaxTotal || 0.000),

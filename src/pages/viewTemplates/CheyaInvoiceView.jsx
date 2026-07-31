@@ -125,11 +125,11 @@ const mapApiDataToInvoice = (data = {}) => {
   const grandTotal = parseFloat(data.grandTotal || 0);
 
   return {
+    kisi:        data.kisi || "",
     refferenceNo: data.referenceNo,
     invoiceNo:    data.invoiceNo       || data.invoiceN || "", 
     billingDate:  formatDate(data.billingDate  || data.invoiceDate) || "22.01.2026",
     roomNo:       data.odaNo          || "",
-    pax:          data.pax             || 0,
     guestName:    data.guestName       || "",
     checkInDate:  formatDate(data.arrivalDate)   || "",
     checkOutDate: formatDate(data.departureDate) || "",
@@ -567,7 +567,7 @@ const CheyaInvoiceView = ({ invoiceData }) => {
                 <tr>
                   <td className="label">Kisi</td>
                   <td className="colon">:</td>
-                  <td className="value">{invoice.pax}</td>
+                  <td className="value">{invoice.kisi}</td>
                 </tr>
               </tbody>
             </table>

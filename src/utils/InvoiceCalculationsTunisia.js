@@ -112,7 +112,7 @@ export const HOTEL_CONFIGS_TUNISIA = {
     descriptionLabel: 'accommodation',
     buildRow: ({ date, roomAmountTnd }) => ({
       date,
-      description: 'accommodation',
+      description: 'Accommodation',
       debitTnd: parseNum(roomAmountTnd),
       creditTnd: 0,
     }),
@@ -189,17 +189,19 @@ export const HOTEL_CONFIGS_TUNISIA = {
   // Taxes (FDCST, VAT) shown inline per day
   SHERATON_TUNIS: {
     detect: (name) => name.includes('sheraton'),
-    inputCurrency: 'TND', // Sheraton uses TND directly (retail + accommodation routed)
+    inputCurrency: 'EUR', // Sheraton uses TND directly (retail + accommodation routed)
     tableColumns: ['date', 'texte', 'debitTnd', 'creditTnd'],
     descriptionLabel: 'Accommodation',
-    buildRow: ({ date, roomAmountTnd }) => ({
+   buildRow: ({ date, roomAmountTnd, eurAmount, exchangeRate }) => ({
       date,
-      texte: 'Accommodation',
-      debitTnd: parseNum(roomAmountTnd),
+      description: 'Package',
+      debitTnd: parseNum(roomAmountTnd), // = (EUR * rate) / 1.0807 net per night
       creditTnd: 0,
+      eurAmount: parseNum(eurAmount),
+      exchangeRate: parseNum(exchangeRate, 5),
     }),
-    showPerNightTax: true,
-    balanceCurrencies: ['USD'],
+    showPerNightTax: true, // FDCST and VAT shown inline per night
+    balanceCurrencies: ['EUR'],
   },
 
   // ── 9. TUNIS MARRIOTT ────────────────────────────────────────────────────
@@ -301,12 +303,25 @@ export const detectHotelTypeTunisia = (hotelConfig) => {
 // };
 
 export const calculateAccommodationTunisia = (formData, hotelType) => {
-  const acc = formData.accommodation_details || {};
+ const acc = formData.accommodation_details || {};
   const cfg = HOTEL_CONFIGS_TUNISIA[hotelType] || HOTEL_CONFIGS_TUNISIA.OTHER_TUNISIA;
 
   const totalNights = parseInt(acc.total_nights) || 0;
-  const cityTaxPerPerson = parseFloat(acc.city_tax_per_person || 3);
-  const nbPersons = parseInt(acc.nb_persons || formData.nb_persons || 1);
+  const cityTaxPerPerson = parseFloat(acc.city_tax_per_person || 0);
+
+  const adults = parseInt(formData.nb_adults, 10) || 0;
+  const children = parseInt(formData.nb_children, 10) || 0;
+  const nperson1 = parseInt(formData.nb_persons, 10) || 0;
+  
+  const nbperson2= parseInt(acc.nb_persons, 10) || 0;
+  const nbperson3 = nperson1? nperson1 : nbperson2;
+  const adultsPlusChildren = adults + children;
+    console.log("these are values", nperson1,nbperson2,nbperson3,adultsPlusChildren, children,adults);
+
+
+  // priority: explicit accommodation_details override > adults+children > legacy nb_persons > 1
+  const nbPersons = nbperson3 > adultsPlusChildren ? nbperson3 : adultsPlusChildren || 0;
+
   const cityTaxPerNight = cityTaxPerPerson * nbPersons;
 
   let roomAmountTnd = 0;
@@ -453,6 +468,8 @@ export const calculateFinalSummaryTunisia = (formData, hotelType) => {
   if (accCalc.exchangeUsdRate > 0) balanceUsd = grandTotal / accCalc.exchangeUsdRate;
   if (accCalc.exchangeRate > 0 && accCalc.inputCurrency === 'EUR')
     balanceEur = grandTotal / accCalc.exchangeRate;
+  console.log("this is grand total and eur", grandTotal, accCalc.exchangeRate);
+  
 
   return {
     grand_total_tnd: parseNum(grandTotal),
@@ -462,8 +479,8 @@ export const calculateFinalSummaryTunisia = (formData, hotelType) => {
     city_tax_total: parseNum(cityTaxTotal),
     stamp_tax: parseNum(stampTax),
     total_ttc: parseNum(grandTotal),
-    balance_usd: parseNum(balanceUsd),
-    balance_eur: parseNum(balanceEur),
+    balance_usd: parseNum(balanceUsd,2),
+    balance_eur: parseNum(balanceEur,2),
     acc_gross: parseNum(accommodationGross),
     services_gross: parseNum(servicesCalc.totalServicesGross),
   };
@@ -589,9 +606,9 @@ const otherServicesArray = svcCalc.services.map(s => ({
       nights: accCalc.totalNights,
       roomAmountTnd: parseNum(accCalc.roomAmountTnd),
       eurAmount: parseNum(accCalc.eurAmount),
-      exchangeRate: parseNum(accCalc.exchangeRate, 5),
+      exchangeRate: parseNum(accCalc.exchangeRate, 2),
 sellingRate:  parseNum(accCalc.sellingRate, 3),   // NEW — needed to reconstruct the form on edit
-      exchangeUsdRate: parseNum(accCalc.exchangeUsdRate, 5),   // TND→USD
+      exchangeUsdRate: parseNum(accCalc.exchangeUsdRate, 2),   // TND→USD
       cityTaxPerPerson: parseNum(accCalc.cityTaxPerNight / Math.max(accCalc.nbPersons, 1)),
       cityTaxPerNight: parseNum(accCalc.cityTaxPerNight),
       stampTax: parseNum(parseFloat(formData.accommodation_details?.stamp_tax ?? 1)),

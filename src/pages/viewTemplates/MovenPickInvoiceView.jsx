@@ -194,10 +194,10 @@ const mapApiDataToInvoice = (data = {}) => {
   return {
     meta: {
       date: formatDate(data.invoiceDate),
-      invoiceNo: data.referenceNo || data.refferenceNo || "53900",
-      cashier: data.cashierId || "9622",
-      userId: data.userId || "HB4I1-AADIOU",
-      vatNo: data.vatNo || "1275809 RAM 00/0",
+      invoiceNo: data.invoiceNo ||"",
+      cashier: data.cashierId || "",
+      userId: data.userId || "",
+      vatNo: data.vatNo || "",
       hotelName: data.hotel || "Mövenpick Hotel Du Lac Tunis",
     },
     guest: {
@@ -208,7 +208,7 @@ const mapApiDataToInvoice = (data = {}) => {
       room: data.roomNo,
       arrival: formatDate(data.arrivalDate),
       departure: formatDate(data.departureDate),
-      reservationNo: data.confirmationNo || "508322904",
+      reservationNo: data.confirmationNo || "",
       membershipNo: data.membershipNo || ""
     },
     items,
@@ -222,7 +222,7 @@ const mapApiDataToInvoice = (data = {}) => {
       stampDuty: formatCurrency(data.stampTaxTotal || 0.000),
       totalGross: formatCurrency(data.totalTtc || 0.000),
       balance: formatCurrency(data.totalTtc || 0.000),
-      exchangeRate: formatCurrency(data.sellingRate || 0.000),
+      exchangeRate: formatCurrency(data.exchangeRate || 0.000),
       totalInEur: formatCurrency(data.balanceUsd || 0.000)
     }
   };

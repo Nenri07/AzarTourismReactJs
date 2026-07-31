@@ -42,6 +42,7 @@ import AdamTunisInvoiceView from "./viewTemplates/AdamTunisInvoiceView";
 import FourSeasonTunisInvoiceView from "./viewTemplates/FourSeasonTunisInvoiceView.jsx";
 import ConsordeTunisInvoiceView from "./viewTemplates/ConsordeTunisInvoiceView";
 import NovotelInvoiceView from "./viewTemplates/NovoTelInvoiceView";
+import DynamicInvoiceFormPageGlobal from "./DynamicInvoiceFormPageBookingExpress.jsx"
 export {
     DashboardPage, InvoicePage, InvoiceViewPage, 
     InvoiceFormPage, Unauthorized, EmployeePage, 
@@ -77,5 +78,5 @@ export {
     FourSeasonTunisInvoiceView,
     NovotelInvoiceView,
     ConsordeTunisInvoiceView,
-    
+    DynamicInvoiceFormPageGlobal
 };

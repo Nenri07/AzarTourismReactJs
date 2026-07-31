@@ -40,7 +40,8 @@ import {
   NotFoundPage,
   HyattRegencyView,
   HiltonParkLaneView,
-  FourSeasonParkLaneView
+  FourSeasonParkLaneView,
+  DynamicInvoiceFormPageGlobal,
 } from "./pages";
 
 document.addEventListener(
@@ -363,6 +364,40 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
+      // Booking Express INVOICES
+{
+        path: "booking-express-invoice/create/:hotelId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["super_admin", "employee"]}>
+            <DynamicInvoiceFormPageGlobal />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "booking-express-invoice/edit/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPageGlobal />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "booking-express-invoice/duplicate/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceFormPageGlobal />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: "booking-express-invoice/download-pdf/:invoiceId",
+        element: (
+          <AuthLayout authentication={true} allowedRoles={["employee", "super_admin"]}>
+            <DynamicInvoiceViewPage />
+          </AuthLayout>
+        ),
+      },
+
         // ==========================================
       // UK INVOICES 
       // ==========================================
@@ -456,6 +491,10 @@ const router = createBrowserRouter([
 },
 {
   path: "uk-invoice/view/:invoiceId",
+  element: <DynamicInvoiceViewPage />,
+},
+{
+  path: "booking-express-invoice/view/:invoiceId",
   element: <DynamicInvoiceViewPage />,
 },
   // PUBLIC INVOICE VIEWS (no auth required)

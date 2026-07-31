@@ -129,7 +129,40 @@ HILTON_BOSPHORUS: {
     },
   },
 
+HILTON_BOMONTI: {
+    detect: (name) =>
+      name.includes('hilton') &&
+      (name.includes('bomonti') || name.includes('istanbul bomonti')),
+    accommodationDescription: 'GUEST ROOM',
+    currency: 'TRY',
+    isRadisson: false,
+    calculateNightlyRate: ({ eurAmount, exchangeRate }) => {
+      // Gross EUR * Exchange Rate = Gross TRY
+      // Gross TRY / 1.12 = Net TRY (Room Amount)
+      const grossTry = eurAmount * exchangeRate;
+      const netTry = grossTry
+      return { roomAmountTry: netTry };
+    },
+    buildRow: ({ date, roomAmountTry, eurAmount, exchangeRate }) => {
+      // Calculate the Net EUR amount to display in the description
 
+      const calulatedTL= parseNum(roomAmountTry /1.12);
+      const netEur = parseNum(roomAmountTry / exchangeRate);
+    
+      
+
+      // TAX is 12% of the Net Room Amount
+      const taxAmount = parseNum(calulatedTL * 0.12); 
+
+      return {
+        date,
+        description: `GUEST ROOM ( ${netEur.toFixed(2)} EUR * ${exchangeRate.toFixed(2)} )`,
+        rateLabel: `${netEur.toFixed(2)} EUR * ${exchangeRate.toFixed(2)}`,
+        rate: parseNum(calulatedTL),
+        taxAmount: taxAmount,
+      };
+    },
+  },
   // ── 2. RADISSON HOTEL ISTANBUL HARBIYE ───────────────────────────────────
   // TWO rows per night — Hotel Expenses (10%) + Accommodation Tax (0%, per PAX)
   RADISSON_HARBIYE: {
@@ -294,6 +327,7 @@ HILTON_BOSPHORUS: {
 
 const PRIORITY_ORDER = [
   'HILTON_BOSPHORUS',
+  'HILTON_BOMONTI',
   'RADISSON_BLU_SISLI',
   'RADISSON_COLLECTION',
   'RADISSON_HARBIYE',
@@ -584,6 +618,8 @@ startingRefNo: formData.starting_ref_no || Math.floor(1000000 + Math.random() * 
       totalAccTax:        parseNum(summary.total_accommodation_tax),
       grandTotal:         parseNum(summary.grand_total),
       totalInEur:         parseNum(summary.total_in_eur),
+      vNo: formData.v_no || '',
+      vD: formData.v_d || '',
  
       accommodationDetails: accommodationDetailsArray,
       otherServices:        otherServicesArray,

@@ -20,6 +20,7 @@ import RaddisonInvoiceView from "./RaddisonInvoiceView";
 import IntercontinentalInvoiceView from "./IntercontinentalInvoiceView";
 import FairmontInvoiceView from "./FairmontInvoiceView";
 import HolidayInvoiceView from "./HolidayInvoiceView";
+import HiltonBomontiIstanbulView from "./HiltonBomontiIstanbulView";
 import HiltonInvoiceView from "./HiltonInvoiceView";
 import DusitThanniInvoiceView from "./DusitThanniInvoiceView"
 import TulipAlexendriaView from "./TulipAlexendriaView";
@@ -54,6 +55,7 @@ import LeCorailInvoiceView from "./LeCorailInvoiceView";
 import SheratonInvoiceView from "./SheratonInvoiceView";
 import NovotelInvoiceViewEgypt from "./NovotelInvoiceViewEgypt";
 import HiltonMetropolaneInvoiceView from "./HiltonMetropolaneInvoiceView";
+import BookingExpressInvoiceView from "./BookingExpressInvoiceView";
 export default function DynamicInvoiceViewPage() {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
@@ -68,6 +70,7 @@ export default function DynamicInvoiceViewPage() {
     const isMalaysiaRoute = location.pathname.includes('malaysia-invoice');
     const isUk = location.pathname.includes('uk-invoice');
     const isTunisiaRoute = location.pathname.includes('tunisia-invoice');
+    const isBookingExpressRoute = location.pathname.includes('booking-express-invoice');
 
   // const isMalaysiaRoute = location.pathname.includes('malaysia-invoice');
   // const isUKRoute = location.pathname.includes('uk-invoice');
@@ -101,6 +104,10 @@ export default function DynamicInvoiceViewPage() {
       else if (isTunisiaRoute) {
         console.log("Fetching from Tunisia API...");
         response = await tunisiainvoiceApi.getInvoiceById(invoiceId);
+      }
+      else if (isBookingExpressRoute) {
+        console.log("Fetching from Booking Express API...");
+        response = await ukInvoiceApi.getInvoiceById(invoiceId);
       }
       else {
       // } else if (isUKRoute) {
@@ -140,6 +147,10 @@ export default function DynamicInvoiceViewPage() {
       
       if (hotelName.includes("london hilton") && hotelName.includes("park lane")) {
         detectedType = "HiltonParkLane";
+      }
+
+       else if (hotelName.includes("booking express")) {
+        detectedType = "BookingExpress";
       }
 
         else if (hotelName.includes("radisson blu hotel & convention center tunis")) {
@@ -210,10 +221,12 @@ export default function DynamicInvoiceViewPage() {
       else if (hotelName.includes("cheya")) {
         detectedType = "Cheya";
       }
-      else if (hotelName.includes("hilton istanbul bosphorus") || hotelName.includes("hilton bosphorus") || hotelName.includes("hilton istanbul")) {
+      else if (hotelName.includes("hilton istanbul bosphorus") || hotelName.includes("hilton bosphorus") ) {
         detectedType = "HiltonBosphorus";   // ← more specific than generic "Hilton"
       }
-
+      else if (hotelName.includes("hilton istanbul bomonti ") || hotelName.includes("hilton istanbul bomonti hotel & conference center") || hotelName.includes("hilton istanbul")) {
+        detectedType = "HiltonBomolti";   // ← more specific than generic "Hilton"
+      }
       else if(hotelName.includes("hilton")){
         detectedType = "Hilton";
       }
@@ -418,6 +431,9 @@ else if (hotelType === "RadissonHarbiye") {
 else if (hotelType === "RadissonCollection") {
   return <RadissonCollection invoiceData={invoice} />;
 }
+else if(hotelType === "BookingExpress") {
+  return <BookingExpressInvoiceView invoiceData={invoice} />;
+}
 else if (hotelType === "MARMARA_TAKSIM") {
   return <MarmaraInvoiceView invoiceData={invoice} />;
 }
@@ -480,6 +496,9 @@ else if(hotelType=="NovotelCairo"){
 }
 else if(hotelType=="HiltonMetropolane"){
  return <HiltonMetropolaneInvoiceView invoiceData={invoice} />
+}
+else if(hotelType=="HiltonBomolti"){
+ return <HiltonBomontiIstanbulView invoiceData={invoice} />
 }
   else {
     // Default fallback

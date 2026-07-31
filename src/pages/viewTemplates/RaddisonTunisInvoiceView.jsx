@@ -84,20 +84,22 @@ if (data.otherServices && data.otherServices.length > 0) {
 
   return {
     meta: {
-      date: formatDate(data.invoiceDate) || "17/02/2026",
-      factureNo: data.referenceNo || data.refferenceNo || "ANV6A02713",
+      date: formatDate(data.invoiceDate) || "",
+      factureNo: data.invoiceNo || "",
     },
     guest: {
-      companyCode: data.companyCode || "3000178582",
+      companyCode: data.vatNo || "",
       companyName: data.companyName || "AZAR TOURISM",
       address1: "TRIPOLI TOWER GROUND FLOOR",
       address2: "OFFICE NO 50, TRIPOLI, LIBYA",
     },
     hotel: {
-      matriculeFiscal: data.vatNo || "12894 PAM 000"
+      matriculeFiscal: data.userId || ""
     },
     items,
     totals: {
+      totalInDollars: formatCurrency(data.balanceUsd || 0.000),
+      exchangeRate: formatCurrency(data.exchangeRate || 0.000),
       totalHorsTaxe: formatCurrency(data.totalHorsTaxes || 0.000),
       fdcst: formatCurrency(data.fdcst1Pct || 0.000),
       tva7: formatCurrency(data.vat7Pct || 0.000),
@@ -494,6 +496,10 @@ const RadissonTunisInvoiceView = ({ invoiceData }) => {
                         <tr><td className="text-left">TOTAL TTC</td><td className="text-right">{invoice.totals.totalTtc}</td></tr>
                         {/* <tr><td className="text-left">CASH</td><td className="text-right">{invoice.totals.cash}</td></tr> */}
                         <tr><td className="text-left">A PAYER</td><td className="text-right">{invoice.totals.totalTtc}</td></tr>
+                                                <tr><td className="text-left">Total in USD</td><td className="text-right">{invoice.totals.totalInDollars}</td></tr>
+                                                                        <tr><td className="text-left">Exchange Rate</td><td className="text-right">{invoice.totals.exchangeRate}</td></tr>
+
+
                       </tbody>
                     </table>
                   </div>
