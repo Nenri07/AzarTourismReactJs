@@ -110,7 +110,7 @@ const mapApiDataToInvoice = (data = {}) => {
         desc: "City Tax",
         debit: cityTaxPerNight,
         credit: 0,
-        priority: 3
+        priority: 1.3
       });
     });
   }

@@ -89,6 +89,15 @@ const mapApiDataToInvoice = (data = {}) => {
     });
   }
 
+
+  // Extra services (Laundry, etc.) — previously never included at all
+  if (data.otherServices && data.otherServices.length > 0) {
+    data.otherServices.forEach((svc) => {
+      rawItems.push({ rawDate: svc.date, desc: svc.name, subDesc, debit: svc.amount, credit: "" });
+    });
+  }
+
+  
   // Stamp duty — use its actual date(s), not invoiceDate
   if (data.stampTaxDetails && data.stampTaxDetails.length > 0) {
     data.stampTaxDetails.forEach((st) => {
@@ -98,12 +107,6 @@ const mapApiDataToInvoice = (data = {}) => {
     rawItems.push({ rawDate: data.invoiceDate, desc: "Droit de Timbre", subDesc, debit: data.stampTaxTotal, credit: "" });
   }
 
-  // Extra services (Laundry, etc.) — previously never included at all
-  if (data.otherServices && data.otherServices.length > 0) {
-    data.otherServices.forEach((svc) => {
-      rawItems.push({ rawDate: svc.date, desc: svc.name, subDesc, debit: svc.amount, credit: "" });
-    });
-  }
 
   // Sort chronologically once; stable sort keeps Package/FDCST/VAT/CityTax order within a day
   rawItems.sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
