@@ -320,9 +320,7 @@ export const calculateAccommodationTunisia = (formData, hotelType) => {
 
 
   // priority: explicit accommodation_details override > adults+children > legacy nb_persons > 1
-  const nbPersons = nbperson3 > adultsPlusChildren ? nbperson3 : adultsPlusChildren || 0;
-
-  const cityTaxPerNight = cityTaxPerPerson * nbPersons;
+  const nbPersons = parseInt(acc.nb_persons, 10) || parseInt(formData.nb_persons, 10) || 0;  const cityTaxPerNight = cityTaxPerPerson * nbPersons;
 
   let roomAmountTnd = 0;
   let eurAmount = 0;
@@ -333,7 +331,7 @@ export const calculateAccommodationTunisia = (formData, hotelType) => {
   if (cfg.inputCurrency === 'EUR') {
     // Four Seasons / Marriott — UNCHANGED, no tradeoff here
     eurAmount = parseFloat(acc.eur_amount || 0);
-    exchangeRate = parseFloat(acc.exchange_rate || 0);
+    exchangeRate = parseFloat(acc.exchange_rate || 2);
     exchangeUsdRate = parseFloat(acc.exchange_usd_rate || 0);
     const grossTnd = eurAmount * exchangeRate;
     roomAmountTnd = grossTnd / 1.0807;
@@ -341,7 +339,7 @@ export const calculateAccommodationTunisia = (formData, hotelType) => {
     // TND-input hotels — matches the original Novotel form exactly:
     // New Room Rate (per night) = Exchange Rate × Selling Rate
     sellingRate = parseFloat(acc.selling_rate || 0);
-    exchangeRate = parseFloat(acc.exchange_rate || 0);
+    exchangeRate = parseFloat(acc.exchange_rate || 2);
     roomAmountTnd = exchangeRate * sellingRate;
     exchangeUsdRate = parseFloat(acc.exchange_usd_rate || 0);
     eurAmount = 0;
@@ -580,7 +578,7 @@ const otherServicesArray = svcCalc.services.map(s => ({
       confirmationNo: formData.confirmation_no || '',
       guestName: cap(formData.guest_name) || 'Guest',
       roomNo: formData.room_number || '',
-      nbPersons: parseInt(formData.nb_persons || 1),
+            nbPersons: accCalc.nbPersons || 1,
       adults: parseInt(formData.nb_adults),
       children: parseInt(formData.nb_children),
       arrangementRate: formData.arrangement_rate || '',  // e.g. "CORP_C_BB"

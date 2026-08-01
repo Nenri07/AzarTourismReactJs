@@ -32,6 +32,14 @@ const formatCurrency = (val) => {
   });
 };
 
+const formatCurrencyUsd = (val) => {
+  if (val === null || val === undefined || val === "") return "";
+  return parseFloat(val).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // API → VIEW SCHEMA MAPPER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -160,7 +168,7 @@ const mapApiDataToInvoice = (data = {}) => {
           credit1: "",
           debit2: data.stampTaxTotal,
           credit2: 0,
-          sortOrder: 2
+          sortOrder: 3
         });
       }
     });
@@ -178,7 +186,7 @@ const mapApiDataToInvoice = (data = {}) => {
         credit1: "",
         debit2: service.amount,
         credit2: 0,
-        sortOrder: 3
+        sortOrder: 2
       });
     });
   }
@@ -222,8 +230,8 @@ const mapApiDataToInvoice = (data = {}) => {
       stampDuty: formatCurrency(data.stampTaxTotal || 0.000),
       totalGross: formatCurrency(data.totalTtc || 0.000),
       balance: formatCurrency(data.totalTtc || 0.000),
-      exchangeRate: formatCurrency(data.exchangeRate || 0.000),
-      totalInEur: formatCurrency(data.balanceUsd || 0.000)
+      exchangeRate: formatCurrencyUsd(data.exchangeRate || 0),
+      totalInEur: formatCurrencyUsd(data.balanceUsd || 0)
     }
   };
 };

@@ -31,6 +31,16 @@ const formatCurrency = (val) => {
   });
 };
 
+const formatCurrencyUsd = (val) => {
+  if (val === null || val === undefined || val === "") return "";
+  const num = parseFloat(val);
+  if (isNaN(num)) return val;
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // API → VIEW SCHEMA MAPPER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -750,11 +760,11 @@ margin-left: 50%;
                         <div className="tax-container-box" style={{width: "35%" , display: "flex", flexDirection: "column", justifyContent: "flex-end"}}>
                         <div className="tax-data-row">
                           <span style={{width: "170px", textAlign:"left"}}>USD Exch. Rate :</span>
-                          <span style={{width: "170px", textAlign:"right", paddingRight: "70px"}}>{formatCurrency(invoice.taxBreakdown.exchangeRate)}</span>
+                          <span style={{width: "170px", textAlign:"right", paddingRight: "70px"}}>{formatCurrencyUsd(invoice.taxBreakdown.exchangeRate)}</span>
                         </div>
                         <div className="tax-data-row">
                           <span style={{width: "170px", textAlign:"left"}}>Total in USD :</span>
-                          <span style={{width: "170px", textAlign:"right" , paddingRight: "70px"}}>{formatCurrency(invoice.taxBreakdown.totalInUsd)}</span>
+                          <span style={{width: "170px", textAlign:"right" , paddingRight: "70px"}}>{formatCurrencyUsd(invoice.taxBreakdown.totalInUsd)}</span>
                         </div>
                       </div>
                       <div className="tax-container-box">

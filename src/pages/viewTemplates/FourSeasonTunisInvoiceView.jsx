@@ -30,6 +30,14 @@ const formatCurrency = (val) => {
   });
 };
 
+const formatCurrencyUsd = (val) => {
+  if (val === null || val === undefined || val === "") return "";
+  return parseFloat(val).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // API → VIEW SCHEMA MAPPER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -174,8 +182,9 @@ const mapApiDataToInvoice = (data = {}) => {
       stampDuty: formatCurrency(data.stampTaxTotal || 1.000),
       grossAmount: formatCurrency(finalBalance),
       balance: formatCurrency(finalBalance),
-      balanceEur: data.balanceEur ? parseFloat(data.balanceEur).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) : "3756.2",
-      balanceUsd: data.balanceUsd ? parseFloat(data.balanceUsd).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "4335.38"
+      exchangeRate: formatCurrencyUsd(data.exchangeRate || 0),
+      balanceEur: data.balanceEur ? formatCurrencyUsd(data.balanceEur) : "3756.20",
+      balanceUsd: data.balanceUsd ? formatCurrencyUsd(data.balanceUsd) : "4335.38"
     }
   };
 };
@@ -596,8 +605,8 @@ font-family: Times New Roman !important;
                             </colgroup>
                             <tbody>
                               <tr>
-                                <td>Balance TND</td>
-                                <td style={{textAlign: 'right', width: '40%'}}>{invoice.totals.balance}&nbsp;TND</td>
+                                <td>Exchange Rate</td>
+                                <td style={{textAlign: 'right', width: '40%'}}>{invoice.totals.exchangeRate} TND</td>
                               </tr>
                               {invoice.totals.balanceEur && (
                                 <tr>

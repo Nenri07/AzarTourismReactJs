@@ -31,6 +31,14 @@ const formatCurrency = (val) => {
   });
 };
 
+const formatCurrencyUsd = (val) => {
+  if (val === null || val === undefined || val === "") return "";
+  return parseFloat(val).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // API → VIEW SCHEMA MAPPER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -98,8 +106,8 @@ if (data.otherServices && data.otherServices.length > 0) {
     },
     items,
     totals: {
-      totalInDollars: formatCurrency(data.balanceUsd || 0.000),
-      exchangeRate: formatCurrency(data.exchangeRate || 0.000),
+      totalInDollars: formatCurrencyUsd(data.balanceUsd || 0),
+      exchangeRate: formatCurrencyUsd(data.exchangeRate || 0),
       totalHorsTaxe: formatCurrency(data.totalHorsTaxes || 0.000),
       fdcst: formatCurrency(data.fdcst1Pct || 0.000),
       tva7: formatCurrency(data.vat7Pct || 0.000),

@@ -27,6 +27,7 @@ const parseNum = (value, decimals = 2) => {
 const CHECK_IN_KEYS = ["check_in_date", "checkin_date", "arrival_date", "arrival"];
 const CHECK_OUT_KEYS = ["check_out_date", "checkout_date", "departure_date", "departure"];
 const NIGHTS_KEYS = ["nights", "total_nights", "no_of_nights", "number_of_nights"];
+const CURRENCY_OPTIONS = ["EUR", "USD", "GBP", "TND", "LYD", "AED", "SAR"];
 
 const pickFieldId = (fields, candidates, fallback) => {
   const ids = new Set((fields || []).map((f) => f.field_id));
@@ -65,8 +66,8 @@ function LineItemSection({ title, currency, formData, onFieldChange }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
       <h3 className="text-sm md:text-base font-bold text-slate-800 mb-4">{title}</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="sm:col-span-1">
           <label className="block text-xs font-semibold text-slate-600 mb-1">
             Description <span className="text-red-500 ml-0.5">*</span>
           </label>
@@ -81,7 +82,7 @@ function LineItemSection({ title, currency, formData, onFieldChange }) {
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1">
-            Price ({currency}) <span className="text-red-500 ml-0.5">*</span>
+            Price <span className="text-red-500 ml-0.5">*</span>
           </label>
           <input
             type="number"
@@ -92,6 +93,21 @@ function LineItemSection({ title, currency, formData, onFieldChange }) {
             required
             className="input input-bordered w-full h-10 text-sm bg-white border-slate-300 focus:border-[#1a1a2e] focus:outline-none rounded-lg"
           />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">
+            Currency <span className="text-red-500 ml-0.5">*</span>
+          </label>
+          <select
+            value={values.currency ?? currency ?? "EUR"}
+            onChange={(e) => onFieldChange("line_item.currency", e.target.value)}
+            required
+            className="select select-bordered w-full h-10 text-sm bg-white border-slate-300 focus:border-[#1a1a2e] focus:outline-none rounded-lg"
+          >
+            {CURRENCY_OPTIONS.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
         </div>
       </div>
     </div>
@@ -122,7 +138,7 @@ const mapToGlobalBackendSchema = (formData, hotelConfig, fieldIds) => {
       invoiceSource: "global",
 
       hotel: hotelConfig?.hotel_name || "Booking Express",
-      currency: hotelConfig?.currency || "EUR",
+      currency: lineItem.currency||hotelConfig?.currency || "EUR",
 
       ...topFields,
 
@@ -262,6 +278,8 @@ export default function DynamicInvoiceFormPageGlobal() {
         line_item: data.lineItem || {
           description: data.description || "",
           price: data.grandTotal ?? "",
+                    currency: data.currency || loadedConfig?.currency || "EUR",
+
         },
       });
 
@@ -287,7 +305,7 @@ export default function DynamicInvoiceFormPageGlobal() {
         hotel_name_ref: response.hotel_name || "",
         status: "pending",
         note: "",
-        line_item: {},
+        line_item: { currency: response.currency || "EUR" },
       });
     } catch (err) {
       setError(err.message || "Failed to load config");
@@ -396,7 +414,7 @@ export default function DynamicInvoiceFormPageGlobal() {
         invoiceNumber: formData.invoice_number || "NEW",
         status: formData.status,
         grandTotal: parseNum(lineItem.price),
-        currency: hotelConfig?.currency || "EUR",
+        currency: lineItem.currency ||hotelConfig?.currency || "EUR",
       });
 
       setTimeout(() => {

@@ -30,6 +30,14 @@ const formatCurrency = (val) => {
   });
 };
 
+const formatCurrencyUsd = (val) => {
+  if (val === null || val === undefined || val === "") return "";
+  return parseFloat(val).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // API â†’ VIEW SCHEMA MAPPER
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -71,7 +79,7 @@ const mapApiDataToInvoice = (data = {}) => {
           desc: "City Tax",
           debit: cityTaxPerNight,
           credit: 0,
-          priority: 3
+          priority: 2
         });
       }
     });
@@ -88,7 +96,7 @@ const mapApiDataToInvoice = (data = {}) => {
         debit: svc.amount,
         credit: 0,
         subDesc: `Room# ${data.roomNo}   ${data.guestName}`,
-        priority: 2
+        priority: 3
       });
     });
   }
@@ -125,10 +133,10 @@ const mapApiDataToInvoice = (data = {}) => {
     items,
     totals: {
       totalDebit: formatCurrency(finalBalance),
-      usdExchangeRate: formatCurrency(data.exchangeRate || 0.00),
+      usdExchangeRate: formatCurrencyUsd(data.exchangeRate || 0.00),
       totalCredit: formatCurrency(0),
       netAmount: formatCurrency(data.totalHorsTaxes || 0.000),
-      totalInUsd: formatCurrency(data.balanceUsd || 0.000),
+      totalInUsd: formatCurrencyUsd(data.balanceUsd || 0.00),
       fdcst1: formatCurrency(data.fdcst1Pct || 0.000),
       tva7: formatCurrency(data.vat7Pct || 0.000),
       tva19: formatCurrency(data.vat19Pct || 0.000),

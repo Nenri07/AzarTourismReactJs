@@ -53,6 +53,14 @@ const formatCurrency = (val) => {
   }).replace(/\s/g, ' ');
 };
 
+const formatCurrencyUsd = (val) => {
+  if (val === null || val === undefined || val === "") return "";
+  return parseFloat(val).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 // NEW: the saved invoice time is stored in 24-hour clock (e.g. "21:53:45" or "21:53").
 // Convert it to 12-hour AM/PM display (e.g. "9:53:45 PM") for the invoice header.
 const formatTimeAMPM = (timeStr) => {
@@ -213,8 +221,8 @@ invoiceNo: data.invoiceNo ? `${data.invoiceNo}  /${String(new Date(data.invoiceD
     },
     items,
     totals: {
-      exchangeRate: formatCurrency(data.exchangeRate),
-      totalInUsd: formatCurrency(data.balanceUsd),
+      exchangeRate: formatCurrencyUsd(data.exchangeRate),
+      totalInUsd: formatCurrencyUsd(data.balanceUsd),
       netAmount: formatCurrency(data.totalHorsTaxes),
       taxBase: formatCurrency(data.totalHorsTaxes),
       tva7: formatCurrency(data.vat7Pct),

@@ -53,7 +53,8 @@ const TunisiaConditionalSection = ({
   useEffect(() => {
   if (sectionKey !== "accommodation_details" || section.multiple_entries) return;
 
-  const calc = calculateAccommodationTunisia(formData);
+  const hotelType = detectHotelTypeTunisia(hotelConfig);
+  const calc = calculateAccommodationTunisia(formData, hotelType);
   const acc = formData.accommodation_details || {};
 
   const knownComputed = {

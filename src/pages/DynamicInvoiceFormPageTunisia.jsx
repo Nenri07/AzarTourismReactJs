@@ -538,6 +538,8 @@ export default function DynamicInvoiceFormPageTunisia() {
           accommodationDetails[fieldId] = data.cityTaxPerPerson || 3;
         else if (fieldId === "stamp_tax")
           accommodationDetails[fieldId] = data.stampTax || 1;
+        else if (fieldId === "nb_persons")
+          accommodationDetails[fieldId] = data.nbPersons || 1;
         else
           accommodationDetails[fieldId] = data[fieldId] !== undefined ? data[fieldId] : "";
       });

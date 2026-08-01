@@ -31,6 +31,14 @@ const formatCurrency = (val) => {
   });
 };
 
+const formatCurrencyUsd = (val) => {
+  if (val === null || val === undefined || val === "") return "";
+  return parseFloat(val).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 const numberToEnglishWords = (amount) => {
   const cleanAmount = String(amount).replace(/,/g, '');
   const num = parseFloat(cleanAmount);
@@ -168,8 +176,8 @@ const mapApiDataToInvoice = (data = {}) => {
     },
     items,
     totals: {
-      exchangeRate: exchangeRateVal ? formatCurrency(exchangeRateVal) : "",
-      balanceUsd: balanceUsdVal ? formatCurrency(balanceUsdVal) : "",
+      exchangeRate: exchangeRateVal ? formatCurrencyUsd(exchangeRateVal) : "",
+      balanceUsd: balanceUsdVal ? formatCurrencyUsd(balanceUsdVal) : "",
       totalDebit: formatCurrency(data.totalTtc),
       totalCredit: formatCurrency(0),
       netAmount: formatCurrency(data.totalHorsTaxes),
