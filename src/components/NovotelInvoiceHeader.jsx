@@ -12,7 +12,7 @@ export default function NovotelInvoiceHeader({
           src={logoUrl}
           width="220"
           alt="Novotel"
-          style={{ margin: '6px auto', height: '62px' }}
+          style={{ margin: '6px auto', height: '45px' }}
         />
       </div>
 
@@ -22,8 +22,8 @@ export default function NovotelInvoiceHeader({
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '16px',
-          marginBottom: '16px',
-          fontSize: '11px',
+          marginBottom: '32px',
+          fontSize: '11.5px',
           lineHeight: '1.4'
         }}
       >
@@ -39,7 +39,7 @@ export default function NovotelInvoiceHeader({
         <div>
           <div>Company : {invoice.companyName}</div>
           <div>Address : {invoice.companyAddress}</div>
-          <div style={{ marginTop: '4px' }}>Account NO : {invoice.accountNo}</div>
+          <div style={{ marginTop: '15px' }}>Account NO : {invoice.accountNo}</div>
           <div>VAT No : {invoice.vatNo}</div>
           <div>Invoice No: {invoice.invoiceNo}</div>
           <div>Cashier : {invoice.cashier}</div>

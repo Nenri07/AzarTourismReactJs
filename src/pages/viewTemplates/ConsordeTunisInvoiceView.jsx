@@ -360,11 +360,12 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
     .m-main-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; table-layout: fixed; font-size: 14px; font-family: Arial, sans-serif; }
     .m-main-table thead { border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; }
     .m-main-table thead th { 
-      padding: 4px 0; 
+      padding: 1px 0 3px 0; 
       text-align: left; 
       font-weight: normal; 
       font-style: italic;
       font-size: 14px;
+      line-height: 1.1;
     }
     .m-main-table th.right-align { text-align: right; }
     .m-main-table td { vertical-align: top; line-height: 1.2; }
@@ -406,15 +407,15 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
                 <td style={{padding: '0'}}>{invoice.guest.room}</td>
               </tr>
               <tr>
-                <td style={{padding: '0'}}>ArrivÃ©e / Arrival: &nbsp;</td>
+                <td style={{padding: '0'}}>Arrivée / Arrival: &nbsp;</td>
                 <td style={{padding: '0'}}>{invoice.guest.arrival}</td>
               </tr>
               <tr>
-                <td style={{padding: '0'}}>DÃ©part / Departure:&nbsp;</td>
+                <td style={{padding: '0'}}>Départ / Departure: &nbsp;</td>
                 <td style={{padding: '0'}}>{invoice.guest.departure}</td>
               </tr>
               <tr>
-                <td style={{padding: '0'}}>NÂº Pers. / NÂº Pax: &nbsp;</td>
+                <td style={{padding: '0'}}>Nº Pers. / Nº Pax: &nbsp;</td>
                 <td style={{padding: '0'}}>{invoice.guest.paxA} &nbsp;&nbsp;&nbsp;/ {invoice.guest.paxC}</td>
               </tr>
               <tr>
@@ -430,7 +431,7 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
                 <td style={{padding: '0'}}>{invoice.meta.date}</td>
               </tr>
               <tr>
-                <td style={{padding: '0'}}>NÂº Reserva/Reser.NÂº:&nbsp;</td>
+                <td style={{padding: '0'}}>Nº Reserva/Reser.Nº:&nbsp;</td>
                 <td style={{padding: '0'}}>{invoice.guest.crsNo}</td>
               </tr>
               <tr>
@@ -489,8 +490,8 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
                   <tr>
                     <th style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial', paddingLeft: '25px' }}>Date</th>
                     <th style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial', paddingLeft: '25px' }}>Description</th>
-                    <th className="right-align" style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial' }}>DÃ©bit TND</th>
-                    <th className="right-align" style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial', paddingRight: '10px' }}>CrÃ©dit TND</th>
+                    <th className="right-align" style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial' }}>Débit TND</th>
+                    <th className="right-align" style={{ fontStyle: 'italic', fontWeight: 'normal', fontFamily: 'Arial', paddingRight: '10px' }}>Crédit TND</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -515,10 +516,10 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
 
                {/* UPDATED TOTALS LAYOUT */}
                {page.isLastPage && (
-                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                    
                    {/* Left Side (37% width) */}
-                   <div style={{ width: '37%', display: 'flex', flexDirection: 'column', fontSize: '14px', fontFamily: 'Arial', justifyContent: 'flex-end', paddingRight: '20px' }}>
+                   <div style={{ width: '37%', display: 'flex', flexDirection: 'column', fontSize: '14px', fontFamily: 'Arial', justifyContent: 'flex-end', paddingRight: '20px' , borderTop:'1px solid'}}>
                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                        <tbody style={{ lineHeight: '1.2' }}> 
                          <tr>
@@ -526,7 +527,7 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
                            <td className="right-align">{invoice.totals.usdExchangeRate}</td>
                          </tr>
                          <tr >
-                           <td >Total In USD :</td>
+                           <td >Total In EUR :</td>
                            <td className="right-align" >{invoice.totals.totalInUsd}</td>
                          </tr>
                        </tbody>
@@ -575,7 +576,7 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
                          <tr><td className="tax-td">TVA 7%</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.tva7} TND</td></tr>
                          <tr><td className="tax-td">Timbre Fiscal</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.stampDuty} TND</td></tr>
                          <tr><td className="tax-td">TVA 19 %</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.tva19} TND</td></tr>
-                         <tr><td className="tax-td">Taxe de SÃ©jour</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.cityTax} TND</td></tr>
+                         <tr><td className="tax-td">Taxe de Séjour</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.cityTax} TND</td></tr>
                          <tr><td className="tax-td">Total TTC</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.grossAmount} TND</td></tr>
                          <tr><td className="tax-td">Net a Payer</td><td className="tax-td" style={{textAlign: 'center'}}>:</td><td className="tax-td" style={{paddingRight: '30px', textAlign: 'right' }}>{invoice.totals.balance} TND</td></tr>
                        </tbody>
@@ -588,7 +589,7 @@ const ConsordeTunisInvoiceView = ({ invoiceData }) => {
                <div style={{ flexGrow: 1 }} />
  
                <div className="m-ending-footer" style={{ borderTop: 'none', textAlign: 'center', fontSize: '12px', fontFamily: 'Tahoma', marginTop: 'auto', lineHieght: '1.2' }}>
-                 HÃ´tel Concorde Les Berges du Lac - RIB : 10112107105061978820<br />
+                 Hôtel Concorde Les Berges du Lac - RIB : 10112107105061978820<br />
                  STE Touristique et Hoteliere El Hammam Boulevard Mohamed Bouazizi 1080 | Tunis<br />
                  Tax ID : 0020078KA M000
                </div>

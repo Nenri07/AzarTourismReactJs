@@ -211,8 +211,8 @@ const mapApiDataToInvoice = (data = {}) => {
     guest: {
       name: data.guestName,
       company: data.companyName || "Azar Company",
-      address1: "Tripoli Tower Ground Floor",
-      address2: "Office no 50, Tripoli, Libya.",
+      address1: "Tripoli Tower Ground Floor Office no 50",
+      address2: "Tripoli, Libya.",
       room: data.roomNo,
       arrival: formatDate(data.arrivalDate),
       departure: formatDate(data.departureDate),
@@ -425,12 +425,12 @@ const MovenpickInvoiceView = ({ invoiceData }) => {
     .header { margin-bottom: 30px; justify-content: left; display: flex;}
     .logo { width: 250px; margin-bottom: 5px; }
     .address-section { line-height: 1.4; margin-bottom: 45px; }
-    .invoice-title { font-size: 16px; font-weight: normal; margin-bottom: 20px; text-transform: uppercase; }
+    .invoice-title { font-size: 14px; font-weight: normal; margin-bottom: 20px; text-transform: uppercase; }
     
     .meta-data { display: flex; justify-content: space-between; margin-bottom: 20px; }
     .meta-group { width: 34.5%; }
     .meta-row { display: flex; }
-    .meta-label { width: 130px; }
+    .meta-label { width: 145px; }
     .meta-labelR{ width: 70px; }
     .meta-value { }
 
@@ -447,9 +447,9 @@ const MovenpickInvoiceView = ({ invoiceData }) => {
     .total-row { font-weight: bold; border-top: 1px solid #000; border-bottom: 1px solid #000; }
 
     .balance-section { margin-top: 15px; display: flex; justify-content: flex-end; }
-    .balance-box { display: flex; width: 395px; font-weight: bold; }
+    .balance-box { display: flex; width: 425px; font-weight: bold; }
 
-    .tax-summary { margin-top: 8px; float: right; width: 290px; }
+    .tax-summary { margin-top: 8px; float: right; width: 362px; }
     .tax-row { display: flex; justify-content: flex-end; line-height: 1.3; }
     .tax-label {
   flex: 1;
@@ -463,7 +463,7 @@ padding-left: 145px;
 }
 
 .tax-value {
-  width: 105px;         /* fixed width so both value columns sit tight together */
+  width: 111px;         /* fixed width so both value columns sit tight together */
   text-align: right;
 }
 
@@ -536,13 +536,13 @@ padding-left: 145px;
               <table className="line-items">
                 <thead>
                   <tr>
-                    <th width="10%">Date</th>
+                    <th width="10.5%">Date</th>
                     <th width="31%">Description</th>
-                    <th width="10%">Qty.</th>
+                    <th width="10%" style={{paddingLeft:"7px"}}>Qty.</th>
                     <th width="12%" className="text-right">Debit TND</th>
                     <th width="12%" className="text-right">Credit TND</th>
                     <th width="12%" className="text-right">Debit TND</th>
-                    <th width="12%" className="text-right">Credit TND</th>
+                    <th width="12%" className="text-right" style={{textAlign:"right", paddingRight: "4px"}}>Credit TND</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -554,18 +554,18 @@ padding-left: 145px;
                       <td className="text-right">{formatCurrency(txn.debit1)}</td>
                       <td className="text-right">{txn.credit1 !== "" ? formatCurrency(txn.credit1) : ""}</td>
                       <td className="text-right">{formatCurrency(txn.debit2)}</td>
-                      <td className="text-right">{txn.credit2 !== "" ? formatCurrency(txn.credit2) : "0.000"}</td>
+                      <td className="text-right" style={{paddingRight:"4px"}}>{txn.credit2 !== "" ? formatCurrency(txn.credit2) : "0.000"}</td>
                     </tr>
                   ))}
 
                   {page.isLastPage && (
                     <tr className="total-row">
-                      <td colSpan="2" style={{ textAlign: 'center', paddingRight: "0px" , paddingLeft: "48px"}}>Total</td>
+                      <td colSpan="2" style={{ textAlign: 'center', paddingRight: "0px" , paddingLeft: "85px"}}>Total</td>
                       <td></td>
                       <td className="text-right">{invoice.totals.totalDebit}</td>
                       <td className="text-right">{invoice.totals.totalCredit}</td>
                       <td className="text-right">{invoice.totals.totalDebit}</td>
-                      <td className="text-right">{invoice.totals.totalCredit}</td>
+                      <td className="text-right"style={{textAlign:"right", paddingRight:"4px"}}>{invoice.totals.totalCredit}</td>
                     </tr>
                   )}
                 </tbody>
@@ -575,8 +575,8 @@ padding-left: 145px;
                 <>
                   <div className="balance-section">
                     <div className="balance-box">
-                      <div style={{ flex: 0 }}>Balance</div>
-                      <div style={{ flex: 1 , paddingRight: "150px"}} className="text-right">{invoice.totals.balance}&nbsp; TND</div>
+                      <div style={{ flex: 0 ,paddingRight: "37px"}}>Balance</div>
+                      <div style={{ flex: 1 , paddingRight: "150px"}} className="text-right">{invoice.totals.balance}&nbsp;&nbsp;&nbsp; TND</div>
                       <div style={{ flex: 1 }} className="text-right"></div>
                     </div>
                   </div>

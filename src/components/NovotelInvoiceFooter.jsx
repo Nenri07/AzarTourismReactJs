@@ -7,7 +7,7 @@ export default function NovotelInvoiceFooter({
 }) {
   return (
     <div style={{ marginTop: '8px', fontSize: '10px' }}>
-      <div style={{ borderTop: '1px solid #000', paddingTop: '6px' }}>
+      <div style={{ borderTop: '1px solid #000', paddingTop: '0.5px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           {/* Left - USD */}
           <div
@@ -42,97 +42,108 @@ export default function NovotelInvoiceFooter({
             </div>
           </div>
 
-          {/* Right - Totals and taxes */}
+       {/* Right - Totals and taxes */}
           <div>
+            {/* Total Row */}
             <div
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
+                justifyContent: 'flex-end',
                 borderBottom: '1px solid #000',
-                paddingBottom: '4px',
-                marginBottom: '4px'
+                paddingBottom: '0.5px',
+                marginBottom: '2px'
               }}
             >
-              <span style={{ marginLeft: 'auto', marginRight: '80px'  }}>
-                Total
-              </span>
-              <span style={{ textAlign: 'right', width: '80px' ,fontSize:'12px'}}>
+              <span style={{ marginRight: '37px', fontSize: '11px' }}>Total</span>
+              <span style={{ textAlign: 'right', width: '260px', fontSize:'12px' }}>
                 {totalDebit.toFixed(3)}
               </span>
-              <span style={{ textAlign: 'right', width: '80px' ,fontSize:'12px'}}>
+              <span style={{ textAlign: 'right', width: '80px', fontSize:'12px' }}>
                 {totalCredit.toFixed(3)}
               </span>
             </div>
+
+            {/* Balance Row */}
             <div
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: '12px'
+                justifyContent: 'flex-end',
+                marginBottom: '12px',
+                paddingRight: '225px'
               }}
             >
-              <span style={{ marginLeft: 'auto', marginRight: '80px' }}>
-                Balance
-              </span>
-              <span style={{ textAlign: 'center', width: '160px' }}>
+              <span style={{ marginRight: '37px', fontSize: '11px' }}>Balance</span>
+              <span style={{ textAlign: 'right', width: '100px',fontSize:'11px' }}>
                 {totalDebit.toFixed(3)} {invoice.currency}
               </span>
             </div>
 
-            <div style={{ textAlign: 'right', lineHeight: '1.4' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Net Taxable</span>
-                <span>
-                  {Number(invoice.netTaxable || 0).toFixed(3)}{' '}
-                  {invoice.currency}
+            {/* Tax breakdown - Widened container (260px) and increased marginRight (40px) */}
+            <div style={{ marginLeft: 'auto', width: '300px', lineHeight: '1.4' }}>
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ flex: 1, textAlign: 'right', marginRight: '105px' }}>Net Taxable</span>
+                <span style={{ width: '90px', textAlign: 'right' }}>
+                  {Number(invoice.netTaxable || 0).toFixed(3)} {invoice.currency}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>FDCST 1 %</span>
-                <span>
-                  {Number(invoice.fdsct || 0).toFixed(3)}{' '}
-                  {invoice.currency}
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ flex: 1, textAlign: 'right', marginRight: '105px' }}>FDCST 1 %</span>
+                <span style={{ width: '90px', textAlign: 'right' }}>
+                  {Number(invoice.fdsct || 0).toFixed(3)} {invoice.currency}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>VAT 7%</span>
-                <span>
-                  {Number(invoice.vat7Total || 0).toFixed(3)}{' '}
-                  {invoice.currency}
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ flex: 1, textAlign: 'right', marginRight: '105px' }}>VAT 7%</span>
+                <span style={{ width: '90px', textAlign: 'right' }}>
+                  {Number(invoice.vat7Total || 0).toFixed(3)} {invoice.currency}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>VAT 19%</span>
-                <span>0.000 {invoice.currency}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>City Tax</span>
-                <span>
-                  {Number(invoice.cityTaxTotal || 0).toFixed(3)}{' '}
-                  {invoice.currency}
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ flex: 1, textAlign: 'right', marginRight: '105px' }}>VAT 19%</span>
+                <span style={{ width: '90px', textAlign: 'right' }}>
+                  0.000 {invoice.currency}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Stamp Tax</span>
-                <span>
-                  {Number(invoice.stampTaxTotal || 0).toFixed(3)}{' '}
-                  {invoice.currency}
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ flex: 1, textAlign: 'right', marginRight: '105px' }}>City Tax</span>
+                <span style={{ width: '90px', textAlign: 'right' }}>
+                  {Number(invoice.cityTaxTotal || 0).toFixed(3)} {invoice.currency}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Non Revenue</span>
-                <span>0.000 {invoice.currency}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Paid Out</span>
-                <span>0.000 {invoice.currency}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Total Gross</span>
-                <span>
-                  {Number(invoice.grossTotal || 0).toFixed(3)}{' '}
-                  {invoice.currency}
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ flex: 1, textAlign: 'right', marginRight: '105px' }}>Stamp Tax</span>
+                <span style={{ width: '90px', textAlign: 'right' }}>
+                  {Number(invoice.stampTaxTotal || 0).toFixed(3)} {invoice.currency}
                 </span>
               </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ flex: 1, textAlign: 'right', marginRight: '105px' }}>Non Revenue</span>
+                <span style={{ width: '90px', textAlign: 'right' }}>
+                  0.000 {invoice.currency}
+                </span>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ flex: 1, textAlign: 'right', marginRight: '105px' }}>Paid Out</span>
+                <span style={{ width: '90px', textAlign: 'right' }}>
+                  0.000 {invoice.currency}
+                </span>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ flex: 1, textAlign: 'right', marginRight: '105px' }}>Total Gross</span>
+                <span style={{ width: '90px', textAlign: 'right' }}>
+                  {Number(invoice.grossTotal || 0).toFixed(3)} {invoice.currency}
+                </span>
+              </div>
+              
             </div>
           </div>
         </div>

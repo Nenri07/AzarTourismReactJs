@@ -296,12 +296,13 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
           align-items: center;
         }
         .be-logo img {
-          max-width: 250px;
+          max-width: 230px;
           height: auto;
         }
         .be-info-grid {
           display: grid;
-          grid-template-columns: 120px 150px;
+          padding-right: 20px;
+          grid-template-columns: 145px 135px;
           row-gap: 3px;
           font-size: 12px;
           color: #555;
@@ -319,7 +320,7 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
         }
         .be-customer .to-label       { font-weight: bold; font-size: 12px; margin-bottom: 3px; color: #333; }
         .be-customer .company-name   { font-weight: bold; font-size: 12px; margin-bottom: 3px; color: #333; }
-        .be-contact-row              { display: flex; align-items: center; font-size: 12px; color: #555; }
+        .be-contact-row              { display: flex; align-items: center; font-size: 11px; color: #555; }
         .be-contact-row .bold        { font-weight: bold; color: #333; }
         .be-divider                  { height: 12px; width: 1px; background: #c5c5c5; margin: 0 12px; }
 
@@ -347,21 +348,21 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
           display: flex;
           align-items: center;
           padding: 8px 20px;
-          border-right: 1px solid #d5d5d5;
+          border-right: 2px solid #b2b2b2;
         }
         .be-date-box:last-child {
           border-right: none;
         }
         .be-date-icon {
-          width: 37px;
-          height: 37px;
+          width: 30px;
+          height: 30px;
           margin-right: 5px;
           object-fit: contain;
           flex-shrink: 0;
         }
         .be-date-text        { display: flex; flex-direction: column; line-height:1.1;padding-top: 4px; }
-        .be-date-label       { font-size: 13px; color: #666; font-weight: bold; margin-bottom: 4px; }
-        .be-date-value       { font-size: 16px; font-weight: 500; color: #000; font-family: Arial, Helvetica, sans-serif;}
+        .be-date-label       { font-size: 12px; color: #666; font-weight: bold;  }
+        .be-date-value       { font-size: 14.5px; font-weight: 500; color: #000; font-family: Arial, Helvetica, sans-serif;}
 
         /* Room Details Header */
         .be-room-header {
@@ -372,12 +373,11 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
         }
         .be-green-bar    { width: 6px; height: 16px; background: #2f7e77; margin-right: 10px; flex-shrink: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         .be-room-title   { font-weight: bold; font-size: 12px; color: #555; white-space: nowrap; }
-        .be-line-extend  { flex-grow: 1; height: 1px; background: #e0e0e0; margin-left: 15px; }
-
+.be-line-extend  { flex-grow: 1; height: 0; border-top: 1px solid #ded5d5; margin-left: 15px; }
         /* Room Table */
         .be-table-wrap { padding: 0 20px 8px; flex-grow: 1; background: #eeeeee} /* Allows content area to fill available space */
         .be-table-box {
-          border: 1px solid #d5d5d5;
+          border: 1px solid #ded5d5;
           border-radius: 15px;
           padding: 8px 8px; /* Adds space inside the rounded box so lines don't touch the outer border */
           overflow: hidden; 
@@ -393,8 +393,8 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
           padding: 5px 15px;
           text-align: center;
           color: #555;
-          border-right: 1px solid #d5d5d5;
-          border-bottom: 1px solid #d5d5d5;
+          border-right: 1px solid #ded5d5;
+          border-bottom: 1px solid #ded5d5;
         }
         .be-table th:first-child,
         .be-table td:first-child {
@@ -410,7 +410,7 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
         }
         
         .be-table-row td {
-          border-bottom: 1px solid #d5d5d5;
+          border-bottom: 1px solid #ded5d5;
         }
         
         /* Total Row */
@@ -427,46 +427,59 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
         .be-footer {
           border-top: 2px solid #d5d5d5;
           padding: 4px 20px 12px 4px;
-          font-size: 12px;
+          font-size: 11px;
           color: #777;
         //   margin-top: auto; 
           background: #fff;
         }
 
         /* Print/PDF specific fixes */
+        /* Print/PDF specific fixes */
         @media print {
           @page { 
             margin: 0; 
             size: A4 portrait; 
           }
-          body { 
-            background: none; 
+          
+          /* Force the browser to print backgrounds */
+          html, body { 
+            background: #fff !important; 
             margin: 0; 
             padding: 0; 
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
           }
+          
           body * { 
             visibility: hidden; 
           }
+          
+          /* Apply exact color printing to EVERY element inside the invoice */
           .be-invoice-wrapper, .be-invoice-wrapper * { 
             visibility: visible; 
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
           }
+          
           .be-invoice-wrapper {
             position: absolute; 
             left: 0; 
             top: 0; 
             width: 100%; 
-    padding: 10mm !important; /* replaces the old @page margin visually */
+            padding: 10mm !important; 
             background: none;
-                justify-content: center;   /* center the card instead of stretching it */
-
+            justify-content: center; 
           }
-           .be-page {
-    width: 794px !important;        /* keep native A4-at-96dpi width, don't stretch */
-    border: 1px solid #c2c2c2 !important;
-    border-radius: 6px !important;  /* keep rounded corners like the screen version */
-    margin: 0 auto !important;
-    box-shadow: none !important;
-  }
+          
+          .be-page {
+            width: 794px !important; 
+            border: 1px solid #c2c2c2 !important;
+            border-radius: 6px !important; 
+            margin: 0 auto !important;
+            box-shadow: none !important;
+          }
         }
       `}} />
 
@@ -505,7 +518,7 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
               )}
               {invoice.email && (
                 <>
-                  <span className="be-divider" />
+                  <span className="be-divider" style={{marginLeft:"115px"}} />
                   <span className="bold">Email:</span>&nbsp;{invoice.email}
                 </>
               )}
@@ -526,14 +539,14 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
 
           {/* ── Dates Block ── */}
           <div className="be-dates">
-            <div className="be-date-box">
+            <div className="be-date-box" style={{flex :"0.5"}}>
               <img src="/checkin.png" alt="Check-in" className="be-date-icon" />
               <div className="be-date-text">
                 <span className="be-date-label">Check-in Date</span>
                 <span className="be-date-value">{invoice.checkInDate}</span>
               </div>
             </div>
-            <div className="be-date-box">
+            <div className="be-date-box" style={{flex: "0.8"}}>
               <img src="/checkout.png" alt="Check-out" className="be-date-icon" />
               <div className="be-date-text">
                 <span className="be-date-label">Check-Out Date</span>
@@ -562,19 +575,19 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
               <table className="be-table">
                 <thead>
                   <tr>
-                    <th style={{paddingLeft: "2px"}}>Room Name</th>
-                    <th>Guest Name</th>
-                    <th>No. Of Rooms</th>
-                    <th>Night/s</th>
-                    <th style={{textAlign: "right", paddingRight: "4px"}}>Taxes</th>
-                    <th style={{textAlign: "right" ,paddingRight: "1px"}}>Room Rate</th>
+                    <th style={{paddingLeft: "2px", width:"24%"}}>Room Name</th>
+                    <th style={{width:"18%", textAlign:"left", paddingLeft: "7px"}}>Guest Name</th>
+                    <th style={{width: "14.5%"}}>No. Of Rooms</th>
+                    <th style={{width: "14.5%"}}>Night/s</th>
+                    <th style={{textAlign: "right", paddingRight: "4px", width: "14.5%"}}>Taxes</th>
+                    <th style={{textAlign: "right" ,paddingRight: "1px", width: "14.5%"}}>Room Rate</th>
                   </tr>
                 </thead>
                 <tbody>
                   {invoice.rooms.map((room, idx) => (
                     <tr key={idx} className="be-table-row">
                       <td style={{paddingLeft: "2px"}}>{room.roomName   || room.room_name   || ""}</td>
-                      <td>{room.guestName  || room.guest_name  || ""}</td>
+                      <td style={{textAlign:"left", paddingLeft:"7px"}}>{room.guestName  || room.guest_name  || ""}</td>
                       <td>{room.noOfRooms  || room.no_of_rooms || 1}</td>
                       <td>{room.nights     || room.no_of_nights|| ""}</td>
                       <td style={{textAlign: "right", paddingRight: "4px"}}>{formatCurrency(room.taxes  ?? 0)}</td>

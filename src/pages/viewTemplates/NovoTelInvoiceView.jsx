@@ -369,7 +369,7 @@ min-height: 295mm;
   }
 
   table {
-    margin-bottom: 10px;
+    margin-bottom: 3px;
   }
 
   @media print {
@@ -413,36 +413,37 @@ min-height: 295mm;
                                             backgroundColor: "#ebebeb",
                                             borderTop: "1px solid #000",
                                             borderBottom: "1px solid #000",
+                                            lineHeight:"1.1"
                                         }}
                                     >
-                                        <th style={{ textAlign: "left", padding: "4px", width: "15%" }}>
+                                        <th style={{ textAlign: "left", padding: "1px 4px", width: "10%", verticalAlign: "top"}}>
                                             Date
                                         </th>
-                                        <th style={{ textAlign: "left", padding: "4px", width: "55%" }}>
+                                        <th style={{ textAlign: "left", padding: "1px 4px", width: "55%",verticalAlign: "top" }}>
                                             Description
                                         </th>
-                                        <th style={{ textAlign: "right", padding: "4px", width: "15%" }}>
+                                        <th style={{ textAlign: "right", padding: "1px 4px", width: "11%" }}>
                                             Debits
                                             <br />
-                                            {invoice.currency}
+                                            <span style={{fontWeight: "normal"}}>{invoice.currency}</span>
                                         </th>
-                                        <th style={{ textAlign: "right", padding: "4px", width: "15%" }}>
+                                        <th style={{ textAlign: "right", padding: "1px 4px", width: "15%" }}>
                                             Credits
                                             <br />
-                                            {invoice.currency}
+                                            <span style={{fontWeight: "normal"}}>{invoice.currency}</span>
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody style={{lineHeight:"1.1"}}>
                                     {pageData.lines.length > 0 ? (
                                         pageData.lines.map((line, i) => (
                                             <tr key={i}>
-                                                <td style={{ padding: "4px" }}>{line.date}</td>
-                                                <td style={{ padding: "4px" }}>{line.description}</td>
-                                                <td style={{ textAlign: "right", padding: "4px" }}>
+                                                <td style={{ padding: "1px" }}>{line.date}</td>
+                                                <td style={{ padding: "1px" }}>{line.description}</td>
+                                                <td style={{ textAlign: "right", padding: "1px" }}>
                                                     {Number(line.debit).toFixed(3)}
                                                 </td>
-                                                <td style={{ textAlign: "right", padding: "4px" }}>
+                                                <td style={{ textAlign: "right", padding: "2px" }}>
                                                     {Number(line.credit).toFixed(3)}
                                                 </td>
                                             </tr>

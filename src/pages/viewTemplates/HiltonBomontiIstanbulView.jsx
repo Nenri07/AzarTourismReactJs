@@ -149,7 +149,7 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
     return {
       refferenceNo: data.referenceNo,
       hotelContact: {
-        name: data.hotel || 'HILTON ISTANBUL BOMONTI HOTEL &\nCONFERENCE CENTER',
+        name:  'HILTON ISTANBUL BOMONTI HOTEL &\nCONFERENCE CENTER',
         addressLine1: 'SILAHSOR CADDESI.NO. 42 BOMONTI SISLI',
         city: 'ISTANBUL . 343810',
         country: 'Turkiye',
@@ -400,10 +400,10 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
           .hotel-address-box {
             border: 1px solid #000;
             text-align: center;
-            font-size: 11px;
-            line-height: 1.5;
-            width: 320px;
-            padding: 10px 5px;
+            font-size: 13.5px;
+            line-height: 1.3;
+            width: 340px;
+            padding: 2px 8px 2px 2px;
           }
           
           .hotel-address-box p { 
@@ -412,12 +412,12 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
           }
 
           .guest-info-section {
-            width: 81%;
+            width: 82%;
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
             line-height: 1.6;
-            font-size: 8.5px !important;
+            font-size: 9.5px !important;
           }
 
           .right-info-table {
@@ -430,11 +430,11 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
             vertical-align: top;
           }
           .right-info-table td:first-child { 
-            width: 55%; 
+            width: 65%; 
           }
 
           .main-table { 
-            width: 81%; 
+            width: 82%; 
             border-collapse: collapse; 
             margin-top: 2px;
             font-size: 8.5px !important;
@@ -442,7 +442,7 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
           
           .main-table thead th { 
             border: 1px solid #000; 
-            padding: 4px 5px; 
+            padding: 2px 5px 6px 5px; 
             font-weight: normal; 
             vertical-align: middle;
             font-size: 9px;
@@ -560,10 +560,10 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
               <thead>
                 <tr>
                   <th className="left-align" style={{ width: '12%' }}>Date</th>
-                  <th className="left-align" style={{ width: '32%' }}>Transaction Description</th>
+                  <th className="left-align" style={{ width: '31%' }}>Transaction Description</th>
                   <th className="left-align" style={{ width: '10%', textAlign: 'center' }}>Cashier ID</th>
-                  <th className="left-align" style={{ width: '12%', textAlign: 'center' }}>Transaction ID</th>
-                  <th className="right-align" style={{ width: '12%', textAlign: 'center' }}>Debit</th>
+                  <th className="left-align" style={{ width: '13%', textAlign: 'center' }}>Transaction ID</th>
+                  <th className="right-align" style={{ width: '14%', textAlign: 'center' }}>Debit</th>
                   <th className="right-align" style={{ width: '12%', textAlign: 'center' }}>Credit</th>
                   <th className="right-align" style={{ width: '10%', textAlign: 'center' }}>Balance</th>
                 </tr>
@@ -575,7 +575,7 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
                     <td className="left-align">{charge.description}</td>
                     <td className="left-align">{charge.cashierId}</td>
                     <td className="left-align" style={{ textAlign: 'right' }}>{charge.transactionId}</td>
-                    <td className="right-align">{charge.debit}</td>
+                    <td className="right-align" style={{paddingRight: "2px"}}>{charge.debit}</td>
                     <td className="right-align">{charge.credit}</td>
                     <td className="right-align">{charge.balance}</td>
                   </tr>
@@ -595,10 +595,10 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
                       <td style={{ width: '15%', textAlign: 'right', paddingRight: '23px' }}>
                         Debit and<br />Credit Totals
                       </td>
-                      <td style={{ width: '10%', textAlign: 'right', verticalAlign: 'top', paddingRight: '18px' }}>
+                      <td style={{ width: '10%', textAlign: 'right', verticalAlign: 'top'}}>
                         {invoice.totals.totalDebit}
                       </td>
-                      <td style={{ width: '10%', textAlign: 'right', verticalAlign: 'bottom' }}>
+                      <td style={{ width: '8%', textAlign: 'right', verticalAlign: 'bottom' }}>
                         {invoice.totals.totalCredit}
                       </td>
                       <td style={{ width: '10%' }}></td>
@@ -617,27 +617,27 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
                       <td style={{ textAlign: 'right', verticalAlign: 'middle', paddingRight: '23px', whiteSpace: 'nowrap' }}>
                         Balance
                       </td>
-                      <td colSpan="2" style={{ verticalAlign: 'middle', padding: '0 10px' }}></td>
+                      <td colSpan="2"></td>
                       <td style={{ textAlign: 'right', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                         {invoice.totals.balance} TL
                       </td>
                     </tr>
 
                     {/* 2. Patches Row (Aligned over the dots gap and the value) */}
-                    <tr>
-                      <td colSpan="3" style={{ verticalAlign: 'middle', padding: '1px 0' }}>
+                    {/* <tr> */}
+                      {/* <td colSpan="3" style={{ verticalAlign: 'middle', padding: '1px 0' }}>
                         <div style={{ display: 'flex', gap: '30px' }}>
                           <div style={{ width: '70px', borderTop: '2px solid black' }}></div>
                           <div style={{ width: '70px', borderTop: '2px solid black' }}></div>
                         </div>
-                      </td>
+                      </td> */}
                       {/* Empty cell matching the width of the Balance/Currency labels column */}
-                      <td></td>
+                      {/* <td></td> */}
                       {/* Right line extending across the gap and the amount column */}
-                      <td colSpan="3" style={{ padding: '1px 0' }}>
+                      {/* <td colSpan="3" style={{ padding: '1px 0' }}>
                         <div style={{ width: '88px', borderTop: '2px solid black', marginRight: 'auto' , marginLeft: "-19px"}}></div>
-                      </td>
-                    </tr>
+                      </td> */}
+                    {/* </tr> */}
 
                     {/* 3. Estimated Currency Row */}
                     <tr>
@@ -656,13 +656,13 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
             )}
             {page.isLastPage && (
               <div>
-                <table className="tax-table" style={{ width: '390px', marginTop: '30px', borderCollapse: 'collapse', fontSize: '8.5px' }}>
+                <table className="tax-table" style={{ width: '390px', marginTop: '30px', borderCollapse: 'collapse', fontSize: '9px' }}>
                   <thead>
                     <tr>
                       <th style={{ textAlign: 'left', width: '160px', padding: '2px 0' }}></th>
                       <th style={{ textAlign: 'right', width: '120px', padding: '2px 0' }}>Total Excluding VAT</th>
-                      <th style={{ textAlign: 'right', width: '80px', padding: '2px 0' }}>VAT</th>
-                      <th style={{ textAlign: 'right', width: '140px', padding: '2px 0' }}>TOTAL</th>
+                      <th style={{ textAlign: 'right', width: '100px', padding: '2px 0' }}>VAT</th>
+                      <th style={{ textAlign: 'right', width: '120px', padding: '2px 0' }}>TOTAL</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -693,7 +693,7 @@ const HiltonBomontiIstanbulView = ({ invoiceData }) => {
                   </tbody>
                 </table>
 
-                <div className="signature-line" style={{ marginTop: '40px', fontSize: '9px' }}>
+                <div className="signature-line" style={{ marginTop: '30px', fontSize: '9px' }}>
                   Guest Signature <span style={{ display: 'inline-block', width: '250px', borderBottom: '1px solid black', margin: '0 0 -2px 5px' }}></span>
                 </div>
               </div>
