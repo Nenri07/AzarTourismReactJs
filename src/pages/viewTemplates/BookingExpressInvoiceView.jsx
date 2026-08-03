@@ -179,12 +179,11 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
     } catch { return dateString; }
   };
 
-  const formatCurrency = (val) => {
+const formatCurrency = (val) => {
     if (val === undefined || val === null || val === "") return "0.00";
-    return parseFloat(val).toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    
+    // .toFixed(2) forces exactly 2 decimal places without any commas
+    return parseFloat(val).toFixed(2); 
   };
 
   // ── 6. PDF Download ──────────────────────────────────────────────────────
@@ -296,7 +295,7 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
           align-items: center;
         }
         .be-logo img {
-          max-width: 230px;
+          max-width: 215px;
           height: auto;
         }
         .be-info-grid {
@@ -314,21 +313,21 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
 
         /* Customer Block */
         .be-customer {
-          border-top: 1px solid #d5d5d5;
-          border-bottom: 1px solid #d5d5d5;
+          border-top: 1px solid #e3e0e0;
+          border-bottom: 1px solid #e3e0e0;
           padding: 8px 10px;
         }
         .be-customer .to-label       { font-weight: bold; font-size: 12px; margin-bottom: 3px; color: #333; }
         .be-customer .company-name   { font-weight: bold; font-size: 12px; margin-bottom: 3px; color: #333; }
         .be-contact-row              { display: flex; align-items: center; font-size: 11px; color: #555; }
         .be-contact-row .bold        { font-weight: bold; color: #333; }
-        .be-divider                  { height: 12px; width: 1px; background: #c5c5c5; margin: 0 12px; }
+        .be-divider                  { height: 12px; width: 1px; background: #fff; margin: 0 12px; }
 
         /* Hotel Details */
         .be-hotel {
           background: #eeeeee;
           padding: 10px 10px;
-          border-bottom: 1px solid #d5d5d5;
+          border-bottom: 1px solid #e3e0e0;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
@@ -339,7 +338,7 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
         .be-dates {
           background: #cbc9c9;
           display: flex;
-          border-bottom: 1px solid #d5d5d5;
+          border-bottom: 1px solid #e3e0e0;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
@@ -347,8 +346,8 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
           flex: 1;
           display: flex;
           align-items: center;
-          padding: 8px 20px;
-          border-right: 2px solid #b2b2b2;
+          padding: 8px 20px 8px 10px;
+          border-right: 1px solid #b2b2b2;
         }
         .be-date-box:last-child {
           border-right: none;
@@ -377,7 +376,7 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
         /* Room Table */
         .be-table-wrap { padding: 0 20px 8px; flex-grow: 1; background: #eeeeee} /* Allows content area to fill available space */
         .be-table-box {
-          border: 1px solid #ded5d5;
+          border: 1px solid #e3e0e0;
           border-radius: 15px;
           padding: 8px 8px; /* Adds space inside the rounded box so lines don't touch the outer border */
           overflow: hidden; 
@@ -393,8 +392,8 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
           padding: 5px 15px;
           text-align: center;
           color: #555;
-          border-right: 1px solid #ded5d5;
-          border-bottom: 1px solid #ded5d5;
+          border-right: 1px solid #e3e0e0;
+          border-bottom: 1px solid #e3e0e0;
         }
         .be-table th:first-child,
         .be-table td:first-child {
@@ -468,7 +467,7 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
             left: 0; 
             top: 0; 
             width: 100%; 
-            padding: 10mm !important; 
+            padding: 7mm 5mm!important; 
             background: none;
             justify-content: center; 
           }
@@ -539,7 +538,7 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
 
           {/* ── Dates Block ── */}
           <div className="be-dates">
-            <div className="be-date-box" style={{flex :"0.5"}}>
+            <div className="be-date-box" style={{flex :"0.62"}}>
               <img src="/checkin.png" alt="Check-in" className="be-date-icon" />
               <div className="be-date-text">
                 <span className="be-date-label">Check-in Date</span>

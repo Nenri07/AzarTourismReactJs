@@ -435,27 +435,48 @@ min-height: 295mm;
                                     </tr>
                                 </thead>
                                 <tbody style={{lineHeight:"1.1"}}>
-                                    {pageData.lines.length > 0 ? (
-                                        pageData.lines.map((line, i) => (
-                                            <tr key={i}>
-                                                <td style={{ padding: "1px" }}>{line.date}</td>
-                                                <td style={{ padding: "1px" }}>{line.description}</td>
-                                                <td style={{ textAlign: "right", padding: "1px" }}>
-                                                    {Number(line.debit).toFixed(3)}
-                                                </td>
-                                                <td style={{ textAlign: "right", padding: "2px" }}>
-                                                    {Number(line.credit).toFixed(3)}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={4} style={{ textAlign: "center", padding: "8px" }}>
-                                                No invoice items found
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
+    {pageData.lines.length > 0 ? (
+        pageData.lines.map((line, i) => (
+            <tr key={i}>
+                <td style={{ 
+                    padding: "1px", 
+                    paddingTop: i === 0 ? "14px" : "1px" 
+                }}>
+                    {line.date}
+                </td>
+                
+                <td style={{ 
+                    padding: "1px", 
+                    paddingTop: i === 0 ? "14px" : "1px" 
+                }}>
+                    {line.description}
+                </td>
+                
+                <td style={{ 
+                    textAlign: "right", 
+                    padding: "1px", 
+                    paddingTop: i === 0 ? "14px" : "1px" 
+                }}>
+                    {Number(line.debit).toFixed(3)}
+                </td>
+                
+                <td style={{ 
+                    textAlign: "right", 
+                    padding: "2px", 
+                    paddingTop: i === 0 ? "14px" : "2px" 
+                }}>
+                    {Number(line.credit).toFixed(3)}
+                </td>
+            </tr>
+        ))
+    ) : (
+        <tr>
+            <td colSpan={4} style={{ textAlign: "center", padding: "8px" }}>
+                No invoice items found
+            </td>
+        </tr>
+    )}
+</tbody>
                             </table>
 
                             {pageData.isLastPage && (

@@ -244,7 +244,7 @@ const buildPages = (items = []) => {
 
   const pages = [];
   const MAX_ROWS_NORMAL = 32; 
-  const MAX_ROWS_WITH_TOTALS = 15; 
+  const MAX_ROWS_WITH_TOTALS = 16; 
 
   for (let i = 0; i < items.length;) {
     const remaining = items.length - i;
@@ -538,19 +538,19 @@ padding-left: 145px;
                   <tr>
                     <th width="10.5%">Date</th>
                     <th width="31%">Description</th>
-                    <th width="10%" style={{paddingLeft:"7px"}}>Qty.</th>
+                    <th width="10%" style={{paddingLeft:"20px"}}>Qty.</th>
                     <th width="12%" className="text-right">Debit TND</th>
                     <th width="12%" className="text-right">Credit TND</th>
                     <th width="12%" className="text-right">Debit TND</th>
                     <th width="12%" className="text-right" style={{textAlign:"right", paddingRight: "4px"}}>Credit TND</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody style={{lineHeight: "1.3"}}>
                   {page.items.map((txn, index) => (
                     <tr key={index}>
                       <td>{txn.date}</td>
                       <td>{txn.desc}</td>
-                      <td>{txn.qty}</td>
+                      <td style={{ paddingLeft: "17px" }}>{txn.qty}</td>
                       <td className="text-right">{formatCurrency(txn.debit1)}</td>
                       <td className="text-right">{txn.credit1 !== "" ? formatCurrency(txn.credit1) : ""}</td>
                       <td className="text-right">{formatCurrency(txn.debit2)}</td>

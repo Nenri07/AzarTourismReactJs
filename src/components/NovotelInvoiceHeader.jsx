@@ -7,7 +7,7 @@ export default function NovotelInvoiceHeader({
   return (
     <>
       {/* Logo */}
-      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <img
           src={logoUrl}
           width="220"
