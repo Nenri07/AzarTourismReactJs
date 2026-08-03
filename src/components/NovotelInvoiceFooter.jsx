@@ -55,7 +55,7 @@ export default function NovotelInvoiceFooter({
               }}
             >
               <span style={{ marginRight: '37px', fontSize: '11px', paddingRight:"65px" }}>Total</span>
-              <span style={{ textAlign: 'right', width: '260px', fontSize:'12px' }}>
+              <span style={{ textAlign: 'right', width: '197px', fontSize:'12px', paddingRight:"60px" }}>
                 {totalDebit.toFixed(3)}
               </span>
               <span style={{ textAlign: 'right', width: '80px', fontSize:'12px' }}>
