@@ -130,7 +130,7 @@ const BookingExpressInvoiceView = ({ invoiceData }) => {
     const currency = data.currency || data.currencyCode || "EUR";
 
     return {
-        refferenceNo    : data.refferenceNo     || data.reference_no    || data.referenceNo || "",
+        refferenceNo    : data.refferenceNo     || data.refference_no    || data.referenceNo || "",
       invoiceNumber  : data.invoiceNumber   || data.invoice_number  || "",
       invoiceDate    : formatDisplayDate(data.invoiceDate || data.invoice_date || ""),
       supplierConfNo : data.supplierConfNo  || data.supplier_conf_no|| data.confNo || "",
@@ -187,9 +187,31 @@ const formatCurrency = (val) => {
   };
 
   // ── 6. PDF Download ──────────────────────────────────────────────────────
+  // ── 6. PDF Download ──────────────────────────────────────────────────────
   const handleDownloadPDF = async () => {
     if (!invoiceRef.current) return;
     setPdfLoading(true);
+
+    // 1. Target the grid and the rows
+    const infoGrid = invoiceRef.current.querySelector('.be-info-grid');
+    const infoRows = invoiceRef.current.querySelectorAll('.be-info-row');
+    
+    // Store original styles so we can revert them later
+    const originalGridPadding = infoGrid ? infoGrid.style.paddingRight : '';
+    const originalRowMargins = [];
+
+    // Apply PDF-only styles
+    if (infoGrid) {
+      infoGrid.style.paddingRight = '25px'; // Your previous right padding
+    }
+    
+    infoRows.forEach((row, index) => {
+      originalRowMargins.push(row.style.marginBottom);
+      // Increase the gap (margin-bottom) for all rows except the very last one
+      if (index < infoRows.length - 1) {
+        row.style.marginBottom = '8px'; // <--- INCREASE THIS VALUE to make the gap larger
+      }
+    });
 
     const headStyles = Array.from(
       document.head.querySelectorAll('link[rel="stylesheet"], style')
@@ -197,30 +219,39 @@ const formatCurrency = (val) => {
     headStyles.forEach(s => s.parentNode && s.parentNode.removeChild(s));
 
     try {
-     const opt = {
-  margin   : 5,
-  filename : `${invoice.refferenceNo || 'BookingExpress-Invoice'}.pdf`,
-  image    : { type: 'jpeg', quality: 1 },
-  html2canvas: {
-    scale      : 4,
-    useCORS    : true,
-    letterRendering: true,
-    scrollY    : 0,
-    windowWidth: 794,   // pin capture width to match .be-page so nothing stretches
-  },
-  jsPDF      : { unit: 'mm', format: 'a4', orientation: 'portrait' },
-};
+      const opt = {
+        margin   : 5,
+        filename : `${invoice.refferenceNo || 'BookingExpress-Invoice'}.pdf`,
+        image    : { type: 'jpeg', quality: 1 },
+        html2canvas: {
+          scale      : 4,
+          useCORS    : true,
+          letterRendering: true,
+          scrollY    : 0,
+          windowWidth: 794,
+        },
+        jsPDF      : { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      };
+      
       await html2pdf().set(opt).from(invoiceRef.current).save();
       toast.success("PDF Downloaded Successfully");
     } catch (err) {
       console.error("PDF Error:", err);
       toast.error("Failed to generate PDF");
     } finally {
+      // 2. Revert everything back to normal after PDF generation
+      if (infoGrid) {
+        infoGrid.style.paddingRight = originalGridPadding;
+      }
+      
+      infoRows.forEach((row, index) => {
+        row.style.marginBottom = originalRowMargins[index];
+      });
+      
       headStyles.forEach(s => document.head.appendChild(s));
       setPdfLoading(false);
     }
   };
-
   const handlePrint = () => window.print();
 
   // ── 7. Loading guard ─────────────────────────────────────────────────────
@@ -298,18 +329,28 @@ const formatCurrency = (val) => {
           max-width: 215px;
           height: auto;
         }
-        .be-info-grid {
-          display: grid;
-          padding-right: 20px;
-          grid-template-columns: 145px 135px;
-          row-gap: 3px;
-          font-size: 12px;
-          color: #555;
-        }
-        .be-info-grid div:nth-child(odd) {
-          font-weight: bold;
-          color: #333;
-        }
+    .be-info-grid {
+    padding:10px 20px 10px 0px;
+  padding-right: 20px;
+  font-size: 12px;
+  color: #555;
+}
+.be-info-row {
+  display: flex;
+  margin-bottom: 3px;
+}
+.be-info-row:last-child {
+  margin-bottom: 0;
+}
+.be-info-label {
+  width: 145px;
+  font-weight: bold;
+  color: #333;
+  flex-shrink: 0;
+}
+.be-info-value {
+  width: 135px;
+}
 
         /* Customer Block */
         .be-customer {
@@ -372,7 +413,7 @@ const formatCurrency = (val) => {
         }
         .be-green-bar    { width: 6px; height: 16px; background: #2f7e77; margin-right: 10px; flex-shrink: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         .be-room-title   { font-weight: bold; font-size: 12px; color: #555; white-space: nowrap; }
-.be-line-extend  { flex-grow: 1; height: 0; border-top: 1px solid #ded5d5; margin-left: 15px; }
+.be-line-extend  { flex-grow: 1; height: 0; border-top: 1px solid #ded5d5; margin-left: 80px; }
         /* Room Table */
         .be-table-wrap { padding: 0 20px 8px; flex-grow: 1; background: #eeeeee} /* Allows content area to fill available space */
         .be-table-box {
@@ -494,13 +535,31 @@ const formatCurrency = (val) => {
               <img src="/BookingExpresslogo.png" alt="Booking Express" />
             </div>
             <div className="be-info-grid">
-              <div>Invoice Number:</div>  <div>{invoice.invoiceNumber}</div>
-              <div>Invoice Date:</div>    <div>{invoice.invoiceDate}</div>
-              <div>Supplier Conf. No:</div><div>{invoice.supplierConfNo}</div>
-              <div>Folio No:</div>        <div>{invoice.folioNo}</div>
-              <div>Booking Date:</div>    <div>{invoice.bookingDate}</div>
-              <div>Booking ID:</div>      <div>{invoice.bookingId}</div>
-            </div>
+  <div className="be-info-row">
+    <span className="be-info-label">Invoice Number:</span>
+    <span className="be-info-value">{invoice.invoiceNumber}</span>
+  </div>
+  <div className="be-info-row">
+    <span className="be-info-label">Invoice Date:</span>
+    <span className="be-info-value">{invoice.invoiceDate}</span>
+  </div>
+  <div className="be-info-row">
+    <span className="be-info-label">Supplier Conf. No:</span>
+    <span className="be-info-value">{invoice.supplierConfNo}</span>
+  </div>
+  <div className="be-info-row">
+    <span className="be-info-label">Folio No:</span>
+    <span className="be-info-value">{invoice.folioNo}</span>
+  </div>
+  <div className="be-info-row">
+    <span className="be-info-label">Booking Date:</span>
+    <span className="be-info-value">{invoice.bookingDate}</span>
+  </div>
+  <div className="be-info-row">
+    <span className="be-info-label">Booking ID:</span>
+    <span className="be-info-value">{invoice.bookingId}</span>
+  </div>
+</div>
           </div>
 
           {/* ── Customer Block ── */}
@@ -517,7 +576,7 @@ const formatCurrency = (val) => {
               )}
               {invoice.email && (
                 <>
-                  <span className="be-divider" style={{marginLeft:"115px"}} />
+                  <span className="be-divider" style={{marginLeft:"90px"}} />
                   <span className="bold">Email:</span>&nbsp;{invoice.email}
                 </>
               )}
@@ -538,14 +597,14 @@ const formatCurrency = (val) => {
 
           {/* ── Dates Block ── */}
           <div className="be-dates">
-            <div className="be-date-box" style={{flex :"0.62"}}>
+            <div className="be-date-box" style={{flex :"0.59"}}>
               <img src="/checkin.png" alt="Check-in" className="be-date-icon" />
               <div className="be-date-text">
                 <span className="be-date-label">Check-in Date</span>
                 <span className="be-date-value">{invoice.checkInDate}</span>
               </div>
             </div>
-            <div className="be-date-box" style={{flex: "0.8"}}>
+            <div className="be-date-box" style={{flex: "0.7"}}>
               <img src="/checkout.png" alt="Check-out" className="be-date-icon" />
               <div className="be-date-text">
                 <span className="be-date-label">Check-Out Date</span>
@@ -576,7 +635,7 @@ const formatCurrency = (val) => {
                   <tr>
                     <th style={{paddingLeft: "2px", width:"24%"}}>Room Name</th>
                     <th style={{width:"18%", textAlign:"left", paddingLeft: "7px"}}>Guest Name</th>
-                    <th style={{width: "14.5%"}}>No. Of Rooms</th>
+                    <th style={{width: "14.5%", padding:"5px"}}>No. Of Rooms</th>
                     <th style={{width: "14.5%"}}>Night/s</th>
                     <th style={{textAlign: "right", paddingRight: "4px", width: "14.5%"}}>Taxes</th>
                     <th style={{textAlign: "right" ,paddingRight: "1px", width: "14.5%"}}>Room Rate</th>
