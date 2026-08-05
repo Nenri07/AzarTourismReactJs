@@ -428,11 +428,12 @@ const MovenpickInvoiceView = ({ invoiceData }) => {
     .invoice-title { font-size: 14px; font-weight: normal; margin-bottom: 20px; text-transform: uppercase; }
     
     .meta-data { display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .meta-group { width: 34.5%; }
+  .meta-group { width: 60%; }
+    .meta-group:last-child { width: 35%; }
     .meta-row { display: flex; }
-    .meta-label { width: 145px; }
-    .meta-labelR{ width: 70px; }
-    .meta-value { }
+    .meta-label { width: 145px; flex-shrink: 0; }
+    .meta-labelR{ width: 70px; flex-shrink: 0; }
+    .meta-value { white-space: nowrap; }
 
     .line-items { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
     .line-items th {
