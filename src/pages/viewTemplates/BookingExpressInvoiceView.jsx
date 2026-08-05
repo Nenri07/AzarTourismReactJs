@@ -426,7 +426,7 @@ const formatCurrency = (val) => {
         .be-table {
           width: 100%;
           border-collapse: collapse; 
-          font-size: 11px;
+          font-size: 10px;
           background: #fff;
         }
         .be-table th, .be-table td {
@@ -654,7 +654,7 @@ const formatCurrency = (val) => {
                   ))}
                   <tr className="be-total-row">
                     <td colSpan={6} style={{paddingTop: '5px', paddingRight: "2px"}}>
-                      Total Amount:{invoice.currency} {formatCurrency(invoice.totalAmount)}
+                      Total Amount: {invoice.currency} {formatCurrency(invoice.totalAmount)}
                     </td>
                   </tr>
                 </tbody>
