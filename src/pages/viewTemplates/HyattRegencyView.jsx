@@ -269,6 +269,8 @@ const HyattRegencyView = ({ invoiceData }) => {
             font-family: Arial, Helvetica, sans-serif;
             color: #000;
             box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           
           .hyatt-page {
