@@ -307,7 +307,7 @@ const HyattRegencyView = ({ invoiceData }) => {
             }
             body { background: none; margin: 0; padding: 0; }
             .hyatt-page { 
-              padding: 2mm 15mm 15mm 15mm !important; 
+              padding: 2mm 7mm 5mm 4mm !important; 
               margin: 0 !important; 
               box-shadow: none !important; 
               width: 100% !important;
