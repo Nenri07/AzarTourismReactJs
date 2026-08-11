@@ -97,7 +97,7 @@ const updates = {
   const grossAmt = parseFloat(value || 0);
 
   if (grossAmt > 0 && hotelType === 'LANSON_PLACE') {
-    const baseAmt = grossAmt / 1.08;
+    const baseAmt = grossAmt ;
     const sstAmt = baseAmt * 0.08;
     updatedEntry['service_sst_myr'] = sstAmt.toFixed(2);
   } else {

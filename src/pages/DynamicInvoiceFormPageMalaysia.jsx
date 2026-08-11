@@ -191,7 +191,7 @@ const otherServices = [];
           } 
           // Map our newly calculated combined Gross Amount
           else if (fieldId === 'gross_amount') {
-            mappedService[fieldId] = grossAmount;
+            mappedService[fieldId] = baseAmount.toFixed(2);
           } 
           // Catch any other fields dynamically, skipping the SST we already set
           else if (fieldId !== 'service_sst_myr') {
