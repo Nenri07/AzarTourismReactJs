@@ -107,7 +107,7 @@ const mapApiDataToInvoice = (data = {}) => {
       itemsRaw.push({
         rawDate: accDate,
         client: data.guestName,
-        desc: acc.detail || "Tarifs Agence de Voyage 25",
+       desc: `Tarifs Agence de Voyage ${String(new Date(data.invoiceDate).getFullYear()).slice(-2)}`,
         pensio: acc.pensio || "LO",
         room: acc.room || data.roomNo,
         voucher: acc.voucher || "",
