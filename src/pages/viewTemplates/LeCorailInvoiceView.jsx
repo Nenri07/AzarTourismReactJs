@@ -129,7 +129,7 @@ const mapApiDataToInvoice = (data = {}) => {
           room: acc.room || data.roomNo,
           voucher: "",
           qty: taxPersons,
-          debit: data.cityTaxPerNight * taxPersons,
+          debit: data.cityTaxPerNight ,
           credit: ""
         });
       }
